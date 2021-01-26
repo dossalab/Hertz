@@ -1,16 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
+
+#include <GLFW/glfw3.h>
 
 #ifdef BUILD_WEBGL
 #include <emscripten/emscripten.h>
 #endif
 
+#define FLYTHROUGH_CAMERA_IMPLEMENTATION
+#include "camera.h"
+
 #include <engine/api.h>
+
+static const float up[3] = { 0.0f, 1.0f, 0.0f };
 
 static struct camera main_camera;
 static struct scene scene;
 static struct mesh ship, skybox;
+
+static vec3 camera_position = { 0.0f, 0.0f, 0.0f };
+static vec3 camera_look = { 0.0f, 0.0f, 1.0f };
 
 static void die(const char *fmt, ...)
 {
@@ -21,51 +32,60 @@ static void die(const char *fmt, ...)
 	va_end(params);
 
 	#ifdef BUILD_WEBGL
-	        emscripten_force_exit(EXIT_FAILURE);
+		emscripten_force_exit(EXIT_FAILURE);
 	#else
 		exit(1);
 	#endif
 }
 
-static void on_mouse(struct event_data *event)
+void update_camera(GLFWwindow *window, float delta_time_sec)
 {
-	mat4x4_identity(main_camera.view);
+	double pos_x, pos_y;
+	static double old_pos_x, old_pos_y;
 
-	mat4x4_rotate(
-		main_camera.view,
-		main_camera.view,
-		1,
-		0,
-		0,
-		event->mouse.y * ENG_PI / 2.0
+	glfwGetCursorPos(window, &pos_x, &pos_y);
+
+	flythrough_camera_update(
+		camera_position, camera_look, up,
+		(float *)main_camera.view,
+		delta_time_sec,
+		100.0f,
+		0.5f,
+		80.0f,
+		pos_x - old_pos_x,
+		pos_y - old_pos_y,
+		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS,
+		false, false,
+		0	
 	);
 
-	mat4x4_rotate(
-		main_camera.view,
-		main_camera.view,
-		0,
-		1,
-		0,
-		event->mouse.x * ENG_PI / 2.0
-	);
+	old_pos_x = pos_x;
+	old_pos_y = pos_y;
 
-	mat4x4_translate_in_place(main_camera.view, 0, -20, 0);
 	engine_update_mvp();
 }
 
-static void on_keyboard(struct event_data *event)
+static void main_loop(void *user)
 {
-}
+	double now; static double past;
+	GLFWwindow *window;
 
-static void main_loop(void)
-{
-	if (engine_poll() < 0) {
-		// ?
-	}
+	window = (GLFWwindow *)user;
+	now = glfwGetTime();
+
+	engine_poll();
+	update_camera(window, now - past);
+
+	past = now;
 }
 
 int main(int argc, char **argv)
 {
+	GLFWwindow *window;
+
 	if (engine_init() < 0) {
 		die("Unable to init engine!\n");
 	}
@@ -87,14 +107,13 @@ int main(int argc, char **argv)
 	engine_set_scene(&scene);
 	engine_set_camera(&main_camera);
 
-	engine_subscribe(ENG_EVENT_MOUSE, on_mouse);
-	engine_subscribe(ENG_EVENT_KEYBOARD, on_keyboard);
+	window = engine_get_window();
 
 	#ifdef BUILD_WEBGL
-		emscripten_set_main_loop(main_loop, 0, 0);
+		emscripten_set_main_loop_arg(main_loop, window, 0, 0);
 	#else
 		for (;;) {
-			main_loop();
+			main_loop(window);
 		}
 
 		// should never appear here?

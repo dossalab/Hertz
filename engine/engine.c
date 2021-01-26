@@ -51,6 +51,7 @@ int engine_init(void)
 
 	//glfwWindowHint(GLFW_SAMPLES, 4);
 	//glEnable(GL_MULTISAMPLE);
+	glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
