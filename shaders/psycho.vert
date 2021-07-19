@@ -17,7 +17,15 @@ varying float _time;
 
 void main()
 {
-	gl_Position = MVP * vec4(in_position, 1.0);
+	vec2 resolution = vec2(12.0, 12.0);
+	vec2 cPos = -1.0 + 2.0 * in_position.xy / resolution.xy;
+	float cLength = length(cPos);
+
+	vec2 uv = in_position.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*0.2)*0.5;
+
+	vec3 off = vec3(uv.x, cos(uv.x), uv.y);
+
+	gl_Position = MVP * vec4(off + in_position, 1.0);
 	vertex = vec3(model * vec4(in_position, 1.0));
 
 	normal = normalize(in_normal);

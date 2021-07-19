@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
+#include <string.h>
 
 #include <engine/engine.h>
 #include <engine/mesh.h>
@@ -14,7 +16,8 @@ static int mesh_attach_geometry(struct mesh *m)
 	vb_location = glGetAttribLocation(m->program, "in_position");
 	nb_location = glGetAttribLocation(m->program, "in_normal");
 
-	if (vb_location < 0 || nb_location < 0) {
+	if (vb_location < 0) {
+		logger_report("unable to find normal or vertex buffer\n");
 		return -1;
 	}
 
@@ -27,31 +30,40 @@ static int mesh_attach_geometry(struct mesh *m)
 	glVertexAttribPointer(vb_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(vb_location);
 
-	/* normal buffer */
-	glGenBuffers(1, &m->nbo);
-	glBindBuffer(GL_ARRAY_BUFFER, m->nbo);
-	glBufferData(GL_ARRAY_BUFFER, m->normal_cnt * sizeof(struct vertex),
-				m->normals, GL_STATIC_DRAW);
+	if (nb_location >= 0) {
+		/* normal buffer */
+		glGenBuffers(1, &m->nbo);
+		glBindBuffer(GL_ARRAY_BUFFER, m->nbo);
+		glBufferData(GL_ARRAY_BUFFER, m->normal_cnt * sizeof(struct vertex),
+					m->normals, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(nb_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(nb_location);
+		glVertexAttribPointer(nb_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(nb_location);
+	}
 
 	return 0;
 }
 
-static int mesh_attach_textures(struct mesh *m)
+int mesh_attach_textures(struct mesh *m)
 {
 	int w, h, n;
 	uint8_t *data;
 	int tcb_location;
+
+	if (!m->texture_path) {
+		logger_report("mesh is not textured\n");
+		m->texture_path = strdup("res/test.jpg");
+	}
 
 	tcb_location = glGetAttribLocation(m->program, "in_texcoords");
 	if (tcb_location < 0) {
 		return -1;
 	}
 
-	data = stbi_load("res/test.jpg", &w, &h, &n, 0);
+	logger_report("loading texture from %s\n", m->texture_path);
+	data = stbi_load(m->texture_path, &w, &h, &n, 3);
 	if (!data) {
+		logger_report("texture %s is not found\n", m->texture_path);
 		return -1;
 	}
 
@@ -86,14 +98,20 @@ static int mesh_attach(struct mesh *m)
 	glBindVertexArray(m->vao);
 
 	if (mesh_attach_geometry(m) < 0) {
-		return -1;
-	}
-
-	if (mesh_attach_textures(m) < 0) {
+		logger_report("unable to attach geometry\n");
 		return -1;
 	}
 
 	return 0;
+}
+
+float get_time(void)
+{
+	static float tick;
+
+	tick += 0.05f;
+
+	return tick;
 }
 
 void mesh_update_mvp(struct mesh *m, mat4x4 pv)
@@ -101,59 +119,48 @@ void mesh_update_mvp(struct mesh *m, mat4x4 pv)
 	mat4x4 mvp;
 	int mvp_pos;
 	int model_pos;
+	int time_pos;
 
 	mat4x4_mul(mvp, pv, m->model);
 
 	mvp_pos = glGetUniformLocation(m->program, "MVP");
 	model_pos = glGetUniformLocation(m->program, "model");
+	time_pos = glGetUniformLocation(m->program, "time");
 
 	glUseProgram(m->program);
 	glUniformMatrix4fv(mvp_pos, 1, GL_FALSE, (float *)mvp);
 	glUniformMatrix4fv(model_pos, 1, GL_FALSE, (float *)m->model);
+	glUniform1f(time_pos, get_time());
 }
 
 void mesh_redraw(struct mesh *m)
 {
 	glBindVertexArray(m->vao);
+	glBindTexture(GL_TEXTURE_2D, m->texture);
 	glUseProgram(m->program);
 
 	glDrawArrays(GL_TRIANGLES, 0, m->vertice_cnt);
 }
 
-int mesh_load(struct mesh *m, char *path)
+int mesh_load(struct mesh *m, char *path, const char *vert, const char *frag)
 {
-	if (loader_load(m, path)) {
+	if (loader_load_obj(m, path)) {
+		logger_report("unable to load obj\n");
 		return -1;
 	}
 
-	m->tex_coords = malloc(sizeof(struct point) * m->vertice_cnt);
-	m->tex_coord_cnt = m->vertice_cnt;
-	for (int i = 0; i < m->vertice_cnt; i++) {
-		switch (i % 3) {
-		case 0:
-			m->tex_coords[i].x = 0.0;
-			m->tex_coords[i].y = 0.0;
-			break;
-		case 1:
-			m->tex_coords[i].x = 1.0;
-			m->tex_coords[i].y = 1.0;
-			break;
-		case 2:
-			m->tex_coords[i].x = 0.0;
-			m->tex_coords[i].y = 1.0;
-			break;
-		}
-
-	}
-
-	if (shaders_apply(m, 2, "shaders/simple.vert",
-				"shaders/simple.frag" ) < 0)
+	if (shaders_apply(m, 2, vert, frag) < 0)
 	{
+		logger_report("unable to apply shaders\n");
 		return -1;
 	}
 
 	if (mesh_attach(m) < 0) {
 		return -1;
+	}
+
+	if (mesh_attach_textures(m) < 0) {
+		/* ehh, not a big deal */
 	}
 
 	mat4x4_identity(m->model);
@@ -169,6 +176,10 @@ void mesh_free(struct mesh *m)
 	m->vertice_cnt = 0;
 	m->normal_cnt = 0;
 	m->tex_coord_cnt = 0;
+
+	if (m->texture_path) {
+		free(m->texture_path);
+	}
 
 	glDeleteBuffers(1, &m->vbo);
 	glDeleteBuffers(1, &m->nbo);

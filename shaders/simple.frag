@@ -1,24 +1,26 @@
 #version 100
 
-precision lowp float;
+precision highp float;
 
 uniform sampler2D tex;
 varying vec3 normal;
 varying vec3 vertex;
 varying vec2 texcoord;
+varying float _time;
 
 void main()
 {
-	vec3 light = vec3(10, 10, 10);
+	float time = _time;
+
+	vec3 light = vec3(100, 100, 0);
 	vec3 dir = normalize(light - vertex);
-	float diffuse = max(dot(normal, dir), 0.0);
+	float diffuse = max(dot(normalize(normal), dir), 0.0);
 	float ambient = 0.2;
-	vec3 color = vec3(1.0, 1.0, 1.0);
 
-	vec3 lighting = color * (diffuse + ambient);
+	float lighting = diffuse + ambient;
 
-	vec4 tex_color = texture2D(tex, texcoord);
+	vec3 color = texture2D(tex, texcoord).xyz;
 
-	gl_FragColor = tex_color * vec4(lighting, 1.0);
+	gl_FragColor = vec4(color, 1.0) * lighting;
 }
 

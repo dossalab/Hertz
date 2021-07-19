@@ -18,9 +18,9 @@ static const float up[3] = { 0.0f, 1.0f, 0.0f };
 
 static struct camera main_camera;
 static struct scene scene;
-static struct mesh ship, skybox;
+static struct mesh ship, skybox, cube, land;
 
-static vec3 camera_position = { 0.0f, 0.0f, 0.0f };
+static vec3 camera_position = { 5.0f, 5.0f, 5.0f };
 static vec3 camera_look = { 0.0f, 0.0f, 1.0f };
 
 static void die(const char *fmt, ...)
@@ -49,7 +49,7 @@ void update_camera(GLFWwindow *window, float delta_time_sec)
 		camera_position, camera_look, up,
 		(float *)main_camera.view,
 		delta_time_sec,
-		100.0f,
+		10.0f,
 		0.5f,
 		80.0f,
 		pos_x - old_pos_x,
@@ -68,7 +68,7 @@ void update_camera(GLFWwindow *window, float delta_time_sec)
 	engine_update_mvp();
 }
 
-static void main_loop(void *user)
+static int main_loop(void *user)
 {
 	double now; static double past;
 	GLFWwindow *window;
@@ -76,11 +76,20 @@ static void main_loop(void *user)
 	window = (GLFWwindow *)user;
 	now = glfwGetTime();
 
-	engine_poll();
+	if (engine_poll() < 0) {
+		return -1;
+	}
+
 	update_camera(window, now - past);
 
 	past = now;
+	return 0;
 }
+
+#define SHADERS_SKY	"shaders/simple.vert", "shaders/skybox.frag"
+#define SHADERS_SIMPLE	"shaders/simple.vert", "shaders/simple.frag"
+#define SHADERS_HORSE	"shaders/psycho.vert", "shaders/simple.frag"
+#define SHADERS_LAND	"shaders/simple.vert", "shaders/simple.frag"
 
 int main(int argc, char **argv)
 {
@@ -90,19 +99,31 @@ int main(int argc, char **argv)
 		die("Unable to init engine!\n");
 	}
 
-	if (mesh_load(&ship, "res/ship.stl") < 0) {
-		die("No ship!\n");
+	if (mesh_load(&ship, "res/horse.obj", SHADERS_HORSE) < 0) {
+		die("No horse!\n");
 	}
 
-	if (mesh_load(&skybox, "res/skybox.stl") < 0) {
+	if (mesh_load(&skybox, "res/skybox.obj", SHADERS_SKY) < 0) {
 		die("No skybox!\n");
 	}
+
+	// if (mesh_load(&cube, "res/cube.obj", SHADERS_SIMPLE) < 0) {
+	// 	die("No cube!\n");
+	// }
+
+	if (mesh_load(&land, "res/land.obj", SHADERS_LAND) < 0) {
+		die("No land!\n");
+	}
+
+	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);
 
 	camera_init(&main_camera);
 	scene_init(&scene);
 
 	scene_add_mesh(&scene, &skybox);
+	scene_add_mesh(&scene, &land);
 	scene_add_mesh(&scene, &ship);
+	// scene_add_mesh(&scene, &cube);
 
 	engine_set_scene(&scene);
 	engine_set_camera(&main_camera);
@@ -113,14 +134,18 @@ int main(int argc, char **argv)
 		emscripten_set_main_loop_arg(main_loop, window, 0, 0);
 	#else
 		for (;;) {
-			main_loop(window);
+			if (main_loop(window) < 0) {
+				break;
+			}
 		}
 
-		// should never appear here?
 		scene_free(&scene);
 		mesh_free(&ship);
+		mesh_free(&land);
 		mesh_free(&skybox);
 	#endif
+
+	printf("end.");
 
 	return 0;
 }

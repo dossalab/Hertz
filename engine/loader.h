@@ -11,6 +11,7 @@ struct stl_entry {
 };
 
 int loader_load(struct mesh *mesh, const char *filename);
+int loader_load_obj(struct mesh *mesh, const char *filename);
 
 #endif
 

@@ -27,9 +27,18 @@ static void resize_callback(GLFWwindow* window, int width, int height)
 	engine_update_mvp();
 }
 
+#include <signal.h>
+
+static void on_sigint(int signal)
+{
+	glfwSetWindowShouldClose(main_window, 1);
+}
+
 int engine_init(void)
 {
 	glfwSetErrorCallback(error_callback);
+	
+	signal(SIGINT, on_sigint);
 
 	if (!glfwInit()) {
 		return -1;
@@ -51,7 +60,7 @@ int engine_init(void)
 
 	//glfwWindowHint(GLFW_SAMPLES, 4);
 	//glEnable(GL_MULTISAMPLE);
-	glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);

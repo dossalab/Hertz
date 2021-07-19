@@ -31,9 +31,10 @@ struct mesh {
 	mat4x4 model;
 	int program;
 	unsigned int texture;
+	char *texture_path;
 };
 
-int mesh_load(struct mesh *m, char *path);
+int mesh_load(struct mesh *m, char *path, const char *vert, const char *frag);
 void mesh_update_mvp(struct mesh *m, mat4x4 pv);
 void mesh_redraw(struct mesh *m);
 void mesh_free(struct mesh *m);
