@@ -5,8 +5,10 @@
 #include <libgen.h>
 #include <stdio.h>
 #include <string.h>
-#include <engine/util.h>
-#include <engine/loader.h>
+#include <logger/logger.h>
+
+#include <utils/files.h>
+#include "loader.h"
 
 struct obj_parser {
 	struct vertex *vertices;
@@ -26,16 +28,6 @@ struct obj_parser {
 	size_t mesh_allocated_uvs;
 };
 
-static char *terminate_region(struct region *r)
-{
-	if (r->size >= r->alloc) {
-		r->ptr = realloc(r->ptr, r->size + 8);
-	}
-
-	((char *)r->ptr)[r->size] = '\0';
-	return (char *)r->ptr;
-}
-
 static char *prepare_mtlib_path(const char *obj_name, const char *mtl_file)
 {
 	char buffer[64];
@@ -48,13 +40,11 @@ static char *prepare_mtlib_path(const char *obj_name, const char *mtl_file)
 	return path;
 }
 
-static int extract_texture_name_from_chunk(const char *obj_name,
-		struct mesh *mesh, struct region *data)
+static int extract_texture_name_from_str(const char *obj_name,
+		struct mesh *mesh, char *input)
 {
-	char *line, *input;
+	char *line;
 	int ret = -1;
-
-	input = terminate_region(data);
 
 	while ((line = strsep(&input, "\n")) != NULL) {
 		if (strncmp(line, "map_Kd", 6) == 0) {
@@ -72,18 +62,19 @@ static int extract_texture_name_from_chunk(const char *obj_name,
 static int process_material_lib(const char *obj_name, struct mesh *mesh,
 		char *line)
 {
-	struct region data;
+	char *content;
 	char *mtlib_path = prepare_mtlib_path(obj_name, line + 1);
 
-	if (read_path(mtlib_path,  &data)) {
-		logger_report("[PS] no mtlib %s?\n", mtlib_path);
+	content = read_text_file(mtlib_path);
+	if (!content) {
+		log_i("[PS] no mtlib %s?\n", mtlib_path);
 
 		/* we don't really consider it an error, yeah */
 		return 0;
 	}
 
-	int ret = extract_texture_name_from_chunk(obj_name, mesh, &data);
-	free(data.ptr);
+	int ret = extract_texture_name_from_str(obj_name, mesh, content);
+	free(content);
 
 	return ret;
 }
@@ -116,10 +107,17 @@ static void insert_new_vertex(struct vertex *v, struct obj_parser *parser)
 {
 	const size_t chunksize = 128;
 	size_t space = parser->vertice_allocated_size - sizeof(struct vertex) * parser->vertice_count;
+	void *tmp;
 
 	if (space < sizeof(struct vertex)) {
+		tmp = realloc(parser->vertices, parser->vertice_allocated_size + chunksize);
+		if (!tmp) {
+			log_e("no mem left!");
+			return;
+		}
+
 		parser->vertice_allocated_size += chunksize;
-		parser->vertices = realloc(parser->vertices, parser->vertice_allocated_size);
+		parser->vertices = tmp;
 	}
 
 	parser->vertices[parser->vertice_count] = *v;
@@ -130,10 +128,17 @@ static void insert_new_normal(struct vertex *n, struct obj_parser *parser)
 {
 	const size_t chunksize = 128;
 	size_t space = parser->normal_allocated_size - sizeof(struct vertex) * parser->normal_count;
+	void *tmp;
 
 	if (space < sizeof(struct vertex)) {
+		tmp = realloc(parser->normals, parser->normal_allocated_size + chunksize);
+		if (!tmp) {
+			log_e("no mem left!");
+			return;
+		}
+
 		parser->normal_allocated_size += chunksize;
-		parser->normals = realloc(parser->normals, parser->normal_allocated_size);
+		parser->normals = tmp;
 	}
 
 	parser->normals[parser->normal_count] = *n;
@@ -143,11 +148,18 @@ static void insert_new_normal(struct vertex *n, struct obj_parser *parser)
 static void insert_new_uv(struct point *uv, struct obj_parser *parser)
 {
 	const size_t chunksize = 128;
+	void *tmp;
 	size_t space = parser->uv_allocated_size - sizeof(struct point) * parser->uv_count;
 
 	if (space < sizeof(struct point)) {
+		tmp = realloc(parser->uvs, parser->uv_allocated_size + chunksize);
+		if (!tmp) {
+			log_e("no mem left!");
+			return;
+		}
+
 		parser->uv_allocated_size += chunksize;
-		parser->uvs = realloc(parser->uvs , parser->uv_allocated_size);
+		parser->uvs = tmp;
 	}
 
 	parser->uvs[parser->uv_count] = *uv;
@@ -200,7 +212,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 					&vertex_id[2],
 					&normal_id[2]);
 		if (matches != 6) {
-			logger_report("[PS] unable to extract f at %d, matches were %d\n",
+			log_e("[PS] unable to extract f at %d, matches were %d\n",
 					line_counter, matches);
 			return -1;
 		}
@@ -210,7 +222,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 	if (vertex_id[0] > parser->vertice_count ||
 			vertex_id[1] > parser->vertice_count ||
 			vertex_id[2] > parser->vertice_count) {
-		logger_report("[PS] file seems malformed, index is not found\n");
+		log_e("[PS] file seems malformed, index is not found\n");
 		return -1;
 	}
 
@@ -218,7 +230,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 	if (normal_id[0] > parser->normal_count ||
 			normal_id[1] > parser->normal_count ||
 			normal_id[2] > parser->normal_count) {
-		logger_report("[PS] file seems malformed, index is not found\n");
+		log_e("[PS] file seems malformed, index is not found\n");
 		return -1;
 	}
 
@@ -260,7 +272,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 		if (uv_id[0] > parser->uv_count ||
 				uv_id[1] > parser->uv_count ||
 				uv_id[2] > parser->uv_count) {
-			logger_report("[PS] file seems malformed, index is not found\n");
+			log_e("[PS] file seems malformed, index is not found\n");
 			return -1;
 		}
 
@@ -296,7 +308,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 		return 0;
 
 	case 'g':
-		logger_report("[PS] got g\n");
+		log_e("[PS] got g\n");
 		break;
 
 	case 'f':
@@ -359,7 +371,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 		return -1;
 
 	default:
-		logger_report("[PS] malformed char at %d: '%c' (0x%02X)\n",
+		log_e("[PS] malformed char at %d: '%c' (0x%02X)\n",
 				line_counter, line[0], line[0]);
 		return -1;
 	}
@@ -368,17 +380,16 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 	return -1;
 }
 
-static int extract_obj_from_chunk(struct mesh *mesh, struct region *data,
+static int extract_obj_from_str(struct mesh *mesh, char *input,
 		const char *filename)
 {
-	char *line, *input;
+	char *line;
 	size_t line_counter = 1;
 	int ret = 0;
+	struct obj_parser parser;
 
-	struct obj_parser parser = { };
+	memset(&parser, 0, sizeof(struct obj_parser));
 	memset(mesh, 0, sizeof(struct mesh));
-
-	input = terminate_region(data);
 
 	while ((line = strsep(&input, "\n")) != NULL) {
 		ret = process_obj_line(line_counter, &parser, mesh, line, filename);
@@ -394,71 +405,17 @@ static int extract_obj_from_chunk(struct mesh *mesh, struct region *data,
 
 int loader_load_obj(struct mesh *mesh, const char *filename)
 {
-	struct region data;
+	char *content;
 	int ret;
 
-	if (read_path(filename,  &data)) {
-		logger_report("[PS] Unable to load file %s\n", filename);
+	content = read_text_file(filename);
+	if (!content) {
+		log_e("[PS] Unable to load file %s\n", filename);
 		return -1;
 	}
 
-	ret = extract_obj_from_chunk(mesh, &data, filename);
-	free(data.ptr);
+	ret = extract_obj_from_str(mesh, content, filename);
+	free(content);
 
 	return ret;
 }
-
-int loader_load(struct mesh *mesh, const char *filename)
-{
-	struct region data;
-	void *ptr;
-	int entries, size;
-
-	if (read_path(filename,  &data)) {
-		logger_report("[PS] Unable to load file %s\n", filename);
-		return -1;
-	}
-
-	if (data.size <= 84) {
-		logger_report("[PS] File %s is too small\n", filename);
-		free(data.ptr);
-		return -1;
-	}
-
-	entries = *((unsigned int *)(data.ptr + 80));
-	size = 84 + entries * (sizeof(struct stl_entry) + 2);
-
-	if (size > data.size) {
-		logger_report("[PS] Seems like %s is corrupt!\n", filename);
-		free(data.ptr);
-		return -1;
-	}
-
-	ptr = data.ptr + 84; /* skip header + count*/
-	logger_report("[PS] %d vertices\n", entries);
-
-	mesh->vertices = malloc(sizeof(struct vertex) * size * 3);
-	mesh->normals = malloc(sizeof(struct vertex) * size * 3);
-	mesh->vertice_cnt = 0;
-	mesh->normal_cnt = 0;
-	mesh->tex_coord_cnt = 0;
-
-	for (int i = 0; i < entries; i++) {
-		struct stl_entry *entry = ptr;
-
-		insert_vertex(mesh, &entry->v1);
-		insert_vertex(mesh, &entry->v2);
-		insert_vertex(mesh, &entry->v3);
-
-		insert_normal(mesh, &entry->normal);
-		insert_normal(mesh, &entry->normal);
-		insert_normal(mesh, &entry->normal);
-
-		ptr += sizeof(struct stl_entry);
-		ptr += 2;
-	}
-
-	free(data.ptr);
-	return 0;
-}
-

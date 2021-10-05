@@ -1,8 +1,7 @@
 #ifndef ENGINE_CAMERA_H
 #define ENGINE_CAMERA_H
 
-#include <engine/scene.h>
-#include <engine/linmath.h>
+#include <utils/linmath.h>
 
 struct camera {
 	mat4x4 view;

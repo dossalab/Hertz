@@ -1,6 +1,7 @@
 #include <stdlib.h>
-#include <engine/scene.h>
-#include <engine/util.h>
+#include <utils/list.h>
+
+#include "scene.h"
 
 int scene_init(struct scene *s)
 {

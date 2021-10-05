@@ -3,10 +3,12 @@
 #include <time.h>
 #include <string.h>
 
+#include <GL/glew.h>
+
+#include <logger/logger.h>
 #include <engine/engine.h>
 #include <engine/mesh.h>
 #include <engine/loader.h>
-#include <engine/shader.h>
 #include <engine/stb_image.h>
 
 static int mesh_attach_geometry(struct mesh *m)
@@ -17,7 +19,7 @@ static int mesh_attach_geometry(struct mesh *m)
 	nb_location = glGetAttribLocation(m->program, "in_normal");
 
 	if (vb_location < 0) {
-		logger_report("unable to find normal or vertex buffer\n");
+		log_e("unable to find normal or vertex buffer\n");
 		return -1;
 	}
 
@@ -51,7 +53,7 @@ int mesh_attach_textures(struct mesh *m)
 	int tcb_location;
 
 	if (!m->texture_path) {
-		logger_report("mesh is not textured\n");
+		log_i("mesh is not textured\n");
 		m->texture_path = strdup("res/test.jpg");
 	}
 
@@ -60,10 +62,10 @@ int mesh_attach_textures(struct mesh *m)
 		return -1;
 	}
 
-	logger_report("loading texture from %s\n", m->texture_path);
+	log_i("loading texture from %s\n", m->texture_path);
 	data = stbi_load(m->texture_path, &w, &h, &n, 3);
 	if (!data) {
-		logger_report("texture %s is not found\n", m->texture_path);
+		log_e("texture %s is not found\n", m->texture_path);
 		return -1;
 	}
 
@@ -98,7 +100,7 @@ static int mesh_attach(struct mesh *m)
 	glBindVertexArray(m->vao);
 
 	if (mesh_attach_geometry(m) < 0) {
-		logger_report("unable to attach geometry\n");
+		log_e("unable to attach geometry\n");
 		return -1;
 	}
 
@@ -142,18 +144,14 @@ void mesh_redraw(struct mesh *m)
 	glDrawArrays(GL_TRIANGLES, 0, m->vertice_cnt);
 }
 
-int mesh_load(struct mesh *m, char *path, const char *vert, const char *frag)
+int mesh_load(struct mesh *m, char *path, GLuint shader_program)
 {
 	if (loader_load_obj(m, path)) {
-		logger_report("unable to load obj\n");
+		log_e("unable to load obj\n");
 		return -1;
 	}
 
-	if (shaders_apply(m, 2, vert, frag) < 0)
-	{
-		logger_report("unable to apply shaders\n");
-		return -1;
-	}
+	m->program = shader_program;
 
 	if (mesh_attach(m) < 0) {
 		return -1;

@@ -1,7 +1,8 @@
 #ifndef ENGINE_SCENE_H
 #define ENGINE_SCENE_H
 
-#include <engine/util.h>
+#include <utils/list.h>
+#include <utils/common.h>
 #include <engine/mesh.h>
 
 struct scene_node {

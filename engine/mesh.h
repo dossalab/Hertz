@@ -1,13 +1,8 @@
 #ifndef ENGINE_MESH_H
 #define ENGINE_MESH_H
 
-#include <engine/linmath.h>
-
-//enum {
-//	VAO_VERTEX_BUFFER,
-//	VAO_NORMAL_BUFFER,
-//	VAO_TEXCOORD_BUFFER
-//};
+#include <utils/linmath.h>
+#include <GL/gl.h>
 
 struct point {
 	float x, y;
@@ -34,7 +29,7 @@ struct mesh {
 	char *texture_path;
 };
 
-int mesh_load(struct mesh *m, char *path, const char *vert, const char *frag);
+int mesh_load(struct mesh *m, char *path, GLuint shader_program);
 void mesh_update_mvp(struct mesh *m, mat4x4 pv);
 void mesh_redraw(struct mesh *m);
 void mesh_free(struct mesh *m);

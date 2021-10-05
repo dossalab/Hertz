@@ -10,7 +10,6 @@ struct stl_entry {
 	struct vertex v3;
 };
 
-int loader_load(struct mesh *mesh, const char *filename);
 int loader_load_obj(struct mesh *mesh, const char *filename);
 
 #endif

@@ -1,47 +1,40 @@
-CC = gcc
-LD = gcc
+V ?= @
 
-exe = opengl
-webasm = opengl.js
+CC	:= gcc
+LD	:= gcc
+ECHO	:= @ printf "[%s]\t%s\n"
 
-obj += $(addprefix core/, main.o)
-obj += $(addprefix engine/, engine.o loader.o camera.o scene.o mesh.o shader.o util.o stb_image.o events.o)
+exe	:= opengl
+libs	:= glfw3 glew
 
-CFLAGS += -I. -Wall -g
-LDFLAGS += -lglfw -lGL -lm -g
+objects := \
+	app/main.o \
+	engine/engine.o \
+	engine/scene.o \
+	engine/camera.o \
+	engine/loader.o \
+	engine/mesh.o \
+	engine/stb_image.o \
+	gl/utils/shaders.o \
+	utils/files.o \
+	utils/list.o \
+	logger/logger.o
 
-# common targets
-emscripten_files = $(webasm:.js=.wasm) $(webasm:.js=.data)
+LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm -O3
+CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g -O3
 
 all: $(exe)
-webasm: $(webasm)
-
-clean:
-	$(RM) $(exe) $(page) $(emscripten_files) $(obj)
 
 %.o : %.c
-	@ echo -e "[CC]\t$@"
-	@ $(CC) $(CFLAGS) -c $^ -o $@
+	$(ECHO) "CC" "$@"
+	$(V)$(CC) $(CFLAGS) -c $< -o $@
 
-# regular gcc build
-$(exe): $(obj)
-	@ echo -e "[LD]\t$@"
-	@ $(LD) $(LDFLAGS) $^ -o $@
+$(exe): $(objects)
+	$(ECHO) "LD" "$@"
+	$(V)$(LD) $(LDFLAGS) $^ -o $@
 
-# emscripten build
-resources := shaders res
+clean:
+	$(ECHO) "RM" "$(objects) $(exe)"
+	$(V)$(RM) $(objects) $(exe)
 
-$(webasm): CC = emcc
-$(webasm): LD = emcc
-$(webasm): CFLAGS += -DBUILD_WEBGL
-$(webasm): LDFLAGS += -s USE_WEBGL2=1 -s FULL_ES3=1 -s USE_GLFW=3 -s WASM=1
-$(webasm): LDFLAGS += $(addprefix --embed-file , $(resources))
-$(webasm): LDFLAGS += -s ALLOW_MEMORY_GROWTH=1
-
-$(webasm): $(obj)
-	@ echo -e "[PAGE]\t$@"
-	@ $(LD) $(LDFLAGS) $^ -o $@
-
-
-.PHONY: all webasm clean
-
+.PHONY: all clean

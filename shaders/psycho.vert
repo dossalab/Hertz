@@ -17,11 +17,11 @@ varying float _time;
 
 void main()
 {
-	vec2 resolution = vec2(12.0, 12.0);
+	vec2 resolution = vec2(4.0, 4.0);
 	vec2 cPos = -1.0 + 2.0 * in_position.xy / resolution.xy;
 	float cLength = length(cPos);
 
-	vec2 uv = in_position.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*0.2)*0.5;
+	vec2 uv = in_position.xy/resolution.xy+(cPos/cLength)*cos(cLength*12.0-time*0.2)*0.2;
 
 	vec3 off = vec3(uv.x, cos(uv.x), uv.y);
 
