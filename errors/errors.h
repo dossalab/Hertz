@@ -8,7 +8,8 @@ enum error_code {
 	ERR_NO_WINDOW,
 	ERR_NO_FILE,
 	ERR_SHADER_INVALID,
-	ERR_NO_MEMORY
+	ERR_NO_MEMORY,
+	ERR_NO_VIDEO_BUFFER
 };
 
 const char *error_to_string(int error);

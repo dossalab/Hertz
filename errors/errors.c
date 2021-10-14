@@ -13,6 +13,8 @@ const char *error_to_string(int error)
 		return "file not found";
 	case ERR_SHADER_INVALID:
 		return "shader is invalid";
+	case ERR_NO_VIDEO_BUFFER:
+		return "unable to allocate a video buffer";
 	}
 
 	return "(unknown error)";

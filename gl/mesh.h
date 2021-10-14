@@ -3,11 +3,17 @@
 
 #include <utils/linmath.h>
 #include <GL/gl.h>
-#include "defines.h"
+#include <engine/defines.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 struct mesh {
 	unsigned int vao, vbo, nbo, tbo;
+
+	/* variables from shaders */
+	GLint mvp_handle, model_handle, time_handle;
+	bool time_presented;
+
 	mat4x4 model;
 	int program;
 	unsigned int texture;

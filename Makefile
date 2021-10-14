@@ -10,10 +10,10 @@ libs	:= glfw3 glew
 objects := \
 	app/main.o \
 	engine/scene.o \
-	engine/mesh.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
 	loaders/model.o \
+	gl/mesh.o \
 	gl/shaders.o \
 	gl/textures.o \
 	utils/files.o \
