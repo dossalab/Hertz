@@ -39,14 +39,14 @@ static char *prepare_mtlib_path(const char *obj_name, const char *mtl_file)
 }
 
 static int extract_texture_name_from_str(const char *obj_name,
-		struct mesh *mesh, char *input)
+		struct model *model, char *input)
 {
 	char *line;
 	int ret = -1;
 
 	while ((line = strsep(&input, "\n")) != NULL) {
 		if (strncmp(line, "map_Kd", 6) == 0) {
-			mesh->texture_path = strdup(
+			model->texture_path = strdup(
 				prepare_mtlib_path(obj_name, line + 7));
 
 			ret = 0;
@@ -57,7 +57,7 @@ static int extract_texture_name_from_str(const char *obj_name,
 	return ret;
 }
 
-static int process_material_lib(const char *obj_name, struct mesh *mesh,
+static int process_material_lib(const char *obj_name, struct model *model,
 		char *line)
 {
 	char *content;
@@ -71,25 +71,25 @@ static int process_material_lib(const char *obj_name, struct mesh *mesh,
 		return 0;
 	}
 
-	int ret = extract_texture_name_from_str(obj_name, mesh, content);
+	int ret = extract_texture_name_from_str(obj_name, model, content);
 	free(content);
 
 	return ret;
 }
 
-static void insert_vertex(struct mesh *m, struct vertex *v)
+static void insert_vertex(struct model *m, struct vertex *v)
 {
-	m->vertices[m->vertice_cnt] = *v;
-	m->vertice_cnt++;
+	m->vertices[m->vertex_count] = *v;
+	m->vertex_count++;
 }
 
-static void insert_normal(struct mesh *m, struct vertex *v)
+static void insert_normal(struct model *m, struct vertex *v)
 {
-	m->normals[m->normal_cnt] = *v;
-	m->normal_cnt++;
+	m->normals[m->normal_count] = *v;
+	m->normal_count++;
 }
 
-static void insert_uv(struct mesh *m, struct point *uv)
+static void insert_uv(struct model *m, struct point *uv)
 {
 	/* uvs are stored inverted, (eg top is 0.0) */
 	struct point uv_corrected;
@@ -97,8 +97,8 @@ static void insert_uv(struct mesh *m, struct point *uv)
 	uv_corrected.x = uv->x;
 	uv_corrected.y = 1.0 - uv->y;
 
-	m->tex_coords[m->tex_coord_cnt] = uv_corrected;
-	m->tex_coord_cnt++;
+	m->uvs[m->uv_count] = uv_corrected;
+	m->uv_count++;
 }
 
 static void insert_new_vertex(struct vertex *v, struct obj_parser *parser)
@@ -185,7 +185,7 @@ static int extract_vt_command(struct point *result, char *line)
 }
 
 static int try_extract_face(size_t line_counter, const char *line,
-		struct obj_parser *parser, struct mesh *mesh)
+		struct obj_parser *parser, struct model *model)
 {
 	unsigned int vertex_id[3], uv_id[3], normal_id[3];
 	struct vertex v1, v2, v3, n1, n2, n3;
@@ -240,27 +240,27 @@ static int try_extract_face(size_t line_counter, const char *line,
 	n2 = parser->normals[normal_id[1] - 1];
 	n3 = parser->normals[normal_id[2] - 1];
 
-	size_t vspace = parser->mesh_allocated_vertices - mesh->vertice_cnt;
+	size_t vspace = parser->mesh_allocated_vertices - model->vertex_count;
 	if (vspace < sizeof(struct vertex) * 3) {
 		parser->mesh_allocated_vertices += 128;
-		mesh->vertices = realloc(mesh->vertices, sizeof(struct vertex) * \
+		model->vertices = realloc(model->vertices, sizeof(struct vertex) * \
 				parser->mesh_allocated_vertices);
 	}
 
-	size_t nspace = parser->mesh_allocated_normals - mesh->normal_cnt;
+	size_t nspace = parser->mesh_allocated_normals - model->normal_count;
 	if (nspace < sizeof(struct vertex) * 3) {
 		parser->mesh_allocated_normals += 128;
-		mesh->normals = realloc(mesh->normals, sizeof(struct vertex) * \
+		model->normals = realloc(model->normals, sizeof(struct vertex) * \
 				parser->mesh_allocated_normals);
 	}
 
-	insert_normal(mesh, &n1);
-	insert_normal(mesh, &n2);
-	insert_normal(mesh, &n3);
+	insert_normal(model, &n1);
+	insert_normal(model, &n2);
+	insert_normal(model, &n3);
 
-	insert_vertex(mesh, &v1);
-	insert_vertex(mesh, &v2);
-	insert_vertex(mesh, &v3);
+	insert_vertex(model, &v1);
+	insert_vertex(model, &v2);
+	insert_vertex(model, &v3);
 
 	/* with uv */
 	if (matches == 9) {
@@ -278,23 +278,23 @@ static int try_extract_face(size_t line_counter, const char *line,
 		uv2 = parser->uvs[uv_id[1] - 1];
 		uv3 = parser->uvs[uv_id[2] - 1];
 
-		size_t uspace = parser->mesh_allocated_uvs - mesh->tex_coord_cnt;
+		size_t uspace = parser->mesh_allocated_uvs - model->uv_count;
 		if (uspace < sizeof(struct point) * 3) {
 			parser->mesh_allocated_uvs += 128;
-			mesh->tex_coords= realloc(mesh->tex_coords, sizeof(struct vertex) * \
+			model->uvs = realloc(model->uvs, sizeof(struct vertex) * \
 					parser->mesh_allocated_uvs);
 		}
 
-		insert_uv(mesh, &uv1);
-		insert_uv(mesh, &uv2);
-		insert_uv(mesh, &uv3);
+		insert_uv(model, &uv1);
+		insert_uv(model, &uv2);
+		insert_uv(model, &uv3);
 	}
 
 	return 0;
 }
 
 static int process_obj_line(size_t line_counter, struct obj_parser *parser,
-		struct mesh *mesh, char *line, const char *filename)
+		struct model *model, char *line, const char *filename)
 {
 	switch (line[0]) {
 	case 'o':
@@ -310,7 +310,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 		break;
 
 	case 'f':
-		return try_extract_face(line_counter, line + 1, parser, mesh);
+		return try_extract_face(line_counter, line + 1, parser, model);
 
 	case 'v':
 		if (line[1] == 't') {
@@ -355,7 +355,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 	
 	case 'm':
 		if (strncmp(line, "mtllib", 6) == 0) {
-			process_material_lib(filename, mesh, line + 6);
+			process_material_lib(filename, model, line + 6);
 			return 0;
 		}
 		
@@ -378,7 +378,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 	return -1;
 }
 
-static int extract_obj_from_str(struct mesh *mesh, char *input,
+static int extract_obj_from_str(struct model *model, char *input,
 		const char *filename)
 {
 	char *line;
@@ -387,10 +387,10 @@ static int extract_obj_from_str(struct mesh *mesh, char *input,
 	struct obj_parser parser;
 
 	memset(&parser, 0, sizeof(struct obj_parser));
-	memset(mesh, 0, sizeof(struct mesh));
+	memset(model, 0, sizeof(struct model));
 
 	while ((line = strsep(&input, "\n")) != NULL) {
-		ret = process_obj_line(line_counter, &parser, mesh, line, filename);
+		ret = process_obj_line(line_counter, &parser, model, line, filename);
 		if (ret < 0) {
 			break;
 		}
@@ -401,7 +401,7 @@ static int extract_obj_from_str(struct mesh *mesh, char *input,
 	return ret;
 }
 
-int loader_load_obj(struct mesh *mesh, const char *filename)
+int loader_load_obj(struct model *model, const char *filename)
 {
 	char *content;
 	int ret;
@@ -411,7 +411,7 @@ int loader_load_obj(struct mesh *mesh, const char *filename)
 		return -ERR_NO_FILE;
 	}
 
-	ret = extract_obj_from_str(mesh, content, filename);
+	ret = extract_obj_from_str(model, content, filename);
 	free(content);
 
 	return ret;

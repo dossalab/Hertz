@@ -1,7 +1,7 @@
 #ifndef LOADERS_OBJ_LOADER_H
 #define LOADERS_OBJ_LOADER_H
 
-#include <engine/mesh.h>
+#include "model.h"
 
 struct stl_entry {
 	struct vertex normal;
@@ -10,7 +10,7 @@ struct stl_entry {
 	struct vertex v3;
 };
 
-int loader_load_obj(struct mesh *mesh, const char *filename);
+int loader_load_obj(struct model *model, const char *filename);
 
 #endif
 

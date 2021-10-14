@@ -13,6 +13,7 @@ objects := \
 	engine/mesh.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
+	loaders/model.o \
 	gl/shaders.o \
 	gl/textures.o \
 	utils/files.o \

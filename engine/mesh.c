@@ -12,7 +12,7 @@
 
 #include "mesh.h"
 
-static int mesh_prepare_gl(struct mesh *m)
+static int mesh_prepare_gl(struct mesh *m, struct model *model)
 {
 	int vb_location, nb_location;
 
@@ -30,10 +30,8 @@ static int mesh_prepare_gl(struct mesh *m)
 	/* vertex buffer */
 	glGenBuffers(1, &m->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
-	glBufferData(GL_ARRAY_BUFFER, m->vertice_cnt * sizeof(struct vertex),
-				m->vertices, GL_STATIC_DRAW);
-	free(m->vertices);
-	m->vertices = 0;
+	glBufferData(GL_ARRAY_BUFFER, model->vertex_count * sizeof(struct vertex),
+				model->vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(vb_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(vb_location);
@@ -42,9 +40,8 @@ static int mesh_prepare_gl(struct mesh *m)
 		/* normal buffer */
 		glGenBuffers(1, &m->nbo);
 		glBindBuffer(GL_ARRAY_BUFFER, m->nbo);
-		glBufferData(GL_ARRAY_BUFFER, m->normal_cnt * sizeof(struct vertex),
-						m->normals, GL_STATIC_DRAW);
-		free(m->normals);
+		glBufferData(GL_ARRAY_BUFFER, model->normal_count * sizeof(struct vertex),
+						model->normals, GL_STATIC_DRAW);
 
 		glVertexAttribPointer(nb_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(nb_location);
@@ -70,7 +67,7 @@ static GLuint create_texture_from_file(const char *path)
 	return texture;
 }
 
-static int mesh_attach_textures(struct mesh *m)
+static int mesh_attach_textures(struct mesh *m, struct model *model)
 {
 	int tcb_location;
 	GLuint texture;
@@ -80,9 +77,9 @@ static int mesh_attach_textures(struct mesh *m)
 		return -1;
 	}
 
-	log_i("loading texture from %s", m->texture_path);
+	log_i("loading texture from %s", model->texture_path);
 
-	texture = create_texture_from_file(m->texture_path);
+	texture = create_texture_from_file(model->texture_path);
 	if (!texture) {
 		return -1;
 	}
@@ -91,9 +88,8 @@ static int mesh_attach_textures(struct mesh *m)
 
 	glGenBuffers(1, &m->tbo);
 	glBindBuffer(GL_ARRAY_BUFFER, m->tbo);
-	glBufferData(GL_ARRAY_BUFFER, m->tex_coord_cnt * sizeof(struct point),
-				m->tex_coords, GL_STATIC_DRAW);
-	free(m->tex_coords);
+	glBufferData(GL_ARRAY_BUFFER, model->uv_count * sizeof(struct point),
+				model->uvs, GL_STATIC_DRAW);
 
 
 	glVertexAttribPointer(tcb_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -136,27 +132,40 @@ void mesh_redraw(struct mesh *m)
 	glBindTexture(GL_TEXTURE_2D, m->texture);
 	glUseProgram(m->program);
 
-	glDrawArrays(GL_TRIANGLES, 0, m->vertice_cnt);
+	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);
+}
+
+static int mesh_load_from_model(struct mesh *mesh, GLuint shader_program,
+		struct model *model)
+{
+	int err;
+
+	mat4x4_identity(mesh->model);
+	mesh->program = shader_program;
+	mesh->vertex_count = model->vertex_count;
+
+	err = mesh_prepare_gl(mesh, model);
+	if (err < 0) {
+		return err;
+	}
+
+	return mesh_attach_textures(mesh, model);
 }
 
 int mesh_load(struct mesh *m, char *path, GLuint shader_program)
 {
 	int err;
+	struct model model;
 
-	err = loader_load_obj(m, path);
+	err = loader_load_obj(&model, path);
 	if (err < 0) {
 		return err;
 	}
 
-	mat4x4_identity(m->model);
-	m->program = shader_program;
+	err = mesh_load_from_model(m, shader_program, &model);
+	free_model(&model);
 
-	err = mesh_prepare_gl(m);
-	if (err < 0) {
-		return err;
-	}
-
-	return mesh_attach_textures(m);
+	return err;
 }
 
 void mesh_free(struct mesh *m)

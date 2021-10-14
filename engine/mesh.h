@@ -3,31 +3,15 @@
 
 #include <utils/linmath.h>
 #include <GL/gl.h>
-
-struct point {
-	float x, y;
-};
-
-struct vertex {
-	float x, y, z;
-};
+#include "defines.h"
+#include <stddef.h>
 
 struct mesh {
 	unsigned int vao, vbo, nbo, tbo;
-	struct vertex *vertices;
-	int vertice_cnt;
-
-	struct vertex *normals;
-	int normal_cnt;
-
-	struct point *tex_coords;
-	int tex_coord_cnt;
-
 	mat4x4 model;
 	int program;
 	unsigned int texture;
-
-	char *texture_path;
+	size_t vertex_count;
 };
 
 int mesh_load(struct mesh *m, char *path, GLuint shader_program);
