@@ -102,23 +102,28 @@ static int load_shaders(void)
 
 static int present_and_draw_scene(GLFWwindow *window)
 {
+	int err;
+
 	struct mesh ship, skybox, land;
 	struct scene scene;
 	mat4x4 view;
 
-	if (mesh_load(&ship, "res/horse.obj", shader_horse) < 0) {
+	err = mesh_load(&ship, "res/horse.obj", shader_horse);
+	if (err < 0) {
 		log_e("No horse!");
-		return -1;
+		return err;
 	}
 
-	if (mesh_load(&skybox, "res/skybox.obj", shader_sky) < 0) {
+	err = mesh_load(&skybox, "res/skybox.obj", shader_sky);
+	if (err < 0) {
 		log_e("No skybox!");
-		return -1;
+		return err;
 	}
 
-	if (mesh_load(&land, "res/land.obj", shader_land) < 0) {
+	err = mesh_load(&land, "res/land.obj", shader_land);
+	if (err < 0) {
 		log_e("No land!");
-		return -1;
+		return err;
 	}
 
 	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);

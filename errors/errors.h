@@ -6,7 +6,8 @@ enum error_code {
 
 	ERR_SYSTEM,
 	ERR_NO_WINDOW,
-	ERR_NO_FILE
+	ERR_NO_FILE,
+	ERR_SHADER_INVALID
 };
 
 const char *error_to_string(int error);
