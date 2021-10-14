@@ -13,7 +13,7 @@ objects := \
 	engine/mesh.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
-	gl/utils/shaders.o \
+	gl/shaders.o \
 	utils/files.o \
 	errors/errors.o \
 	utils/list.o \
