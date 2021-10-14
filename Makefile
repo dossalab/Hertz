@@ -14,6 +14,7 @@ objects := \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
 	gl/shaders.o \
+	gl/textures.o \
 	utils/files.o \
 	errors/errors.o \
 	utils/list.o \

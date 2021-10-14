@@ -26,6 +26,7 @@ struct mesh {
 	mat4x4 model;
 	int program;
 	unsigned int texture;
+
 	char *texture_path;
 };
 

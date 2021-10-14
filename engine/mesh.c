@@ -4,11 +4,12 @@
 #include <string.h>
 
 #include <GL/glew.h>
-
 #include <logger/logger.h>
-#include <engine/mesh.h>
+#include <gl/textures.h>
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
+
+#include "mesh.h"
 
 static int mesh_attach_geometry(struct mesh *m)
 {
@@ -45,16 +46,27 @@ static int mesh_attach_geometry(struct mesh *m)
 	return 0;
 }
 
-int mesh_attach_textures(struct mesh *m)
+static GLuint create_texture_from_file(const char *path)
 {
 	int w, h, n;
 	uint8_t *data;
-	int tcb_location;
+	GLuint texture;
 
-	if (!m->texture_path) {
-		log_i("mesh is not textured");
-		m->texture_path = strdup("res/test.jpg");
+	data = stbi_load(path, &w, &h, &n, 3);
+	if (!data) {
+		return 0;
 	}
+
+	texture = create_texture_from_rgb(data, w, h);
+	stbi_image_free(data);
+
+	return texture;
+}
+
+static int mesh_attach_textures(struct mesh *m)
+{
+	int tcb_location;
+	GLuint texture;
 
 	tcb_location = glGetAttribLocation(m->program, "in_texcoords");
 	if (tcb_location < 0) {
@@ -62,24 +74,13 @@ int mesh_attach_textures(struct mesh *m)
 	}
 
 	log_i("loading texture from %s", m->texture_path);
-	data = stbi_load(m->texture_path, &w, &h, &n, 3);
-	if (!data) {
-		log_e("texture %s is not found", m->texture_path);
+
+	texture = create_texture_from_file(m->texture_path);
+	if (!texture) {
 		return -1;
 	}
 
-	glGenTextures(1, &m->texture);
-	glBindTexture(GL_TEXTURE_2D, m->texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-			w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-	glGenerateMipmap(GL_TEXTURE_2D);
+	m->texture = texture;
 
 	glGenBuffers(1, &m->tbo);
 	glBindBuffer(GL_ARRAY_BUFFER, m->tbo);
@@ -89,7 +90,6 @@ int mesh_attach_textures(struct mesh *m)
 	glVertexAttribPointer(tcb_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(tcb_location);
 
-	stbi_image_free(data);
 	return 0;
 }
 
@@ -173,10 +173,6 @@ void mesh_free(struct mesh *m)
 	m->vertice_cnt = 0;
 	m->normal_cnt = 0;
 	m->tex_coord_cnt = 0;
-
-	if (m->texture_path) {
-		free(m->texture_path);
-	}
 
 	glDeleteBuffers(1, &m->vbo);
 	glDeleteBuffers(1, &m->nbo);
