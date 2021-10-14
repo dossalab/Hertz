@@ -9,9 +9,7 @@ libs	:= glfw3 glew
 
 objects := \
 	app/main.o \
-	engine/engine.o \
 	engine/scene.o \
-	engine/camera.o \
 	engine/mesh.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \

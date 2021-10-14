@@ -6,21 +6,34 @@
 
 #include <logger/logger.h>
 #include <gl/utils/shaders.h>
-#include <engine/engine.h>
 #include <engine/scene.h>
+#include <utils/linmath.h>
 
 #define FLYTHROUGH_CAMERA_IMPLEMENTATION
 #include "camera.h"
 
+#define ENG_PI		3.14159265359f
+#define ENG_FOV		(70.0f * ENG_PI / 180.0f)
 #define WINDOW_TITLE	"My cool application"
 
 static GLuint shader_sky;
 static GLuint shader_horse;
 static GLuint shader_land;
+static mat4x4 projection;
 
-static void update_camera(GLFWwindow *window, struct camera *camera,
-		float delta_time_sec)
+static void update_projection(size_t width, size_t height)
 {
+	float aspect;
+
+	aspect = (float)width / (float)height;
+
+	mat4x4_perspective(projection, ENG_FOV, aspect, 0.1f, 1000.0f);
+}
+
+static void update_camera(GLFWwindow *window, struct scene *scene,
+		mat4x4 view, float delta_time_sec)
+{
+	mat4x4 vp;
 	double pos_x, pos_y;
 	static double old_pos_x, old_pos_y;
 	static const float up[3] = { 0.0f, 1.0f, 0.0f };
@@ -31,7 +44,7 @@ static void update_camera(GLFWwindow *window, struct camera *camera,
 
 	flythrough_camera_update(
 		camera_position, camera_look, up,
-		(float *)camera->view,
+		(float *)view,
 		delta_time_sec,
 		10.0f,
 		0.5f,
@@ -49,10 +62,11 @@ static void update_camera(GLFWwindow *window, struct camera *camera,
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
 
-	engine_update_mvp();
+	mat4x4_mul(vp, projection, view);
+	scene_update_mvp(scene, vp);
 }
 
-static int main_loop(GLFWwindow *window, struct camera *camera)
+static int main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
 {
 	double now; static double past;
 
@@ -62,11 +76,11 @@ static int main_loop(GLFWwindow *window, struct camera *camera)
 
 	now = glfwGetTime();
 
-	update_camera(window, camera, now - past);
+	update_camera(window, scene, view, now - past);
 
 	glfwPollEvents();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	engine_redraw();
+	scene_redraw(scene);
 	glfwSwapBuffers(window);
 
 	past = now;
@@ -89,7 +103,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 {
 	struct mesh ship, skybox, land;
 	struct scene scene;
-	struct camera camera;
+	mat4x4 view;
 
 	if (mesh_load(&ship, "res/horse.obj", shader_horse) < 0) {
 		log_e("No horse!");
@@ -108,7 +122,6 @@ static int present_and_draw_scene(GLFWwindow *window)
 
 	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);
 
-	camera_init(&camera);
 	scene_init(&scene);
 
 	scene_add_mesh(&scene, &skybox);
@@ -116,11 +129,8 @@ static int present_and_draw_scene(GLFWwindow *window)
 	scene_add_mesh(&scene, &ship);
 	// scene_add_mesh(&scene, &cube);
 
-	engine_set_scene(&scene);
-	engine_set_camera(&camera);
-
 	for (;;) {
-		if (main_loop(window, &camera) < 0) {
+		if (main_loop(window, &scene, view) < 0) {
 			break;
 		}
 	}
@@ -136,7 +146,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 static void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-	engine_handle_resize(width, height);
+	update_projection(width, height);
 }
 
 static GLFWwindow *create_context_window(void)
@@ -183,7 +193,10 @@ static int do_opengl_stuff(GLFWwindow *window)
 		return err;
 	}
 
-	return present_and_draw_scene(window);
+	err = present_and_draw_scene(window);
+	/* TODO: remove shaders */
+
+	return err;
 }
 
 int main(void)
