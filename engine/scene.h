@@ -2,7 +2,6 @@
 #define ENGINE_SCENE_H
 
 #include <utils/list.h>
-#include <utils/common.h>
 #include <engine/mesh.h>
 
 struct scene_node {

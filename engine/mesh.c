@@ -6,7 +6,6 @@
 #include <GL/glew.h>
 
 #include <logger/logger.h>
-#include <engine/engine.h>
 #include <engine/mesh.h>
 #include <engine/loader.h>
 #include <engine/stb_image.h>

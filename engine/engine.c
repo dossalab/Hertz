@@ -4,20 +4,13 @@ static struct camera *current_camera = NULL;
 static struct scene *current_scene = NULL;
 static mat4x4 projection;
 
-static void update_projection(int width, int height)
+void engine_handle_resize(size_t width, size_t height)
 {
 	float aspect;
 
 	aspect = (float)width / (float)height;
 
 	mat4x4_perspective(projection, ENG_FOV, aspect, 0.1f, 1000.0f);
-}
-
-void engine_handle_resize(size_t width, size_t height)
-{
-	glViewport(0, 0, width, height);
-
-	update_projection(width, height);
 	engine_update_mvp();
 }
 

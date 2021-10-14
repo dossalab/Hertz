@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <utils/list.h>
+#include <utils/common.h>
 
 #include "scene.h"
 

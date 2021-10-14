@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <signal.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -10,52 +9,41 @@
 #include <engine/engine.h>
 #include <engine/scene.h>
 
-#define WINDOW_TITLE		"My cool application"
 #define FLYTHROUGH_CAMERA_IMPLEMENTATION
 #include "camera.h"
 
-static GLFWwindow *main_window;
-static const float up[3] = { 0.0f, 1.0f, 0.0f };
-
-static struct camera main_camera;
-static struct scene scene;
-static struct mesh ship, skybox, cube, land;
-
-static vec3 camera_position = { 5.0f, 5.0f, 5.0f };
-static vec3 camera_look = { 0.0f, 0.0f, 1.0f };
-
-#define SHADERS_SKY	"shaders/simple.vert", "shaders/skybox.frag"
-#define SHADERS_SIMPLE	"shaders/simple.vert", "shaders/simple.frag"
-#define SHADERS_HORSE	"shaders/psycho.vert", "shaders/simple.frag"
-#define SHADERS_LAND	"shaders/simple.vert", "shaders/simple.frag"
+#define WINDOW_TITLE	"My cool application"
 
 static GLuint shader_sky;
-static GLuint shader_simple;
 static GLuint shader_horse;
 static GLuint shader_land;
 
-void update_camera(float delta_time_sec)
+static void update_camera(GLFWwindow *window, struct camera *camera,
+		float delta_time_sec)
 {
 	double pos_x, pos_y;
 	static double old_pos_x, old_pos_y;
+	static const float up[3] = { 0.0f, 1.0f, 0.0f };
+	static vec3 camera_position = { 5.0f, 5.0f, 5.0f };
+	static vec3 camera_look = { 0.0f, 0.0f, 1.0f };
 
-	glfwGetCursorPos(main_window, &pos_x, &pos_y);
+	glfwGetCursorPos(window, &pos_x, &pos_y);
 
 	flythrough_camera_update(
 		camera_position, camera_look, up,
-		(float *)main_camera.view,
+		(float *)camera->view,
 		delta_time_sec,
 		10.0f,
 		0.5f,
 		80.0f,
 		pos_x - old_pos_x,
 		pos_y - old_pos_y,
-		glfwGetKey(main_window, GLFW_KEY_W) == GLFW_PRESS,
-		glfwGetKey(main_window, GLFW_KEY_A) == GLFW_PRESS,
-		glfwGetKey(main_window, GLFW_KEY_S) == GLFW_PRESS,
-		glfwGetKey(main_window, GLFW_KEY_D) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS,
 		false, false,
-		0	
+		0
 	);
 
 	old_pos_x = pos_x;
@@ -64,22 +52,22 @@ void update_camera(float delta_time_sec)
 	engine_update_mvp();
 }
 
-static int main_loop(void)
+static int main_loop(GLFWwindow *window, struct camera *camera)
 {
 	double now; static double past;
 
-	if (glfwWindowShouldClose(main_window)) {
+	if (glfwWindowShouldClose(window)) {
 		return -1;
 	}
 
 	now = glfwGetTime();
 
-	update_camera(now - past);
+	update_camera(window, camera, now - past);
 
 	glfwPollEvents();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	engine_redraw();
-	glfwSwapBuffers(main_window);
+	glfwSwapBuffers(window);
 
 	past = now;
 	return 0;
@@ -87,15 +75,22 @@ static int main_loop(void)
 
 static int load_shaders(void)
 {
-	shader_sky = complile_simple_program(SHADERS_SKY);
-	shader_horse = complile_simple_program(SHADERS_HORSE);
-	shader_land = complile_simple_program(SHADERS_LAND);
+	shader_sky = complile_simple_program("shaders/simple.vert",
+			"shaders/skybox.frag");
+	shader_horse = complile_simple_program("shaders/psycho.vert",
+			"shaders/simple.frag");
+	shader_land = complile_simple_program("shaders/simple.vert",
+			"shaders/simple.frag");
 
 	return shader_sky == 0 || shader_horse == 0 || shader_land == 0;
 }
 
-static int present_and_draw_scene(void)
+static int present_and_draw_scene(GLFWwindow *window)
 {
+	struct mesh ship, skybox, land;
+	struct scene scene;
+	struct camera camera;
+
 	if (mesh_load(&ship, "res/horse.obj", shader_horse) < 0) {
 		log_e("No horse!");
 		return -1;
@@ -106,10 +101,6 @@ static int present_and_draw_scene(void)
 		return -1;
 	}
 
-	// if (mesh_load(&cube, "res/cube.obj", SHADERS_SIMPLE) < 0) {
-	// 	die("No cube!\n");
-	// }
-
 	if (mesh_load(&land, "res/land.obj", shader_land) < 0) {
 		log_e("No land!\n");
 		return -1;
@@ -117,7 +108,7 @@ static int present_and_draw_scene(void)
 
 	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);
 
-	camera_init(&main_camera);
+	camera_init(&camera);
 	scene_init(&scene);
 
 	scene_add_mesh(&scene, &skybox);
@@ -126,10 +117,10 @@ static int present_and_draw_scene(void)
 	// scene_add_mesh(&scene, &cube);
 
 	engine_set_scene(&scene);
-	engine_set_camera(&main_camera);
+	engine_set_camera(&camera);
 
 	for (;;) {
-		if (main_loop() < 0) {
+		if (main_loop(window, &camera) < 0) {
 			break;
 		}
 	}
@@ -142,95 +133,79 @@ static int present_and_draw_scene(void)
 	return 0;
 }
 
-static void on_sigint_handler(int signal)
+static void window_resize_callback(GLFWwindow* window, int width, int height)
 {
-	if (main_window) {
-		glfwSetWindowShouldClose(main_window, true);
-	}
+	glViewport(0, 0, width, height);
+	engine_handle_resize(width, height);
 }
 
-static int init_glfw(void)
+static GLFWwindow *create_context_window(void)
 {
+	GLenum glew_ret;
+	GLFWwindow *window;
+
+	window = glfwCreateWindow(640, 480, WINDOW_TITLE, NULL, NULL);
+	if (!window) {
+		log_e("unable to create window handle!");
+		return NULL;
+	}
+
+	glfwMakeContextCurrent(window);
+
+	/*
+	 * uhh we have to do that *after* context is created.
+	 * not sure what will happen if we create multiple windows
+	 */
+	glew_ret = glewInit();
+	if (glew_ret != GLEW_OK) {
+		log_e("unable to init GLEW! %s", glewGetErrorString(glew_ret));
+		glfwDestroyWindow(window);
+		return NULL;
+	}
+
+	glfwSetFramebufferSizeCallback(window, window_resize_callback);
+
+	log_i("created window with GLEW %s", glewGetString(GLEW_VERSION));
+	return window;
+}
+
+static int do_opengl_stuff(GLFWwindow *window)
+{
+	int err;
+
+	/* a couple of basic settings first */
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	err = load_shaders();
+	if (err < 0) {
+		log_e("unable to load shaders");
+		return err;
+	}
+
+	return present_and_draw_scene(window);
+}
+
+int main(void)
+{
+	GLFWwindow *window;
 	int err;
 
 	err = glfwInit();
 	if (err < 0) {
 		log_e("unable to init glfw!");
-		return err;
-	}
-
-	return 0;
-}
-
-static void window_resize_callback(GLFWwindow* window, int width, int height)
-{
-	engine_handle_resize(width, height);
-}
-
-static int create_main_window(void)
-{
-	GLenum glew_ret;
-
-	main_window = glfwCreateWindow(640, 480, WINDOW_TITLE, NULL, NULL);
-	if (!main_window) {
-		log_e("unable to create window handle!");
-		return -1;
-	}
-
-	glfwMakeContextCurrent(main_window);
-
-	glew_ret = glewInit();
-	if (glew_ret != GLEW_OK) {
-		log_e("unable to init GLEW! %s", glewGetErrorString(glew_ret));
-		glfwDestroyWindow(main_window);
-		main_window = NULL;
-		return -1;
-	}
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
-	glfwSetFramebufferSizeCallback(main_window, window_resize_callback);
-
-	log_i("created window with GLEW %s", glewGetString(GLEW_VERSION));
-	return 0;
-}
-
-static void cleanup_static_libs(void)
-{
-	glfwTerminate();
-}
-
-int main(void)
-{
-	int err;
-
-	signal(SIGINT, on_sigint_handler);
-
-	err = init_glfw();
-	if (err < 0) {
-		log_e("unable to init static libraries!");
 		return 1;
 	}
 
-	err = create_main_window();
-	if (err < 0) {
-		log_e("unable to create main window!");
-		goto cleanup_and_exit;
+	window = create_context_window();
+	if (window) {
+		do_opengl_stuff(window);
+	} else {
+		log_e("unable to create a window!");
 	}
 
-	err = load_shaders();
-	if (err < 0) {
-		log_e("unable to load shaders");
-		goto cleanup_and_exit;
-	}
-
-	log_i("application ready!");
-	present_and_draw_scene();
-
-cleanup_and_exit:
-	cleanup_static_libs();
-	log_i("application exit.");
+	glfwTerminate();
+	log_i("we're done");
 
 	return 0;
 }
