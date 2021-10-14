@@ -8,6 +8,7 @@
 #include <gl/utils/shaders.h>
 #include <engine/scene.h>
 #include <utils/linmath.h>
+#include <errors/errors.h>
 
 #define FLYTHROUGH_CAMERA_IMPLEMENTATION
 #include "camera.h"
@@ -179,7 +180,7 @@ static GLFWwindow *create_context_window(void)
 	return window;
 }
 
-static int do_opengl_stuff(GLFWwindow *window)
+static int load_shaders_and_draw(GLFWwindow *window)
 {
 	int err;
 
@@ -199,26 +200,48 @@ static int do_opengl_stuff(GLFWwindow *window)
 	return err;
 }
 
-int main(void)
+static int create_window_and_draw(void)
 {
+	int err;
 	GLFWwindow *window;
+
+	window = create_context_window();
+	if (!window) {
+		log_e("unable to create a window!");
+		return -ERR_NO_WINDOW;
+	}
+
+	err = load_shaders_and_draw(window);
+	glfwDestroyWindow(window);
+
+	return err;
+}
+
+static int gfx_main(void)
+{
 	int err;
 
 	err = glfwInit();
 	if (err < 0) {
 		log_e("unable to init glfw!");
+		return -ERR_SYSTEM;
+	}
+
+	err = create_window_and_draw();
+	glfwTerminate();
+
+	return err;
+}
+
+int main(void)
+{
+	int err;
+
+	err = gfx_main();
+	if (err < 0) {
+		log_e("unable to run application - %s", error_to_string(err));
 		return 1;
 	}
-
-	window = create_context_window();
-	if (window) {
-		do_opengl_stuff(window);
-	} else {
-		log_e("unable to create a window!");
-	}
-
-	glfwTerminate();
-	log_i("we're done");
 
 	return 0;
 }

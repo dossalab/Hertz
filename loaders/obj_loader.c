@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <logger/logger.h>
+#include <errors/errors.h>
 
 #include <utils/files.h>
 #include "obj_loader.h"
@@ -407,8 +408,7 @@ int loader_load_obj(struct mesh *mesh, const char *filename)
 
 	content = read_text_file(filename);
 	if (!content) {
-		log_e("[PS] Unable to load file %s", filename);
-		return -1;
+		return -ERR_NO_FILE;
 	}
 
 	ret = extract_obj_from_str(mesh, content, filename);

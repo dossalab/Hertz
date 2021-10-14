@@ -15,6 +15,7 @@ objects := \
 	loaders/obj_loader.o \
 	gl/utils/shaders.o \
 	utils/files.o \
+	errors/errors.o \
 	utils/list.o \
 	logger/logger.o
 
