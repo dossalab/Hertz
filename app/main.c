@@ -67,12 +67,12 @@ static void update_camera(GLFWwindow *window, struct scene *scene,
 	scene_update_mvp(scene, vp);
 }
 
-static int main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
+static bool main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
 {
 	double now; static double past;
 
 	if (glfwWindowShouldClose(window)) {
-		return -1;
+		return false;
 	}
 
 	now = glfwGetTime();
@@ -85,7 +85,7 @@ static int main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
 	glfwSwapBuffers(window);
 
 	past = now;
-	return 0;
+	return true;
 }
 
 static int load_shaders(void)
@@ -136,7 +136,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 	// scene_add_mesh(&scene, &cube);
 
 	for (;;) {
-		if (main_loop(window, &scene, view) < 0) {
+		if (!main_loop(window, &scene, view)) {
 			break;
 		}
 	}

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <utils/list.h>
 #include <utils/common.h>
+#include <errors/errors.h>
 
 #include "scene.h"
 
@@ -14,7 +15,7 @@ int scene_add_mesh(struct scene *s, struct mesh *m)
 {
 	struct scene_node *node = malloc(sizeof(struct scene_node));
 	if (!node) {
-		return -1;
+		return -ERR_NO_MEMORY;
 	}
 
 	node->mesh = *m;

@@ -74,14 +74,14 @@ static int mesh_attach_textures(struct mesh *m, struct model *model)
 
 	tcb_location = glGetAttribLocation(m->program, "in_texcoords");
 	if (tcb_location < 0) {
-		return -1;
+		return -ERR_SHADER_INVALID;
 	}
 
 	log_i("loading texture from %s", model->texture_path);
 
 	texture = create_texture_from_file(model->texture_path);
 	if (!texture) {
-		return -1;
+		return -ERR_NO_FILE;
 	}
 
 	m->texture = texture;
