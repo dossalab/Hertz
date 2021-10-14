@@ -6,6 +6,6 @@
 
 GLuint load_shader_from_file(const char *filename, GLenum type);
 GLuint create_shader_program(size_t shader_count, ...);
-GLuint complile_simple_program(const char *vert_path, const char *frag_path);
+GLuint compile_simple_program(const char *vert_path, const char *frag_path);
 
 #endif

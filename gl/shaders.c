@@ -96,7 +96,7 @@ GLuint create_shader_program(size_t shader_count, ...)
 	return program;
 }
 
-GLuint complile_simple_program(const char *vert_path, const char *frag_path)
+GLuint compile_simple_program(const char *vert_path, const char *frag_path)
 {
 	GLuint vertex, frag;
 	GLuint program = 0;
