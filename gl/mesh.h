@@ -12,7 +12,7 @@ struct mesh {
 
 	/* variables from shaders */
 	GLint mvp_handle, model_handle, time_handle;
-	bool time_presented;
+	bool model_presented, time_presented;
 
 	mat4x4 model;
 	int program;

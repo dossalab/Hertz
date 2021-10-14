@@ -91,7 +91,7 @@ static bool main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
 static int load_shaders(void)
 {
 	shader_sky = complile_simple_program("shaders/simple.vert",
-			"shaders/simple.frag");
+			"shaders/skybox.frag");
 	shader_horse = complile_simple_program("shaders/psycho.vert",
 			"shaders/simple.frag");
 	shader_land = complile_simple_program("shaders/simple.vert",

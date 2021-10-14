@@ -37,9 +37,8 @@ static int mesh_create_buffers(struct mesh *m, struct model *model)
 	glBindVertexArray(m->vao);
 
 	vb_location = glGetAttribLocation(m->program, "in_position");
-	nb_location = glGetAttribLocation(m->program, "in_normal");
 
-	if (vb_location < 0 || nb_location < 0) {
+	if (vb_location < 0) {
 		return -ERR_SHADER_INVALID;
 	}
 
@@ -47,6 +46,14 @@ static int mesh_create_buffers(struct mesh *m, struct model *model)
 			model->vertex_count * sizeof(struct vertex));
 	if (!m->vbo) {
 		return -ERR_NO_VIDEO_BUFFER;
+	}
+
+	nb_location = glGetAttribLocation(m->program, "in_normal");
+	if (nb_location < 0) {
+		log_d("shader doesn't require normal buffer");
+
+		/* not an error - we can run like that if shader wants */
+		return 0;
 	}
 
 	m->nbo = create_opengl_buffer(nb_location, 3, model->normals,
@@ -115,8 +122,10 @@ static int find_uniforms(struct mesh *m)
 	}
 
 	m->model_handle = glGetUniformLocation(m->program, "model");
-	if (m->model_handle < 0) {
-		return -ERR_SHADER_INVALID;
+	m->model_presented = !(m->model_handle < 0);
+
+	if (!m->model_presented) {
+		log_d("no model matrix in the shader");
 	}
 
 	m->time_handle = glGetUniformLocation(m->program, "time");
@@ -180,7 +189,10 @@ void mesh_update_mvp(struct mesh *m, mat4x4 vp)
 
 	glUseProgram(m->program);
 	glUniformMatrix4fv(m->mvp_handle, 1, GL_FALSE, (float *)mvp);
-	glUniformMatrix4fv(m->model_handle, 1, GL_FALSE, (float *)m->model);
+
+	if (m->model_presented) {
+		glUniformMatrix4fv(m->model_handle, 1, GL_FALSE, (float *)m->model);
+	}
 
 	if (m->time_presented) {
 		glUniform1f(m->time_handle, get_time());

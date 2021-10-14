@@ -21,8 +21,8 @@ objects := \
 	utils/list.o \
 	logger/logger.o
 
-LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm -O3
-CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g -O3
+LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm
+CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g
 
 all: $(exe)
 
