@@ -108,6 +108,8 @@ static int present_and_draw_scene(GLFWwindow *window)
 	struct scene scene;
 	mat4x4 view;
 
+	mat4x4_identity(view);
+
 	err = mesh_load(&ship, "res/horse.obj", shader_horse);
 	if (err < 0) {
 		log_e("No horse!");
