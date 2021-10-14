@@ -100,7 +100,11 @@ static int load_shaders(void)
 	shader_land = compile_simple_program("shaders/simple.vert",
 			"shaders/simple.frag");
 
-	return shader_sky == 0 || shader_horse == 0 || shader_land == 0;
+	if (shader_sky == 0 || shader_horse == 0 || shader_land == 0) {
+		return -ERR_SHADER_INVALID;
+	}
+
+	return 0;
 }
 
 static int present_and_draw_scene(GLFWwindow *window)
