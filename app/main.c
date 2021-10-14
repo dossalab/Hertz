@@ -102,7 +102,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 	}
 
 	if (mesh_load(&land, "res/land.obj", shader_land) < 0) {
-		log_e("No land!\n");
+		log_e("No land!");
 		return -1;
 	}
 

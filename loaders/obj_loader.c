@@ -64,7 +64,7 @@ static int process_material_lib(const char *obj_name, struct mesh *mesh,
 
 	content = read_text_file(mtlib_path);
 	if (!content) {
-		log_i("[PS] no mtlib %s?\n", mtlib_path);
+		log_i("[PS] no mtlib %s?", mtlib_path);
 
 		/* we don't really consider it an error, yeah */
 		return 0;
@@ -209,7 +209,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 					&vertex_id[2],
 					&normal_id[2]);
 		if (matches != 6) {
-			log_e("[PS] unable to extract f at %d, matches were %d\n",
+			log_e("[PS] unable to extract f at %d, matches were %d",
 					line_counter, matches);
 			return -1;
 		}
@@ -219,7 +219,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 	if (vertex_id[0] > parser->vertice_count ||
 			vertex_id[1] > parser->vertice_count ||
 			vertex_id[2] > parser->vertice_count) {
-		log_e("[PS] file seems malformed, index is not found\n");
+		log_e("[PS] file seems malformed, index is not found");
 		return -1;
 	}
 
@@ -227,7 +227,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 	if (normal_id[0] > parser->normal_count ||
 			normal_id[1] > parser->normal_count ||
 			normal_id[2] > parser->normal_count) {
-		log_e("[PS] file seems malformed, index is not found\n");
+		log_e("[PS] file seems malformed, index is not found");
 		return -1;
 	}
 
@@ -269,7 +269,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 		if (uv_id[0] > parser->uv_count ||
 				uv_id[1] > parser->uv_count ||
 				uv_id[2] > parser->uv_count) {
-			log_e("[PS] file seems malformed, index is not found\n");
+			log_e("[PS] file seems malformed, index is not found");
 			return -1;
 		}
 
@@ -305,7 +305,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 		return 0;
 
 	case 'g':
-		log_e("[PS] got g\n");
+		log_e("[PS] got g");
 		break;
 
 	case 'f':
@@ -368,7 +368,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 		return -1;
 
 	default:
-		log_e("[PS] malformed char at %d: '%c' (0x%02X)\n",
+		log_e("[PS] malformed char at %d: '%c' (0x%02X)",
 				line_counter, line[0], line[0]);
 		return -1;
 	}
@@ -407,7 +407,7 @@ int loader_load_obj(struct mesh *mesh, const char *filename)
 
 	content = read_text_file(filename);
 	if (!content) {
-		log_e("[PS] Unable to load file %s\n", filename);
+		log_e("[PS] Unable to load file %s", filename);
 		return -1;
 	}
 

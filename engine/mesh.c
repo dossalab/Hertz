@@ -18,7 +18,7 @@ static int mesh_attach_geometry(struct mesh *m)
 	nb_location = glGetAttribLocation(m->program, "in_normal");
 
 	if (vb_location < 0) {
-		log_e("unable to find normal or vertex buffer\n");
+		log_e("unable to find normal or vertex buffer");
 		return -1;
 	}
 
@@ -52,7 +52,7 @@ int mesh_attach_textures(struct mesh *m)
 	int tcb_location;
 
 	if (!m->texture_path) {
-		log_i("mesh is not textured\n");
+		log_i("mesh is not textured");
 		m->texture_path = strdup("res/test.jpg");
 	}
 
@@ -61,10 +61,10 @@ int mesh_attach_textures(struct mesh *m)
 		return -1;
 	}
 
-	log_i("loading texture from %s\n", m->texture_path);
+	log_i("loading texture from %s", m->texture_path);
 	data = stbi_load(m->texture_path, &w, &h, &n, 3);
 	if (!data) {
-		log_e("texture %s is not found\n", m->texture_path);
+		log_e("texture %s is not found", m->texture_path);
 		return -1;
 	}
 
@@ -99,7 +99,7 @@ static int mesh_attach(struct mesh *m)
 	glBindVertexArray(m->vao);
 
 	if (mesh_attach_geometry(m) < 0) {
-		log_e("unable to attach geometry\n");
+		log_e("unable to attach geometry");
 		return -1;
 	}
 
@@ -146,7 +146,7 @@ void mesh_redraw(struct mesh *m)
 int mesh_load(struct mesh *m, char *path, GLuint shader_program)
 {
 	if (loader_load_obj(m, path)) {
-		log_e("unable to load obj\n");
+		log_e("unable to load obj");
 		return -1;
 	}
 
