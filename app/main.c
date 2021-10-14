@@ -9,6 +9,7 @@
 #include <engine/scene.h>
 #include <utils/linmath.h>
 #include <errors/errors.h>
+#include "time.h"
 
 #define FLYTHROUGH_CAMERA_IMPLEMENTATION
 #include "camera.h"
@@ -69,15 +70,17 @@ static void update_camera(GLFWwindow *window, struct scene *scene,
 
 static bool main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
 {
-	double now; static double past;
+	double now, spent; static double past;
 
 	if (glfwWindowShouldClose(window)) {
 		return false;
 	}
 
 	now = glfwGetTime();
+	spent = now - past;
 
-	update_camera(window, scene, view, now - past);
+	update_camera(window, scene, view, spent);
+	update_counter(spent);
 
 	glfwPollEvents();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -250,5 +253,6 @@ int main(void)
 		return 1;
 	}
 
+	log_d("time counter value is %f s", global_time_counter);
 	return 0;
 }

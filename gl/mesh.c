@@ -2,6 +2,7 @@
 #include <time.h>
 #include <string.h>
 
+#include <app/time.h>
 #include <logger/logger.h>
 #include <errors/errors.h>
 #include <gl/textures.h>
@@ -105,15 +106,6 @@ static int mesh_attach_textures(struct mesh *m, struct model *model)
 	return 0;
 }
 
-float get_time(void)
-{
-	static float tick;
-
-	tick += 0.05f;
-
-	return tick;
-}
-
 static int find_uniforms(struct mesh *m)
 {
 	m->mvp_handle = glGetUniformLocation(m->program, "MVP");
@@ -195,7 +187,7 @@ void mesh_update_mvp(struct mesh *m, mat4x4 vp)
 	}
 
 	if (m->time_presented) {
-		glUniform1f(m->time_handle, get_time());
+		glUniform1f(m->time_handle, global_time_counter);
 	}
 }
 
