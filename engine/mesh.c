@@ -7,8 +7,8 @@
 
 #include <logger/logger.h>
 #include <engine/mesh.h>
-#include <engine/loader.h>
-#include <engine/stb_image.h>
+#include <loaders/obj_loader.h>
+#include <loaders/stb_image.h>
 
 static int mesh_attach_geometry(struct mesh *m)
 {

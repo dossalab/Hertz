@@ -13,8 +13,8 @@ objects := \
 	engine/scene.o \
 	engine/camera.o \
 	engine/mesh.o \
-	engine/stb_image.o \
-	engine/loader.o \
+	loaders/stb_image.o \
+	loaders/obj_loader.o \
 	gl/utils/shaders.o \
 	utils/files.o \
 	utils/list.o \

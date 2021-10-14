@@ -5,7 +5,7 @@
 #include <logger/logger.h>
 
 #include <utils/files.h>
-#include "loader.h"
+#include "obj_loader.h"
 
 struct obj_parser {
 	struct vertex *vertices;

@@ -1,5 +1,5 @@
-#ifndef ENGINE_LOADER_H
-#define ENGINE_LOADER_H
+#ifndef LOADERS_OBJ_LOADER_H
+#define LOADERS_OBJ_LOADER_H
 
 #include <engine/mesh.h>
 
