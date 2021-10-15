@@ -3,6 +3,10 @@
 
 void free_model(struct model *m)
 {
+	if (m->texture_path) {
+		free(m->texture_path);
+	}
+
 	free(m->vertices);
 	free(m->normals);
 	free(m->uvs);

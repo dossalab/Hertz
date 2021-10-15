@@ -94,6 +94,13 @@ static int mesh_attach_textures(struct mesh *m, struct model *model)
 		return -ERR_SHADER_INVALID;
 	}
 
+	if (!model->texture_path) {
+		log_d("mesh is not textured");
+
+		/* not really an error */
+		return 0;
+	}
+
 	texture = create_texture_from_file(model->texture_path);
 	if (!texture) {
 		return -ERR_NO_FILE;
