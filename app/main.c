@@ -111,7 +111,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 {
 	int err;
 
-	struct mesh ship, skybox, land;
+	struct mesh ship, skybox, land, wall;
 	struct scene scene;
 	mat4x4 view;
 
@@ -135,14 +135,19 @@ static int present_and_draw_scene(GLFWwindow *window)
 		return err;
 	}
 
-	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);
+	err = mesh_load(&wall, "res/wall.obj", shader_land);
+	if (err < 0) {
+		log_e("No wall!");
+		return err;
+	}
 
+	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);
 	scene_init(&scene);
 
 	scene_add_mesh(&scene, &skybox);
 	scene_add_mesh(&scene, &land);
 	scene_add_mesh(&scene, &ship);
-	// scene_add_mesh(&scene, &cube);
+	scene_add_mesh(&scene, &wall);
 
 	for (;;) {
 		mat4x4 identity;
@@ -150,6 +155,8 @@ static int present_and_draw_scene(GLFWwindow *window)
 
 		/* 1 rad / sec */
 		mat4x4_rotate_Y(ship.model, identity, 2 * ENG_PI * global_time_counter);
+		mat4x4_translate(wall.model, 10.0f, global_time_counter, -10.0f);
+
 
 		if (!main_loop(window, &scene, view)) {
 			break;
@@ -158,6 +165,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 
 	scene_free(&scene);
 	mesh_free(&ship);
+	mesh_free(&wall);
 	mesh_free(&land);
 	mesh_free(&skybox);
 
