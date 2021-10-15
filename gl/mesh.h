@@ -1,9 +1,9 @@
-#ifndef ENGINE_MESH_H
-#define ENGINE_MESH_H
+#ifndef GL_MESH_H
+#define GL_MESH_H
 
-#include <utils/linmath.h>
 #include <GL/gl.h>
-#include <engine/defines.h>
+#include <utils/linmath.h>
+#include <utils/defines.h>
 #include <stddef.h>
 #include <stdbool.h>
 

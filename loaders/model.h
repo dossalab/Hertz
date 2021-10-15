@@ -1,7 +1,7 @@
 #ifndef LOADERS_MODEL_H
 #define LOADERS_MODEL_H
 
-#include <engine/defines.h>
+#include <utils/defines.h>
 #include <stddef.h>
 
 struct model {

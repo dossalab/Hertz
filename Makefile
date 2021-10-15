@@ -8,9 +8,9 @@ exe	:= opengl
 libs	:= glfw3 glew
 
 objects := \
-	app/main.o \
-	app/time.o \
-	engine/scene.o \
+	init/main.o \
+	counters/time.o \
+	scene/scene.o \
 	cameras/fly_camera.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \

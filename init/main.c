@@ -6,11 +6,11 @@
 
 #include <logger/logger.h>
 #include <gl/shaders.h>
-#include <engine/scene.h>
+#include <scene/scene.h>
 #include <utils/linmath.h>
 #include <cameras/fly_camera.h>
 #include <errors/errors.h>
-#include "time.h"
+#include <counters/time.h>
 
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
