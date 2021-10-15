@@ -368,6 +368,10 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 		
 		return -1;
 
+	case 'l':
+		/* don't know what this is but ok */
+		return 0;
+
 	default:
 		log_e("[PS] malformed char at %d: '%c' (0x%02X)",
 				line_counter, line[0], line[0]);
