@@ -1,12 +1,11 @@
+#include <math.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <utils/linmath.h>
 
-#ifndef FLYTHROUGH_CAMERA_H
-#define FLYTHROUGH_CAMERA_H
+#include "fly_camera.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-// Flags for tweaking the view matrix
+/* Flags for tweaking the view matrix */
 #define FLYTHROUGH_CAMERA_LEFT_HANDED_BIT 1
 
 // * eye:
@@ -36,7 +35,7 @@ extern "C" {
 //     * Example layout: W, A, S, D, space, ctrl
 // * flags:
 //     * For producing a different view matrix depending on your conventions.
-void flythrough_camera_update(
+static void flythrough_camera_update(
     float eye[3],
     float look[3],
     const float up[3],
@@ -51,27 +50,12 @@ void flythrough_camera_update(
     unsigned int flags);
 
 // Utility for producing a look-to matrix without having to update a camera.
-void flythrough_camera_look_to(
+static void flythrough_camera_look_to(
     const float eye[3],
     const float look[3],
     const float up[3],
     float view[16],
     unsigned int flags);
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus
-
-#endif // FLYTHROUGH_CAMERA_H
-
-#ifdef FLYTHROUGH_CAMERA_IMPLEMENTATION
-
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-#include <math.h>
-#include <assert.h>
 
 void flythrough_camera_update(
     float eye[3],
@@ -334,8 +318,47 @@ void flythrough_camera_look_to(
     view[15] = 1.0f;
 }
 
-#ifdef __cplusplus
+void fly_camera_update_projection(struct camera *c, float fov, float aspect)
+{
+	mat4x4_perspective(c->projection, fov, aspect, 0.1f, 1000.0f);
 }
-#endif // __cplusplus
 
-#endif // FLYTHROUGH_CAMERA_IMPLEMENTATION
+void fly_camera_update(struct camera *c, GLFWwindow *window, float time_spent)
+{
+	mat4x4 view;
+	double pos_x, pos_y;
+	static double old_pos_x, old_pos_y;
+	static const float up[3] = { 0.0f, 1.0f, 0.0f };
+	static vec3 camera_position = { 5.0f, 5.0f, 5.0f };
+	static vec3 camera_look = { 0.0f, 0.0f, 1.0f };
+
+	glfwGetCursorPos(window, &pos_x, &pos_y);
+
+	flythrough_camera_update(
+		camera_position, camera_look, up,
+		(float *)view,
+		time_spent,
+		10.0f,
+		0.5f,
+		80.0f,
+		pos_x - old_pos_x,
+		pos_y - old_pos_y,
+		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS,
+		false, false,
+		0
+	);
+
+	old_pos_x = pos_x;
+	old_pos_y = pos_y;
+
+	mat4x4_mul(c->vp, c->projection, view);
+}
+
+void fly_camera_reset(struct camera *c)
+{
+	mat4x4_identity(c->projection);
+	mat4x4_identity(c->vp);
+}

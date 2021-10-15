@@ -11,6 +11,7 @@ objects := \
 	app/main.o \
 	app/time.o \
 	engine/scene.o \
+	cameras/fly_camera.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
 	loaders/model.o \

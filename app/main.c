@@ -8,11 +8,9 @@
 #include <gl/shaders.h>
 #include <engine/scene.h>
 #include <utils/linmath.h>
+#include <cameras/fly_camera.h>
 #include <errors/errors.h>
 #include "time.h"
-
-#define FLYTHROUGH_CAMERA_IMPLEMENTATION
-#include "camera.h"
 
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
@@ -21,54 +19,8 @@
 static GLuint shader_sky;
 static GLuint shader_horse;
 static GLuint shader_land;
-static mat4x4 projection;
 
-static void update_projection(size_t width, size_t height)
-{
-	float aspect;
-
-	aspect = (float)width / (float)height;
-
-	mat4x4_perspective(projection, ENG_FOV, aspect, 0.1f, 1000.0f);
-}
-
-static void update_camera(GLFWwindow *window, struct scene *scene,
-		mat4x4 view, float delta_time_sec)
-{
-	mat4x4 vp;
-	double pos_x, pos_y;
-	static double old_pos_x, old_pos_y;
-	static const float up[3] = { 0.0f, 1.0f, 0.0f };
-	static vec3 camera_position = { 5.0f, 5.0f, 5.0f };
-	static vec3 camera_look = { 0.0f, 0.0f, 1.0f };
-
-	glfwGetCursorPos(window, &pos_x, &pos_y);
-
-	flythrough_camera_update(
-		camera_position, camera_look, up,
-		(float *)view,
-		delta_time_sec,
-		10.0f,
-		0.5f,
-		80.0f,
-		pos_x - old_pos_x,
-		pos_y - old_pos_y,
-		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS,
-		false, false,
-		0
-	);
-
-	old_pos_x = pos_x;
-	old_pos_y = pos_y;
-
-	mat4x4_mul(vp, projection, view);
-	scene_update_mvp(scene, vp);
-}
-
-static bool main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
+static bool main_loop(GLFWwindow *window, struct scene *scene, struct camera *c)
 {
 	double now, spent; static double past;
 
@@ -79,7 +31,8 @@ static bool main_loop(GLFWwindow *window, struct scene *scene, mat4x4 view)
 	now = glfwGetTime();
 	spent = now - past;
 
-	update_camera(window, scene, view, spent);
+	fly_camera_update(c, window, spent);
+	scene_update_mvp(scene, c->vp);
 	update_counter(spent);
 
 	glfwPollEvents();
@@ -112,10 +65,11 @@ static int present_and_draw_scene(GLFWwindow *window)
 	int err;
 
 	struct mesh ship, skybox, land, wall;
+	struct camera fly_camera;
 	struct scene scene;
-	mat4x4 view;
 
-	mat4x4_identity(view);
+	fly_camera_reset(&fly_camera);
+	glfwSetWindowUserPointer(window, &fly_camera);
 
 	err = mesh_load(&ship, "res/horse.obj", shader_horse);
 	if (err < 0) {
@@ -158,7 +112,7 @@ static int present_and_draw_scene(GLFWwindow *window)
 		mat4x4_translate(wall.model, 10.0f, global_time_counter, -10.0f);
 
 
-		if (!main_loop(window, &scene, view)) {
+		if (!main_loop(window, &scene, &fly_camera)) {
 			break;
 		}
 	}
@@ -174,8 +128,14 @@ static int present_and_draw_scene(GLFWwindow *window)
 
 static void window_resize_callback(GLFWwindow* window, int width, int height)
 {
+	float aspect;
+	struct camera *c;
+
+	aspect = (float)width / (float)height;
+
 	glViewport(0, 0, width, height);
-	update_projection(width, height);
+	c = glfwGetWindowUserPointer(window);
+	fly_camera_update_projection(c, ENG_FOV, aspect);
 }
 
 static GLFWwindow *create_context_window(void)
