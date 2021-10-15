@@ -347,7 +347,8 @@ void fly_camera_update(struct camera *c, GLFWwindow *window, float time_spent)
 		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
 		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
 		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS,
-		false, false,
+		glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS,
 		0
 	);
 
