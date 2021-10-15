@@ -145,6 +145,12 @@ static int present_and_draw_scene(GLFWwindow *window)
 	// scene_add_mesh(&scene, &cube);
 
 	for (;;) {
+		mat4x4 identity;
+		mat4x4_identity(identity);
+
+		/* 1 rad / sec */
+		mat4x4_rotate_Y(ship.model, identity, 2 * ENG_PI * global_time_counter);
+
 		if (!main_loop(window, &scene, view)) {
 			break;
 		}
