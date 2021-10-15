@@ -18,7 +18,7 @@ int scene_add_mesh(struct scene *s, struct mesh *m)
 		return -ERR_NO_MEMORY;
 	}
 
-	node->mesh = *m;
+	node->mesh = m;
 
 	list_push(&node->head, &s->drawing_list);
 	return 0;
@@ -32,7 +32,7 @@ void scene_update_mvp(struct scene *s, mat4x4 vp)
 
 	list_backward(ptr, &s->drawing_list) {
 		node = container_of(ptr, struct scene_node, head);
-		mesh = &node->mesh;
+		mesh = node->mesh;
 
 		mesh_update_mvp(mesh, vp);
 	}
@@ -46,7 +46,7 @@ void scene_redraw(struct scene *s)
 
 	list_backward(ptr, &s->drawing_list) {
 		node = container_of(ptr, struct scene_node, head);
-		mesh = &node->mesh;
+		mesh = node->mesh;
 
 		mesh_redraw(mesh);
 	}

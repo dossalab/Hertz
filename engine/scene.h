@@ -6,7 +6,7 @@
 
 struct scene_node {
 	struct list_item head;
-	struct mesh mesh;
+	struct mesh *mesh;
 };
 
 struct scene {
