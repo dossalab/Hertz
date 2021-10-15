@@ -12,7 +12,7 @@ void main()
 {
 	float time = _time;
 
-	vec3 light = vec3(100, 100, 0);
+	vec3 light = vec3(100, 100, 100);
 	vec3 dir = normalize(light - vertex);
 	float diffuse = max(dot(normalize(normal), dir), 0.0);
 	float ambient = 0.2;
