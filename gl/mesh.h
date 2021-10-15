@@ -15,6 +15,7 @@ struct mesh {
 	bool model_presented, time_presented;
 
 	mat4x4 model;
+	mat4x4 mvp;
 	int program;
 	unsigned int texture;
 	size_t vertex_count;

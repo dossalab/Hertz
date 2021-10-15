@@ -132,6 +132,7 @@ static int mesh_load_from_model(struct mesh *mesh, GLuint shader_program,
 	int err;
 
 	mat4x4_identity(mesh->model);
+	mat4x4_identity(mesh->mvp);
 	mesh->program = shader_program;
 	mesh->vertex_count = model->vertex_count;
 
@@ -170,17 +171,7 @@ void mesh_redraw(struct mesh *m)
 	glBindTexture(GL_TEXTURE_2D, m->texture);
 	glUseProgram(m->program);
 
-	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);
-}
-
-void mesh_update_mvp(struct mesh *m, mat4x4 vp)
-{
-	mat4x4 mvp;
-
-	mat4x4_mul(mvp, vp, m->model);
-
-	glUseProgram(m->program);
-	glUniformMatrix4fv(m->mvp_handle, 1, GL_FALSE, (float *)mvp);
+	glUniformMatrix4fv(m->mvp_handle, 1, GL_FALSE, (float *)m->mvp);
 
 	if (m->model_presented) {
 		glUniformMatrix4fv(m->model_handle, 1, GL_FALSE, (float *)m->model);
@@ -189,6 +180,13 @@ void mesh_update_mvp(struct mesh *m, mat4x4 vp)
 	if (m->time_presented) {
 		glUniform1f(m->time_handle, global_time_counter);
 	}
+
+	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);
+}
+
+void mesh_update_mvp(struct mesh *m, mat4x4 vp)
+{
+	mat4x4_mul(m->mvp, vp, m->model);
 }
 
 void mesh_free(struct mesh *m)
