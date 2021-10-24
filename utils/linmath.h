@@ -43,6 +43,12 @@ static inline void vec##n##_norm(vec##n r, vec##n const v) \
 { \
 	float k = 1.f / vec##n##_len(v); \
 	vec##n##_scale(r, v, k); \
+} \
+static inline void vec##n##_copy(vec##n r, vec##n const v) \
+{ \
+	int i; \
+	for(i=0; i<n; ++i) \
+		r[i] = v[i]; \
 }
 
 LINMATH_H_DEFINE_VEC(2)

@@ -30,8 +30,8 @@ static GLuint create_opengl_buffer(GLuint location, size_t components,
 	return handle;
 }
 
-static int mesh_create_geometry_buffers(struct mesh *m, struct vertex *vertices,
-		size_t vertex_count, struct vertex *normals, size_t normal_count)
+static int mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
+		size_t vertex_count, vec3 *normals, size_t normal_count)
 {
 	int vb_location, nb_location;
 
@@ -67,7 +67,7 @@ static int mesh_create_geometry_buffers(struct mesh *m, struct vertex *vertices,
 }
 
 int mesh_attach_textures(struct mesh *m, GLuint texture,
-		struct point *uvs, size_t uv_count)
+		vec2 *uvs, size_t uv_count)
 {
 	int tcb_location;
 
@@ -109,8 +109,8 @@ static int find_uniforms(struct mesh *m)
 }
 
 int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
-		struct vertex *vertices, size_t vertex_count,
-		struct vertex *normals, size_t normal_count)
+		vec3 *vertices, size_t vertex_count,
+		vec3 *normals, size_t normal_count)
 {
 	int err;
 

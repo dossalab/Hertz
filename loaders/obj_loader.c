@@ -9,15 +9,15 @@
 #include "obj_loader.h"
 
 struct obj_parser {
-	struct vertex *vertices;
+	vec3 *vertices;
 	size_t vertice_count;
 	size_t vertice_allocated_size;
 
-	struct vertex *normals;
+	vec3 *normals;
 	size_t normal_count;
 	size_t normal_allocated_size;
 
-	struct point *uvs;
+	vec2 *uvs;
 	size_t uv_count;
 	size_t uv_allocated_size;
 
@@ -77,37 +77,37 @@ static int process_material_lib(const char *obj_name, struct model *model,
 	return ret;
 }
 
-static void insert_vertex(struct model *m, struct vertex *v)
+static void insert_vertex(struct model *m, vec3 v)
 {
-	m->vertices[m->vertex_count] = *v;
+	vec3_copy(m->vertices[m->vertex_count], v);
 	m->vertex_count++;
 }
 
-static void insert_normal(struct model *m, struct vertex *v)
+static void insert_normal(struct model *m, vec3 v)
 {
-	m->normals[m->normal_count] = *v;
+	vec3_copy(m->normals[m->normal_count], v);
 	m->normal_count++;
 }
 
-static void insert_uv(struct model *m, struct point *uv)
+static void insert_uv(struct model *m, vec2 uv)
 {
 	/* uvs are stored inverted, (eg top is 0.0) */
-	struct point uv_corrected;
+	vec2 uv_corrected;
 
-	uv_corrected.x = uv->x;
-	uv_corrected.y = 1.0 - uv->y;
+	uv_corrected[0] = uv[0];
+	uv_corrected[1] = 1.0 - uv[1];
 
-	m->uvs[m->uv_count] = uv_corrected;
+	vec2_copy(m->uvs[m->uv_count], uv_corrected);
 	m->uv_count++;
 }
 
-static void insert_new_vertex(struct vertex *v, struct obj_parser *parser)
+static void insert_new_vertex(vec3 v, struct obj_parser *parser)
 {
 	const size_t chunksize = 128;
-	size_t space = parser->vertice_allocated_size - sizeof(struct vertex) * parser->vertice_count;
+	size_t space = parser->vertice_allocated_size - sizeof(vec3) * parser->vertice_count;
 	void *tmp;
 
-	if (space < sizeof(struct vertex)) {
+	if (space < sizeof(vec3)) {
 		tmp = realloc(parser->vertices, parser->vertice_allocated_size + chunksize);
 		if (!tmp) {
 			log_e("no mem left!");
@@ -118,17 +118,17 @@ static void insert_new_vertex(struct vertex *v, struct obj_parser *parser)
 		parser->vertices = tmp;
 	}
 
-	parser->vertices[parser->vertice_count] = *v;
+	vec3_copy(parser->vertices[parser->vertice_count], v);
 	parser->vertice_count++;
 }
 
-static void insert_new_normal(struct vertex *n, struct obj_parser *parser)
+static void insert_new_normal(vec3 n, struct obj_parser *parser)
 {
 	const size_t chunksize = 128;
-	size_t space = parser->normal_allocated_size - sizeof(struct vertex) * parser->normal_count;
+	size_t space = parser->normal_allocated_size - sizeof(vec3) * parser->normal_count;
 	void *tmp;
 
-	if (space < sizeof(struct vertex)) {
+	if (space < sizeof(vec3)) {
 		tmp = realloc(parser->normals, parser->normal_allocated_size + chunksize);
 		if (!tmp) {
 			log_e("no mem left!");
@@ -139,17 +139,17 @@ static void insert_new_normal(struct vertex *n, struct obj_parser *parser)
 		parser->normals = tmp;
 	}
 
-	parser->normals[parser->normal_count] = *n;
+	vec3_copy(parser->normals[parser->normal_count], n);
 	parser->normal_count++;
 }
 
-static void insert_new_uv(struct point *uv, struct obj_parser *parser)
+static void insert_new_uv(vec2 uv, struct obj_parser *parser)
 {
 	const size_t chunksize = 128;
 	void *tmp;
-	size_t space = parser->uv_allocated_size - sizeof(struct point) * parser->uv_count;
+	size_t space = parser->uv_allocated_size - sizeof(vec2) * parser->uv_count;
 
-	if (space < sizeof(struct point)) {
+	if (space < sizeof(vec2)) {
 		tmp = realloc(parser->uvs, parser->uv_allocated_size + chunksize);
 		if (!tmp) {
 			log_e("no mem left!");
@@ -160,13 +160,13 @@ static void insert_new_uv(struct point *uv, struct obj_parser *parser)
 		parser->uvs = tmp;
 	}
 
-	parser->uvs[parser->uv_count] = *uv;
+	vec2_copy(parser->uvs[parser->uv_count], uv);
 	parser->uv_count++;
 }
 
-static int extract_v_command(struct vertex *result, char *line)
+static int extract_v_command(vec3 result, char *line)
 {
-	int ret = sscanf(line, "%f %f %f", &result->x, &result->y, &result->z);
+	int ret = sscanf(line, "%f %f %f", &result[0], &result[1], &result[2]);
 	if (ret != 3) {
 		return -1;
 	} else {
@@ -174,9 +174,9 @@ static int extract_v_command(struct vertex *result, char *line)
 	}
 }
 
-static int extract_vt_command(struct point *result, char *line)
+static int extract_vt_command(vec2 result, char *line)
 {
-	int ret = sscanf(line, "%f %f", &result->x, &result->y);
+	int ret = sscanf(line, "%f %f", &result[0], &result[1]);
 	if (ret != 2) {
 		return -1;
 	} else {
@@ -188,7 +188,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 		struct obj_parser *parser, struct model *model)
 {
 	unsigned int vertex_id[3], uv_id[3], normal_id[3];
-	struct vertex v1, v2, v3, n1, n2, n3;
+	vec3 v1, v2, v3, n1, n2, n3;
 
 	int matches = sscanf(line, "%d/%d/%d %d/%d/%d %d/%d/%d",
 				&vertex_id[0],
@@ -232,39 +232,39 @@ static int try_extract_face(size_t line_counter, const char *line,
 		return -1;
 	}
 
-	v1 = parser->vertices[vertex_id[0] - 1];
-	v2 = parser->vertices[vertex_id[1] - 1];
-	v3 = parser->vertices[vertex_id[2] - 1];
+	vec3_copy(v1, parser->vertices[vertex_id[0] - 1]);
+	vec3_copy(v2, parser->vertices[vertex_id[1] - 1]);
+	vec3_copy(v3, parser->vertices[vertex_id[2] - 1]);
 
-	n1 = parser->normals[normal_id[0] - 1];
-	n2 = parser->normals[normal_id[1] - 1];
-	n3 = parser->normals[normal_id[2] - 1];
+	vec3_copy(n1, parser->normals[normal_id[0] - 1]);
+	vec3_copy(n2, parser->normals[normal_id[1] - 1]);
+	vec3_copy(n3, parser->normals[normal_id[2] - 1]);
 
 	size_t vspace = parser->mesh_allocated_vertices - model->vertex_count;
-	if (vspace < sizeof(struct vertex) * 3) {
+	if (vspace < sizeof(vec3) * 3) {
 		parser->mesh_allocated_vertices += 128;
-		model->vertices = realloc(model->vertices, sizeof(struct vertex) * \
+		model->vertices = realloc(model->vertices, sizeof(vec3) * \
 				parser->mesh_allocated_vertices);
 	}
 
 	size_t nspace = parser->mesh_allocated_normals - model->normal_count;
-	if (nspace < sizeof(struct vertex) * 3) {
+	if (nspace < sizeof(vec3) * 3) {
 		parser->mesh_allocated_normals += 128;
-		model->normals = realloc(model->normals, sizeof(struct vertex) * \
+		model->normals = realloc(model->normals, sizeof(vec3) * \
 				parser->mesh_allocated_normals);
 	}
 
-	insert_normal(model, &n1);
-	insert_normal(model, &n2);
-	insert_normal(model, &n3);
+	insert_normal(model, n1);
+	insert_normal(model, n2);
+	insert_normal(model, n3);
 
-	insert_vertex(model, &v1);
-	insert_vertex(model, &v2);
-	insert_vertex(model, &v3);
+	insert_vertex(model, v1);
+	insert_vertex(model, v2);
+	insert_vertex(model, v3);
 
 	/* with uv */
 	if (matches == 9) {
-		struct point uv1, uv2, uv3;
+		vec2 uv1, uv2, uv3;
 
 		/* uvs are count from 1, not from 0 */
 		if (uv_id[0] > parser->uv_count ||
@@ -274,20 +274,20 @@ static int try_extract_face(size_t line_counter, const char *line,
 			return -1;
 		}
 
-		uv1 = parser->uvs[uv_id[0] - 1];
-		uv2 = parser->uvs[uv_id[1] - 1];
-		uv3 = parser->uvs[uv_id[2] - 1];
+		vec2_copy(uv1, parser->uvs[uv_id[0] - 1]);
+		vec2_copy(uv2, parser->uvs[uv_id[1] - 1]);
+		vec2_copy(uv3, parser->uvs[uv_id[2] - 1]);
 
 		size_t uspace = parser->mesh_allocated_uvs - model->uv_count;
-		if (uspace < sizeof(struct point) * 3) {
+		if (uspace < sizeof(vec2) * 3) {
 			parser->mesh_allocated_uvs += 128;
-			model->uvs = realloc(model->uvs, sizeof(struct vertex) * \
+			model->uvs = realloc(model->uvs, sizeof(vec3) * \
 					parser->mesh_allocated_uvs);
 		}
 
-		insert_uv(model, &uv1);
-		insert_uv(model, &uv2);
-		insert_uv(model, &uv3);
+		insert_uv(model, uv1);
+		insert_uv(model, uv2);
+		insert_uv(model, uv3);
 	}
 
 	return 0;
@@ -315,35 +315,35 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 	case 'v':
 		if (line[1] == 't') {
 			/* vt */
-			struct point v;
+			vec2 v;
 
-			if (extract_vt_command(&v, line + 2) < 0) {
+			if (extract_vt_command(v, line + 2) < 0) {
 				return -1;
 			}
 
-			insert_new_uv(&v, parser);
+			insert_new_uv(v, parser);
 			return 0;
 
 		} else if (line[1] == 'n') {
 			/* vn */
-			struct vertex v;
+			vec3 v;
 
-			if (extract_v_command(&v, line + 2) < 0) {
+			if (extract_v_command(v, line + 2) < 0) {
 				return -1;
 			}
 
-			insert_new_normal(&v, parser);
+			insert_new_normal(v, parser);
 			return 0;
 
 		} else if (line[1] == ' ') {
 			/* v */
-			struct vertex v;
+			vec3 v;
 
-			if (extract_v_command(&v, line + 2) < 0) {
+			if (extract_v_command(v, line + 2) < 0) {
 				return -1;
 			}
 
-			insert_new_vertex(&v, parser);
+			insert_new_vertex(v, parser);
 			return 0;
 
 		} else {

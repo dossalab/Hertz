@@ -1,13 +1,13 @@
 #ifndef LOADERS_MODEL_H
 #define LOADERS_MODEL_H
 
-#include <utils/defines.h>
 #include <stddef.h>
+#include <utils/linmath.h>
 
 struct model {
-	struct vertex *vertices;
-	struct vertex *normals;
-	struct point *uvs;
+	vec3 *vertices;
+	vec3 *normals;
+	vec2 *uvs;
 
 	size_t vertex_count;
 	size_t normal_count;

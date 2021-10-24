@@ -3,7 +3,6 @@
 
 #include <GL/gl.h>
 #include <utils/linmath.h>
-#include <utils/defines.h>
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -23,10 +22,10 @@ struct mesh {
 };
 
 int mesh_attach_textures(struct mesh *m, GLuint texture,
-		struct point *uvs, size_t uv_count);
+		vec2 *uvs, size_t uv_count);
 int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
-		struct vertex *vertices, size_t vertex_count,
-		struct vertex *normals, size_t normal_count);
+		vec3 *vertices, size_t vertex_count,
+		vec3 *normals, size_t normal_count);
 void mesh_update_mvp(struct mesh *m, mat4x4 pv);
 void mesh_redraw(struct mesh *m);
 void mesh_free(struct mesh *m);
