@@ -1,6 +1,6 @@
 #include "textures.h"
 
-GLuint create_texture_from_rgb(uint8_t *texture_data, size_t w, size_t h)
+GLuint create_texture_from_rgb(void *texture_data, size_t w, size_t h)
 {
 	GLuint texture;
 
