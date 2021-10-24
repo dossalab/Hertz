@@ -13,6 +13,8 @@ static GLuint create_opengl_buffer(GLuint location, size_t components,
 		void *data, size_t len)
 {
 	GLuint handle;
+	const GLenum data_type = GL_FLOAT;
+	const size_t byte_len = sizeof(float) * len * components;
 
 	glGenBuffers(1, &handle);
 	if (!handle) {
@@ -20,9 +22,9 @@ static GLuint create_opengl_buffer(GLuint location, size_t components,
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, handle);
-	glBufferData(GL_ARRAY_BUFFER, len, data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, byte_len, data, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(location, components, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(location, components, data_type, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(location);
 
 	return handle;
@@ -42,8 +44,7 @@ static int mesh_create_geometry_buffers(struct mesh *m, struct vertex *vertices,
 		return -ERR_SHADER_INVALID;
 	}
 
-	m->vbo = create_opengl_buffer(vb_location, 3, vertices,
-			vertex_count * sizeof(struct vertex));
+	m->vbo = create_opengl_buffer(vb_location, 3, vertices, vertex_count);
 	if (!m->vbo) {
 		return -ERR_NO_VIDEO_BUFFER;
 	}
@@ -56,8 +57,7 @@ static int mesh_create_geometry_buffers(struct mesh *m, struct vertex *vertices,
 		return 0;
 	}
 
-	m->nbo = create_opengl_buffer(nb_location, 3, normals,
-			normal_count * sizeof(struct vertex));
+	m->nbo = create_opengl_buffer(nb_location, 3, normals, normal_count);
 	if (!m->nbo) {
 		glDeleteBuffers(1, &m->vbo);
 		return -ERR_NO_VIDEO_BUFFER;
@@ -77,9 +77,8 @@ int mesh_attach_textures(struct mesh *m, GLuint texture,
 	}
 
 	m->texture = texture;
-	m->tbo = create_opengl_buffer(tcb_location, 2, uvs,
-		uv_count * sizeof(struct point));
 
+	m->tbo = create_opengl_buffer(tcb_location, 2, uvs, uv_count);
 	if (!m->tbo) {
 		return -ERR_NO_VIDEO_BUFFER;
 	}
