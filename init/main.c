@@ -6,11 +6,14 @@
 
 #include <logger/logger.h>
 #include <gl/shaders.h>
+#include <gl/textures.h>
 #include <scene/scene.h>
 #include <utils/linmath.h>
 #include <cameras/fly_camera.h>
 #include <errors/errors.h>
 #include <counters/time.h>
+#include <loaders/obj_loader.h>
+#include <loaders/stb_image.h>
 
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
@@ -19,6 +22,55 @@
 static GLuint shader_sky;
 static GLuint shader_horse;
 static GLuint shader_land;
+
+static GLuint create_texture_from_file(const char *path)
+{
+	int w, h, n;
+	uint8_t *data;
+	GLuint texture;
+
+	data = stbi_load(path, &w, &h, &n, 3);
+	if (!data) {
+		return 0;
+	}
+
+	texture = create_texture_from_rgb(data, w, h);
+	stbi_image_free(data);
+
+	return texture;
+}
+
+static int load_mesh_from_obj(struct mesh *m, char *path, GLuint shader_program)
+{
+	int err = 0;
+	struct model model;
+	GLuint texture;
+
+	err = loader_load_obj(&model, path);
+	if (err < 0) {
+		return err;
+	}
+
+	err = mesh_create_from_geometry(m, shader_program, model.vertices,
+			model.vertex_count, model.normals, model.normal_count);
+	if (err < 0) {
+		goto exit;
+	}
+
+	if (model.texture_path) {
+		texture = create_texture_from_file(model.texture_path);
+		if (!texture) {
+			err = -ERR_NO_FILE;
+			goto exit;
+		}
+
+		err = mesh_attach_textures(m, texture, model.uvs, model.uv_count);
+	}
+
+exit:
+	free_model(&model);
+	return err;
+}
 
 static bool main_loop(GLFWwindow *window, struct scene *scene, struct camera *c)
 {
@@ -71,25 +123,25 @@ static int present_and_draw_scene(GLFWwindow *window)
 	fly_camera_reset(&fly_camera);
 	glfwSetWindowUserPointer(window, &fly_camera);
 
-	err = mesh_load(&ship, "res/horse.obj", shader_horse);
+	err = load_mesh_from_obj(&ship, "res/horse.obj", shader_horse);
 	if (err < 0) {
 		log_e("No horse!");
 		return err;
 	}
 
-	err = mesh_load(&skybox, "res/skybox.obj", shader_sky);
+	err = load_mesh_from_obj(&skybox, "res/skybox.obj", shader_sky);
 	if (err < 0) {
 		log_e("No skybox!");
 		return err;
 	}
 
-	err = mesh_load(&land, "res/land.obj", shader_land);
+	err = load_mesh_from_obj(&land, "res/land.obj", shader_land);
 	if (err < 0) {
 		log_e("No land!");
 		return err;
 	}
 
-	err = mesh_load(&wall, "res/wall.obj", shader_land);
+	err = load_mesh_from_obj(&wall, "res/wall.obj", shader_land);
 	if (err < 0) {
 		log_e("No wall!");
 		return err;

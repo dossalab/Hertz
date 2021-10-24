@@ -6,8 +6,6 @@
 #include <logger/logger.h>
 #include <errors/errors.h>
 #include <gl/textures.h>
-#include <loaders/obj_loader.h>
-#include <loaders/stb_image.h>
 
 #include "mesh.h"
 
@@ -30,7 +28,8 @@ static GLuint create_opengl_buffer(GLuint location, size_t components,
 	return handle;
 }
 
-static int mesh_create_buffers(struct mesh *m, struct model *model)
+static int mesh_create_geometry_buffers(struct mesh *m, struct vertex *vertices,
+		size_t vertex_count, struct vertex *normals, size_t normal_count)
 {
 	int vb_location, nb_location;
 
@@ -43,8 +42,8 @@ static int mesh_create_buffers(struct mesh *m, struct model *model)
 		return -ERR_SHADER_INVALID;
 	}
 
-	m->vbo = create_opengl_buffer(vb_location, 3, model->vertices,
-			model->vertex_count * sizeof(struct vertex));
+	m->vbo = create_opengl_buffer(vb_location, 3, vertices,
+			vertex_count * sizeof(struct vertex));
 	if (!m->vbo) {
 		return -ERR_NO_VIDEO_BUFFER;
 	}
@@ -57,8 +56,8 @@ static int mesh_create_buffers(struct mesh *m, struct model *model)
 		return 0;
 	}
 
-	m->nbo = create_opengl_buffer(nb_location, 3, model->normals,
-			model->normal_count * sizeof(struct vertex));
+	m->nbo = create_opengl_buffer(nb_location, 3, normals,
+			normal_count * sizeof(struct vertex));
 	if (!m->nbo) {
 		glDeleteBuffers(1, &m->vbo);
 		return -ERR_NO_VIDEO_BUFFER;
@@ -67,48 +66,25 @@ static int mesh_create_buffers(struct mesh *m, struct model *model)
 	return 0;
 }
 
-static GLuint create_texture_from_file(const char *path)
-{
-	int w, h, n;
-	uint8_t *data;
-	GLuint texture;
-
-	data = stbi_load(path, &w, &h, &n, 3);
-	if (!data) {
-		return 0;
-	}
-
-	texture = create_texture_from_rgb(data, w, h);
-	stbi_image_free(data);
-
-	return texture;
-}
-
-static int mesh_attach_textures(struct mesh *m, struct model *model)
+int mesh_attach_textures(struct mesh *m, GLuint texture,
+		struct point *uvs, size_t uv_count)
 {
 	int tcb_location;
-	GLuint texture;
 
 	tcb_location = glGetAttribLocation(m->program, "in_texcoords");
 	if (tcb_location < 0) {
 		return -ERR_SHADER_INVALID;
 	}
 
-	if (!model->texture_path) {
-		log_d("mesh is not textured");
-
-		/* not really an error */
-		return 0;
-	}
-
-	texture = create_texture_from_file(model->texture_path);
-	if (!texture) {
-		return -ERR_NO_FILE;
-	}
-
 	m->texture = texture;
-	m->tbo = create_opengl_buffer(tcb_location, 2, model->uvs, 
-			model->uv_count * sizeof(struct point));
+	m->tbo = create_opengl_buffer(tcb_location, 2, uvs,
+		uv_count * sizeof(struct point));
+
+	if (!m->tbo) {
+		return -ERR_NO_VIDEO_BUFFER;
+	}
+
+	m->texture_attached = true;
 
 	return 0;
 }
@@ -133,50 +109,36 @@ static int find_uniforms(struct mesh *m)
 	return 0;
 }
 
-static int mesh_load_from_model(struct mesh *mesh, GLuint shader_program,
-		struct model *model)
+int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
+		struct vertex *vertices, size_t vertex_count,
+		struct vertex *normals, size_t normal_count)
 {
 	int err;
 
 	mat4x4_identity(mesh->model);
 	mat4x4_identity(mesh->mvp);
 	mesh->program = shader_program;
-	mesh->vertex_count = model->vertex_count;
+	mesh->vertex_count = vertex_count;
+	mesh->texture_attached = false;
 
 	err = find_uniforms(mesh);
 	if (err < 0) {
 		return err;
 	}
 
-	err = mesh_create_buffers(mesh, model);
-	if (err < 0) {
-		return err;
-	}
-
-	return mesh_attach_textures(mesh, model);
-}
-
-int mesh_load(struct mesh *m, char *path, GLuint shader_program)
-{
-	int err;
-	struct model model;
-
-	err = loader_load_obj(&model, path);
-	if (err < 0) {
-		return err;
-	}
-
-	err = mesh_load_from_model(m, shader_program, &model);
-	free_model(&model);
-
-	return err;
+	return mesh_create_geometry_buffers(mesh, vertices, vertex_count,
+			normals, normal_count);
 }
 
 void mesh_redraw(struct mesh *m)
 {
 	glBindVertexArray(m->vao);
-	glBindTexture(GL_TEXTURE_2D, m->texture);
 	glUseProgram(m->program);
+
+	/* so the previous one will be used (if exists) :) */
+	if (m->texture_attached) {
+		glBindTexture(GL_TEXTURE_2D, m->texture);
+	}
 
 	glUniformMatrix4fv(m->mvp_handle, 1, GL_FALSE, (float *)m->mvp);
 
@@ -200,6 +162,9 @@ void mesh_free(struct mesh *m)
 {
 	glDeleteBuffers(1, &m->vbo);
 	glDeleteBuffers(1, &m->nbo);
-	glDeleteBuffers(1, &m->tbo);
+
+	if (m->texture_attached) {
+		glDeleteBuffers(1, &m->tbo);
+	}
 }
 
