@@ -64,7 +64,7 @@ static int load_mesh_from_obj(struct mesh *m, char *path, GLuint shader_program)
 			goto exit;
 		}
 
-		err = mesh_attach_textures(m, texture, model.uvs, model.uv_count);
+		err = mesh_texture(m, texture, model.uvs, model.uv_count);
 	}
 
 exit:

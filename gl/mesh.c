@@ -3,9 +3,7 @@
 #include <string.h>
 
 #include <counters/time.h>
-#include <logger/logger.h>
 #include <errors/errors.h>
-#include <gl/textures.h>
 
 #include "mesh.h"
 
@@ -51,40 +49,17 @@ static int mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 
 	nb_location = glGetAttribLocation(m->program, "in_normal");
 	if (nb_location < 0) {
-		log_d("shader doesn't require normal buffer");
-
 		/* not an error - we can run like that if shader wants */
 		return 0;
 	}
 
 	m->nbo = create_opengl_buffer(nb_location, 3, normals, normal_count);
 	if (!m->nbo) {
-		glDeleteBuffers(1, &m->vbo);
-		return -ERR_NO_VIDEO_BUFFER;
+		/* same - not an error (though we're out of video memory?) */
+		return 0;
 	}
 
-	return 0;
-}
-
-int mesh_attach_textures(struct mesh *m, GLuint texture,
-		vec2 *uvs, size_t uv_count)
-{
-	int tcb_location;
-
-	tcb_location = glGetAttribLocation(m->program, "in_texcoords");
-	if (tcb_location < 0) {
-		return -ERR_SHADER_INVALID;
-	}
-
-	m->texture = texture;
-
-	m->tbo = create_opengl_buffer(tcb_location, 2, uvs, uv_count);
-	if (!m->tbo) {
-		return -ERR_NO_VIDEO_BUFFER;
-	}
-
-	m->texture_attached = true;
-
+	m->nbo_presented = true;
 	return 0;
 }
 
@@ -98,35 +73,15 @@ static int find_uniforms(struct mesh *m)
 	m->model_handle = glGetUniformLocation(m->program, "model");
 	m->model_presented = !(m->model_handle < 0);
 
-	if (!m->model_presented) {
-		log_d("no model matrix in the shader");
-	}
-
 	m->time_handle = glGetUniformLocation(m->program, "time");
 	m->time_presented = !(m->time_handle < 0);
 
 	return 0;
 }
 
-int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
-		vec3 *vertices, size_t vertex_count,
-		vec3 *normals, size_t normal_count)
+void mesh_update_mvp(struct mesh *m, mat4x4 vp)
 {
-	int err;
-
-	mat4x4_identity(mesh->model);
-	mat4x4_identity(mesh->mvp);
-	mesh->program = shader_program;
-	mesh->vertex_count = vertex_count;
-	mesh->texture_attached = false;
-
-	err = find_uniforms(mesh);
-	if (err < 0) {
-		return err;
-	}
-
-	return mesh_create_geometry_buffers(mesh, vertices, vertex_count,
-			normals, normal_count);
+	mat4x4_mul(m->mvp, vp, m->model);
 }
 
 void mesh_redraw(struct mesh *m)
@@ -152,18 +107,59 @@ void mesh_redraw(struct mesh *m)
 	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);
 }
 
-void mesh_update_mvp(struct mesh *m, mat4x4 vp)
+int mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count)
 {
-	mat4x4_mul(m->mvp, vp, m->model);
+	int tcb_location;
+
+	tcb_location = glGetAttribLocation(m->program, "in_texcoords");
+	if (tcb_location < 0) {
+		return -ERR_SHADER_INVALID;
+	}
+
+	m->texture = texture;
+
+	m->tbo = create_opengl_buffer(tcb_location, 2, uvs, uv_count);
+	if (!m->tbo) {
+		return -ERR_NO_VIDEO_BUFFER;
+	}
+
+	m->texture_attached = true;
+
+	return 0;
+}
+
+int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
+		vec3 *vertices, size_t vertex_count,
+		vec3 *normals, size_t normal_count)
+{
+	int err;
+
+	mat4x4_identity(mesh->model);
+	mat4x4_identity(mesh->mvp);
+	mesh->program = shader_program;
+	mesh->vertex_count = vertex_count;
+
+	mesh->texture_attached = false;
+	mesh->nbo_presented = false;
+
+	err = find_uniforms(mesh);
+	if (err < 0) {
+		return err;
+	}
+
+	return mesh_create_geometry_buffers(mesh, vertices, vertex_count,
+			normals, normal_count);
 }
 
 void mesh_free(struct mesh *m)
 {
 	glDeleteBuffers(1, &m->vbo);
-	glDeleteBuffers(1, &m->nbo);
+
+	if (m->nbo_presented) {
+		glDeleteBuffers(1, &m->nbo);
+	}
 
 	if (m->texture_attached) {
 		glDeleteBuffers(1, &m->tbo);
 	}
 }
-
