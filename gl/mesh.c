@@ -1,8 +1,6 @@
 #include <GL/glew.h>
-#include <time.h>
 #include <string.h>
 
-#include <counters/time.h>
 #include <errors/errors.h>
 
 #include "mesh.h"
@@ -37,7 +35,6 @@ static int mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 	glBindVertexArray(m->vao);
 
 	vb_location = glGetAttribLocation(m->program, "in_position");
-
 	if (vb_location < 0) {
 		return -ERR_SHADER_INVALID;
 	}
@@ -84,7 +81,7 @@ void mesh_update_mvp(struct mesh *m, mat4x4 vp)
 	mat4x4_mul(m->mvp, vp, m->model);
 }
 
-void mesh_redraw(struct mesh *m)
+void mesh_redraw(struct mesh *m, float time)
 {
 	glBindVertexArray(m->vao);
 	glUseProgram(m->program);
@@ -101,7 +98,7 @@ void mesh_redraw(struct mesh *m)
 	}
 
 	if (m->time_presented) {
-		glUniform1f(m->time_handle, global_time_counter);
+		glUniform1f(m->time_handle, time);
 	}
 
 	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);

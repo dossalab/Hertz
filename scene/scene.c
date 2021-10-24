@@ -38,7 +38,7 @@ void scene_update_mvp(struct scene *s, mat4x4 vp)
 	}
 }
 
-void scene_redraw(struct scene *s)
+void scene_redraw(struct scene *s, float time)
 {
 	struct list_item *ptr;
 	struct scene_node *node;
@@ -48,7 +48,7 @@ void scene_redraw(struct scene *s)
 		node = container_of(ptr, struct scene_node, head);
 		mesh = node->mesh;
 
-		mesh_redraw(mesh);
+		mesh_redraw(mesh, time);
 	}
 }
 

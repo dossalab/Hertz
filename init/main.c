@@ -145,7 +145,7 @@ static bool main_loop(GLFWwindow *window, struct scene *scene, struct camera *c)
 
 	glfwPollEvents();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	scene_redraw(scene);
+	scene_redraw(scene, global_time_counter);
 	glfwSwapBuffers(window);
 
 	past = now;

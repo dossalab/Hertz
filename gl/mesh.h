@@ -22,7 +22,7 @@ struct mesh {
 };
 
 void mesh_update_mvp(struct mesh *m, mat4x4 pv);
-void mesh_redraw(struct mesh *m);
+void mesh_redraw(struct mesh *m, float time);
 
 int mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count);
 
