@@ -2,7 +2,7 @@
 #define SCENE_SCENE_H
 
 #include <utils/list.h>
-#include <gl/mesh.h>
+#include <objects/mesh.h>
 
 struct scene_node {
 	struct list_item head;

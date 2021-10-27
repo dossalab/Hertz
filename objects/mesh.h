@@ -1,5 +1,5 @@
-#ifndef GL_MESH_H
-#define GL_MESH_H
+#ifndef OBJECTS_MESH_H
+#define OBJECTS_MESH_H
 
 #include <GL/gl.h>
 #include <utils/linmath.h>

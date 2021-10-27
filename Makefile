@@ -15,10 +15,10 @@ objects := \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
 	loaders/model.o \
-	gl/mesh.o \
 	gl/shaders.o \
 	gl/textures.o \
 	utils/files.o \
+	objects/mesh.o \
 	errors/errors.o \
 	utils/list.o \
 	logger/logger.o

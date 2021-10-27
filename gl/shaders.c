@@ -70,3 +70,60 @@ GLuint create_shader_program(size_t shader_count, ...)
 	glLinkProgram(program);
 	return program;
 }
+
+void use_shader_program(GLuint shader)
+{
+	glUseProgram(shader);
+}
+
+GLint get_shader_attribute_handle(GLuint shader, const char *name)
+{
+	return glGetAttribLocation(shader, name);
+}
+
+GLint get_shader_uniform_handle(GLuint shader, const char *name)
+{
+	return glGetUniformLocation(shader, name);
+}
+
+void set_shader_uniform_matrix(GLint uniform, mat4x4 value)
+{
+	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
+}
+
+void set_shader_uniform_float(GLint uniform, float value)
+{
+	glUniform1f(uniform, value);
+}
+
+GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
+		size_t components, void *data, size_t len)
+{
+	GLuint buffer;
+	GLint attribute;
+	const GLenum data_type = GL_FLOAT;
+	const size_t byte_len = sizeof(float) * len * components;
+
+	attribute = get_shader_attribute_handle(shader, name);
+	if (attribute < 0) {
+		return 0;
+	}
+
+	glGenBuffers(1, &buffer);
+	if (!buffer) {
+		return 0;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, byte_len, data, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(attribute, components, data_type, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(attribute);
+
+	return buffer;
+}
+
+void delete_shader_attribute_buffer(GLuint buffer)
+{
+	glDeleteBuffers(1, &buffer);
+}
