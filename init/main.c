@@ -6,8 +6,8 @@
 #include <GLFW/glfw3.h>
 
 #include <logger/logger.h>
-#include <gl/shaders.h>
-#include <gl/textures.h>
+#include <utils/gl/shaders.h>
+#include <utils/gl/textures.h>
 #include <scene/scene.h>
 #include <utils/linmath.h>
 #include <cameras/fly_camera.h>

@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include <errors/errors.h>
-#include <gl/shaders.h>
+#include <utils/gl/shaders.h>
 
 #include "mesh.h"
 

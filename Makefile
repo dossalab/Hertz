@@ -15,8 +15,8 @@ objects := \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
 	loaders/model.o \
-	gl/shaders.o \
-	gl/textures.o \
+	utils/gl/shaders.o \
+	utils/gl/textures.o \
 	utils/files.o \
 	utils/glfw_ctx_helper.o \
 	objects/mesh.o \
