@@ -18,6 +18,7 @@ objects := \
 	gl/shaders.o \
 	gl/textures.o \
 	utils/files.o \
+	utils/glfw_ctx_helper.o \
 	objects/mesh.o \
 	errors/errors.o \
 	utils/list.o \

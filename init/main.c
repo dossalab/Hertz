@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <GL/glew.h>
@@ -15,6 +16,7 @@
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
 #include <utils/files.h>
+#include <utils/glfw_ctx_helper.h>
 
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
@@ -23,6 +25,12 @@
 static GLuint shader_sky;
 static GLuint shader_horse;
 static GLuint shader_land;
+
+struct render_state {
+	struct mesh ship, skybox, land, wall;
+	struct camera fly_camera;
+	struct scene scene;
+};
 
 GLuint load_shader_from_file(const char *filename, GLenum type)
 {
@@ -128,30 +136,6 @@ exit:
 	return err;
 }
 
-static bool main_loop(GLFWwindow *window, struct scene *scene, struct camera *c)
-{
-	double now, spent; static double past;
-
-	if (glfwWindowShouldClose(window)) {
-		return false;
-	}
-
-	now = glfwGetTime();
-	spent = now - past;
-
-	fly_camera_update(c, window, spent);
-	scene_update_mvp(scene, c->vp);
-	update_counter(spent);
-
-	glfwPollEvents();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	scene_redraw(scene, global_time_counter);
-	glfwSwapBuffers(window);
-
-	past = now;
-	return true;
-}
-
 static int load_shaders(void)
 {
 	shader_sky = compile_simple_program("shaders/simple.vert",
@@ -168,175 +152,130 @@ static int load_shaders(void)
 	return 0;
 }
 
-static int present_and_draw_scene(GLFWwindow *window)
+static int load_assets(struct render_state *state)
 {
 	int err;
 
-	struct mesh ship, skybox, land, wall;
-	struct camera fly_camera;
-	struct scene scene;
+	fly_camera_reset(&state->fly_camera);
 
-	fly_camera_reset(&fly_camera);
-	glfwSetWindowUserPointer(window, &fly_camera);
-
-	err = load_mesh_from_obj(&ship, "res/horse.obj", shader_horse);
+	err = load_mesh_from_obj(&state->ship, "res/horse.obj", shader_horse);
 	if (err < 0) {
 		log_e("No horse!");
 		return err;
 	}
 
-	err = load_mesh_from_obj(&skybox, "res/skybox.obj", shader_sky);
+	err = load_mesh_from_obj(&state->skybox, "res/skybox.obj", shader_sky);
 	if (err < 0) {
 		log_e("No skybox!");
 		return err;
 	}
 
-	err = load_mesh_from_obj(&land, "res/land.obj", shader_land);
+	err = load_mesh_from_obj(&state->land, "res/land.obj", shader_land);
 	if (err < 0) {
 		log_e("No land!");
 		return err;
 	}
 
-	err = load_mesh_from_obj(&wall, "res/wall.obj", shader_land);
+	err = load_mesh_from_obj(&state->wall, "res/wall.obj", shader_land);
 	if (err < 0) {
 		log_e("No wall!");
 		return err;
 	}
 
-	mat4x4_translate(land.model, 0.0f, -6.0f, 0.0f);
-	scene_init(&scene);
+	mat4x4_translate(state->land.model, 0.0f, -6.0f, 0.0f);
+	scene_init(&state->scene);
 
-	scene_add_mesh(&scene, &skybox);
-	scene_add_mesh(&scene, &land);
-	scene_add_mesh(&scene, &ship);
-	scene_add_mesh(&scene, &wall);
-
-	for (;;) {
-		mat4x4 identity;
-		mat4x4_identity(identity);
-
-		/* 1 rad / sec */
-		mat4x4_rotate_Y(ship.model, identity, 2 * ENG_PI * global_time_counter);
-		mat4x4_translate(wall.model, 10.0f, global_time_counter, -10.0f);
-
-
-		if (!main_loop(window, &scene, &fly_camera)) {
-			break;
-		}
-	}
-
-	scene_free(&scene);
-	mesh_free(&ship);
-	mesh_free(&wall);
-	mesh_free(&land);
-	mesh_free(&skybox);
+	scene_add_mesh(&state->scene, &state->skybox);
+	scene_add_mesh(&state->scene, &state->land);
+	scene_add_mesh(&state->scene, &state->ship);
+	scene_add_mesh(&state->scene, &state->wall);
 
 	return 0;
 }
 
-static void window_resize_callback(GLFWwindow* window, int width, int height)
+static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 {
 	float aspect;
-	struct camera *c;
+	struct render_state *state = user;
 
-	aspect = (float)width / (float)height;
+	aspect = (float)w / (float)h;
 
-	glViewport(0, 0, width, height);
-	c = glfwGetWindowUserPointer(window);
-	fly_camera_update_projection(c, ENG_FOV, aspect);
+	glViewport(0, 0, w, h);
+	fly_camera_update_projection(&state->fly_camera, ENG_FOV, aspect);
 }
 
-static GLFWwindow *create_context_window(void)
+static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 {
-	GLenum glew_ret;
-	GLFWwindow *window;
+	mat4x4 identity;
+	struct render_state *state = user;
 
-	window = glfwCreateWindow(640, 480, WINDOW_TITLE, NULL, NULL);
-	if (!window) {
-		log_e("unable to create window handle!");
-		return NULL;
-	}
+	mat4x4_identity(identity);
 
-	glfwMakeContextCurrent(window);
+	/* 1 rad / sec */
+	mat4x4_rotate_Y(state->ship.model, identity, 2 * ENG_PI * global_time_counter);
+	mat4x4_translate(state->wall.model, 10.0f, global_time_counter, -10.0f);
 
-	/*
-	 * uhh we have to do that *after* context is created.
-	 * not sure what will happen if we create multiple windows
-	 */
-	glew_ret = glewInit();
-	if (glew_ret != GLEW_OK) {
-		log_e("unable to init GLEW! %s", glewGetErrorString(glew_ret));
-		glfwDestroyWindow(window);
-		return NULL;
-	}
+	fly_camera_update(&state->fly_camera, window, spent);
+	scene_update_mvp(&state->scene, state->fly_camera.vp);
+	update_counter(spent);
 
-	glfwSetFramebufferSizeCallback(window, window_resize_callback);
-
-	log_i("created window with GLEW %s", glewGetString(GLEW_VERSION));
-	return window;
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	scene_redraw(&state->scene, global_time_counter);
 }
 
-static int load_shaders_and_draw(GLFWwindow *window)
+static void glfw_on_exit(GLFWwindow *window, void *user)
+{
+	struct render_state *state = user;
+
+	scene_free(&state->scene);
+	mesh_free(&state->ship);
+	mesh_free(&state->wall);
+	mesh_free(&state->land);
+	mesh_free(&state->skybox);
+}
+
+static int glfw_on_init(GLFWwindow *window, void *user)
 {
 	int err;
 
-	/* a couple of basic settings first */
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	/* TODO: exit path cleanups */
 	err = load_shaders();
 	if (err < 0) {
-		log_e("unable to load shaders");
+		log_e("unable to load shaders!");
 		return err;
 	}
 
-	err = present_and_draw_scene(window);
-	/* TODO: remove shaders */
-
-	return err;
-}
-
-static int create_window_and_draw(void)
-{
-	int err;
-	GLFWwindow *window;
-
-	window = create_context_window();
-	if (!window) {
-		log_e("unable to create a window!");
-		return -ERR_NO_WINDOW;
-	}
-
-	err = load_shaders_and_draw(window);
-	glfwDestroyWindow(window);
-
-	return err;
-}
-
-static int gfx_main(void)
-{
-	int err;
-
-	err = glfwInit();
+	err = load_assets(user);
 	if (err < 0) {
-		log_e("unable to init glfw!");
-		return -ERR_SYSTEM;
+		log_e("unable to load assets!");
+		return err;
 	}
 
-	err = create_window_and_draw();
-	glfwTerminate();
-
-	return err;
+	return 0;
 }
 
 int main(void)
 {
 	int err;
+	struct render_state state;
 
-	err = gfx_main();
+	memset(&state, 0, sizeof(state));
+
+	struct glfw_ctx_callbacks callbacks = {
+		.on_init = glfw_on_init,
+		.on_draw = glfw_on_draw,
+		.on_resize = glfw_on_resize,
+		.on_exit = glfw_on_exit,
+
+		.user = &state,
+	};
+
+	err = glfw_ctx_main(WINDOW_TITLE, &callbacks);
 	if (err < 0) {
-		log_e("unable to run application - %s", error_to_string(err));
-		return 1;
+		log_e("context helper exited with error code %d", err);
 	}
 
 	log_d("time counter value is %f s", global_time_counter);
