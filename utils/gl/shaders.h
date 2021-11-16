@@ -1,5 +1,5 @@
-#ifndef GL_SHADERS_H
-#define GL_SHADERS_H
+#ifndef UTILS_GL_SHADERS_H
+#define UTILS_GL_SHADERS_H
 
 #include <GL/gl.h>
 #include <stddef.h>

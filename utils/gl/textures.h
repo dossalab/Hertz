@@ -1,5 +1,5 @@
-#ifndef GL_TEXTURES_H
-#define GL_TEXTURES_H
+#ifndef UTILS_GL_TEXTURES_H
+#define UTILS_GL_TEXTURES_H
 
 #include <GL/glew.h>
 #include <stddef.h>

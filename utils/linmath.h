@@ -1,5 +1,5 @@
-#ifndef LINMATH_H
-#define LINMATH_H
+#ifndef UTILS_LINMATH_H
+#define UTILS_LINMATH_H
 
 #include <math.h>
 

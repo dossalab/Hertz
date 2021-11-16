@@ -1,5 +1,5 @@
-#ifndef CAMERA_FLY_CAMERA_H
-#define CAMERA_FLY_CAMERA_H
+#ifndef CAMERAS_FLY_CAMERA_H
+#define CAMERAS_FLY_CAMERA_H
 
 #include <GLFW/glfw3.h>
 #include "camera.h"

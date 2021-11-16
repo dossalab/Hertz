@@ -1,5 +1,5 @@
-#ifndef CAMERA_CAMERA_H
-#define CAMERA_CAMERA_H
+#ifndef CAMERAS_CAMERA_H
+#define CAMERAS_CAMERA_H
 
 #include <utils/linmath.h>
 
