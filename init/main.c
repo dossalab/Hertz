@@ -11,7 +11,6 @@
 #include <scene/scene.h>
 #include <utils/linmath.h>
 #include <cameras/fly_camera.h>
-#include <counters/time.h>
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
 #include <utils/files.h>
@@ -29,6 +28,7 @@ struct render_state {
 	struct mesh ship, skybox, land, wall;
 	struct camera fly_camera;
 	struct scene scene;
+	double time;
 };
 
 GLuint load_shader_from_file(const char *filename, GLenum type)
@@ -213,15 +213,15 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	mat4x4_identity(identity);
 
 	/* 1 rad / sec */
-	mat4x4_rotate_Y(state->ship.model, identity, 2 * ENG_PI * global_time_counter);
-	mat4x4_translate(state->wall.model, 10.0f, global_time_counter, -10.0f);
+	mat4x4_rotate_Y(state->ship.model, identity, 2 * ENG_PI * state->time);
+	mat4x4_translate(state->wall.model, 10.0f, state->time, -10.0f);
 
 	fly_camera_update(&state->fly_camera, window, spent);
 	scene_update_mvp(&state->scene, state->fly_camera.vp);
-	update_counter(spent);
+	state->time += spent;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	scene_redraw(&state->scene, global_time_counter);
+	scene_redraw(&state->scene, state->time);
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)

@@ -9,7 +9,6 @@ libs	:= glfw3 glew
 
 objects := \
 	init/main.o \
-	counters/time.o \
 	scene/scene.o \
 	cameras/fly_camera.o \
 	loaders/stb_image.o \
