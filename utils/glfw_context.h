@@ -1,5 +1,5 @@
-#ifndef UTILS_GLFW_CTX_HELPER_H
-#define UTILS_GLFW_CTX_HELPER_H
+#ifndef UTILS_GLFW_CONTEXT_H
+#define UTILS_GLFW_CONTEXT_H
 
 #include <stddef.h>
 #include <stdbool.h>

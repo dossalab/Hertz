@@ -14,7 +14,7 @@
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
 #include <utils/files.h>
-#include <utils/glfw_ctx_helper.h>
+#include <utils/glfw_context.h>
 
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)

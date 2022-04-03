@@ -3,7 +3,7 @@
 #include <utils/log.h>
 #include <stdbool.h>
 
-#include "glfw_ctx_helper.h"
+#include "glfw_context.h"
 
 static void glfw_window_resize_callback(GLFWwindow *window, int width, int height)
 {
