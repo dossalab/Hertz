@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <libgen.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <logger/logger.h>
-#include <errors/errors.h>
 
 #include <utils/files.h>
 #include "obj_loader.h"
@@ -38,26 +38,26 @@ static char *prepare_mtlib_path(const char *obj_name, const char *mtl_file)
 	return path;
 }
 
-static int extract_texture_name_from_str(const char *obj_name,
+static bool extract_texture_name_from_str(const char *obj_name,
 		struct model *model, char *input)
 {
 	char *line;
-	int ret = -1;
+	bool ok = false;
 
 	while ((line = strsep(&input, "\n")) != NULL) {
 		if (strncmp(line, "map_Kd", 6) == 0) {
 			model->texture_path = strdup(
 				prepare_mtlib_path(obj_name, line + 7));
 
-			ret = 0;
+			ok = true;
 			break;
 		}
 	}
 
-	return ret;
+	return ok;
 }
 
-static int process_material_lib(const char *obj_name, struct model *model,
+static bool process_material_lib(const char *obj_name, struct model *model,
 		char *line)
 {
 	char *content;
@@ -68,13 +68,13 @@ static int process_material_lib(const char *obj_name, struct model *model,
 		log_i("[PS] no mtlib %s?", mtlib_path);
 
 		/* we don't really consider it an error, yeah */
-		return 0;
+		return true;
 	}
 
-	int ret = extract_texture_name_from_str(obj_name, model, content);
+	bool ok = extract_texture_name_from_str(obj_name, model, content);
 	free(content);
 
-	return ret;
+	return ok;
 }
 
 static void insert_vertex(struct model *m, vec3 v)
@@ -164,27 +164,27 @@ static void insert_new_uv(vec2 uv, struct obj_parser *parser)
 	parser->uv_count++;
 }
 
-static int extract_v_command(vec3 result, char *line)
+static bool extract_v_command(vec3 result, char *line)
 {
 	int ret = sscanf(line, "%f %f %f", &result[0], &result[1], &result[2]);
 	if (ret != 3) {
-		return -1;
+		return false;
 	} else {
-		return 0;
+		return true;
 	}
 }
 
-static int extract_vt_command(vec2 result, char *line)
+static bool extract_vt_command(vec2 result, char *line)
 {
 	int ret = sscanf(line, "%f %f", &result[0], &result[1]);
 	if (ret != 2) {
-		return -1;
+		return false;
 	} else {
-		return 0;
+		return true;
 	}
 }
 
-static int try_extract_face(size_t line_counter, const char *line,
+static bool try_extract_face(size_t line_counter, const char *line,
 		struct obj_parser *parser, struct model *model)
 {
 	unsigned int vertex_id[3], uv_id[3], normal_id[3];
@@ -212,7 +212,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 		if (matches != 6) {
 			log_e("[PS] unable to extract f at %d, matches were %d",
 					line_counter, matches);
-			return -1;
+			return false;
 		}
 	}
 
@@ -221,7 +221,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 			vertex_id[1] > parser->vertice_count ||
 			vertex_id[2] > parser->vertice_count) {
 		log_e("[PS] file seems malformed, index is not found");
-		return -1;
+		return false;
 	}
 
 	/* normals are count from 1, not from 0 */
@@ -229,7 +229,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 			normal_id[1] > parser->normal_count ||
 			normal_id[2] > parser->normal_count) {
 		log_e("[PS] file seems malformed, index is not found");
-		return -1;
+		return false;
 	}
 
 	vec3_copy(v1, parser->vertices[vertex_id[0] - 1]);
@@ -271,7 +271,7 @@ static int try_extract_face(size_t line_counter, const char *line,
 				uv_id[1] > parser->uv_count ||
 				uv_id[2] > parser->uv_count) {
 			log_e("[PS] file seems malformed, index is not found");
-			return -1;
+			return false;
 		}
 
 		vec2_copy(uv1, parser->uvs[uv_id[0] - 1]);
@@ -290,10 +290,10 @@ static int try_extract_face(size_t line_counter, const char *line,
 		insert_uv(model, uv3);
 	}
 
-	return 0;
+	return true;
 }
 
-static int process_obj_line(size_t line_counter, struct obj_parser *parser,
+static bool process_obj_line(size_t line_counter, struct obj_parser *parser,
 		struct model *model, char *line, const char *filename)
 {
 	switch (line[0]) {
@@ -303,7 +303,7 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 	case '\n':
 	case '\r':
 	case '\0': /* empty line (\n) */
-		return 0;
+		return true;
 
 	case 'g':
 		log_e("[PS] got g");
@@ -317,106 +317,107 @@ static int process_obj_line(size_t line_counter, struct obj_parser *parser,
 			/* vt */
 			vec2 v;
 
-			if (extract_vt_command(v, line + 2) < 0) {
-				return -1;
+			if (!extract_vt_command(v, line + 2)) {
+				return false;
 			}
 
 			insert_new_uv(v, parser);
-			return 0;
+			return true;
 
 		} else if (line[1] == 'n') {
 			/* vn */
 			vec3 v;
 
-			if (extract_v_command(v, line + 2) < 0) {
-				return -1;
+			if (!extract_v_command(v, line + 2)) {
+				return false;
 			}
 
 			insert_new_normal(v, parser);
-			return 0;
+			return true;
 
 		} else if (line[1] == ' ') {
 			/* v */
 			vec3 v;
 
-			if (extract_v_command(v, line + 2) < 0) {
-				return -1;
+			if (!extract_v_command(v, line + 2)) {
+				return false;
 			}
 
 			insert_new_vertex(v, parser);
-			return 0;
+			return true;
 
 		} else {
-			 return -1;
+			return false;
 		}
 
 		/* should not reach */
-		return -1;
-	
+		return false;
+
 	case 'm':
 		if (strncmp(line, "mtllib", 6) == 0) {
 			process_material_lib(filename, model, line + 6);
-			return 0;
+			return true;
 		}
-		
-		return -1;
+
+		return false;
 
 	case 'u':
 		if (strncmp(line, "usemtl", 6) == 0) {
-			return 0;
+			return true;
 		}
-		
-		return -1;
+
+		return false;
 
 	case 'l':
 		/* don't know what this is but ok */
-		return 0;
+		return true;
 
 	default:
 		log_e("[PS] malformed char at %d: '%c' (0x%02X)",
 				line_counter, line[0], line[0]);
-		return -1;
+		return false;
 	}
 
 	/* should not appear here */
-	return -1;
+	return false;
 }
 
-static int extract_obj_from_str(struct model *model, char *input,
+static bool extract_obj_from_str(struct model *model, char *input,
 		const char *filename)
 {
 	char *line;
 	size_t line_counter = 1;
-	int ret = 0;
+	bool ok = false;
 	struct obj_parser parser;
 
 	memset(&parser, 0, sizeof(struct obj_parser));
 	memset(model, 0, sizeof(struct model));
 
 	while ((line = strsep(&input, "\n")) != NULL) {
-		ret = process_obj_line(line_counter, &parser, model, line, filename);
-		if (ret < 0) {
+		ok = process_obj_line(line_counter, &parser, model, line, filename);
+		if (!ok) {
 			break;
 		}
 
 		line_counter++;
 	}
 
-	return ret;
+	return ok;
 }
 
-int loader_load_obj(struct model *model, const char *filename)
+bool loader_load_obj(struct model *model, const char *filename)
 {
 	char *content;
-	int ret;
+	bool ok;
 
 	content = read_text_file(filename);
 	if (!content) {
-		return -ERR_NO_FILE;
+		log_e("unable to read file '%s'", filename);
+		return false;
 	}
 
-	ret = extract_obj_from_str(model, content, filename);
+	ok = extract_obj_from_str(model, content, filename);
 	free(content);
 
-	return ret;
+	return ok;
 }

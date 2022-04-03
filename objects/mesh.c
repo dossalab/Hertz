@@ -1,12 +1,12 @@
 #include <GL/glew.h>
 #include <string.h>
+#include <logger/logger.h>
 
-#include <errors/errors.h>
 #include <utils/gl/shaders.h>
 
 #include "mesh.h"
 
-static int mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
+static bool mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 		size_t vertex_count, vec3 *normals, size_t normal_count)
 {
 	glGenVertexArrays(1, &m->vao);
@@ -15,25 +15,22 @@ static int mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 	m->vbo = create_shader_attribute_buffer(m->program, "in_position",
 			3, vertices, vertex_count);
 	if (!m->vbo) {
-		return -ERR_NO_VIDEO_BUFFER;
+		log_e("unable to create vbo");
+		return false;
 	}
 
 	m->nbo = create_shader_attribute_buffer(m->program, "in_normal",
 			3, normals, normal_count);
-	if (!m->nbo) {
-		/* same - not an error (though we're out of video memory?) */
-		return 0;
-	}
+	m->nbo_presented = m->nbo? true : false;
 
-	m->nbo_presented = true;
-	return 0;
+	return true;
 }
 
-static int find_uniforms(struct mesh *m)
+static bool find_uniforms(struct mesh *m)
 {
 	m->mvp_handle = get_shader_uniform_handle(m->program, "MVP");
 	if (m->mvp_handle < 0) {
-		return -ERR_SHADER_INVALID;
+		return false;
 	}
 
 	m->model_handle = get_shader_uniform_handle(m->program, "model");
@@ -42,7 +39,7 @@ static int find_uniforms(struct mesh *m)
 	m->time_handle = get_shader_uniform_handle(m->program, "time");
 	m->time_presented = !(m->time_handle < 0);
 
-	return 0;
+	return true;
 }
 
 void mesh_update_mvp(struct mesh *m, mat4x4 vp)
@@ -73,26 +70,26 @@ void mesh_redraw(struct mesh *m, float time)
 	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);
 }
 
-int mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count)
+bool mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count)
 {
 	m->texture = texture;
 
 	m->tbo = create_shader_attribute_buffer(m->program, "in_texcoords",
 			2, uvs, uv_count);
 	if (!m->tbo) {
-		return -ERR_NO_VIDEO_BUFFER;
+		log_i("no texture buffer object");
+		return false;
 	}
 
 	m->texture_attached = true;
-
-	return 0;
+	return true;
 }
 
-int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
+bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
 		vec3 *vertices, size_t vertex_count,
 		vec3 *normals, size_t normal_count)
 {
-	int err;
+	bool ok;
 
 	mat4x4_identity(mesh->model);
 	mat4x4_identity(mesh->mvp);
@@ -102,9 +99,10 @@ int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
 	mesh->texture_attached = false;
 	mesh->nbo_presented = false;
 
-	err = find_uniforms(mesh);
-	if (err < 0) {
-		return err;
+	ok = find_uniforms(mesh);
+	if (!ok) {
+		log_e("unable to find uniforms");
+		return false;
 	}
 
 	return mesh_create_geometry_buffers(mesh, vertices, vertex_count,

@@ -24,9 +24,9 @@ struct mesh {
 void mesh_update_mvp(struct mesh *m, mat4x4 pv);
 void mesh_redraw(struct mesh *m, float time);
 
-int mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count);
+bool mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count);
 
-int mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
+bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
 		vec3 *vertices, size_t vertex_count,
 		vec3 *normals, size_t normal_count);
 

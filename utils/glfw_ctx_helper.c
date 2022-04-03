@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <logger/logger.h>
-#include <errors/errors.h>
+#include <stdbool.h>
 
 #include "glfw_ctx_helper.h"
 
@@ -46,23 +46,23 @@ static GLFWwindow *create_context_window(const char *title)
 	return window;
 }
 
-static int create_glfw_window_and_draw(const char *title,
+static bool create_glfw_window_and_draw(const char *title,
 		struct glfw_ctx_callbacks *callbacks)
 {
 	GLFWwindow *window;
 	double now, spent, past;
-	int err = 0;
+	bool ok;
 
 	window = create_context_window(title);
 	if (!window) {
 		log_e("unable to create a window!");
-		return -ERR_SYSTEM;
+		return false;
 	}
 
 	glfwSetWindowUserPointer(window, callbacks);
 
-	err = callbacks->on_init(window, callbacks->user);
-	if (err < 0) {
+	ok = callbacks->on_init(window, callbacks->user);
+	if (!ok) {
 		log_e("'on_init' failed, canceling drawing");
 		goto cleanup;
 	}
@@ -87,20 +87,20 @@ static int create_glfw_window_and_draw(const char *title,
 
 cleanup:
 	glfwDestroyWindow(window);
-	return err;
+	return ok;
 }
 
-int glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
+bool glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
 {
-	int err;
+	bool ok;
 
 	if (!glfwInit()) {
 		log_e("unable to init glfw!");
-		return -ERR_SYSTEM;
+		return false;
 	}
 
-	err = create_glfw_window_and_draw(title, callbacks);
+	ok = create_glfw_window_and_draw(title, callbacks);
 	glfwTerminate();
 
-	return err;
+	return ok;
 }

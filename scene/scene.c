@@ -1,27 +1,25 @@
 #include <stdlib.h>
 #include <utils/list.h>
 #include <utils/common.h>
-#include <errors/errors.h>
 
 #include "scene.h"
 
-int scene_init(struct scene *s)
+void scene_init(struct scene *s)
 {
 	list_init(&s->drawing_list);
-	return 0;
 }
 
-int scene_add_mesh(struct scene *s, struct mesh *m)
+bool scene_add_mesh(struct scene *s, struct mesh *m)
 {
 	struct scene_node *node = malloc(sizeof(struct scene_node));
 	if (!node) {
-		return -ERR_NO_MEMORY;
+		return false;
 	}
 
 	node->mesh = m;
 
 	list_push(&node->head, &s->drawing_list);
-	return 0;
+	return true;
 }
 
 void scene_update_mvp(struct scene *s, mat4x4 vp)

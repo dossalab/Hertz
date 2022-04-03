@@ -11,7 +11,7 @@ struct stl_entry {
 	vec3 v3;
 };
 
-int loader_load_obj(struct model *model, const char *filename);
+bool loader_load_obj(struct model *model, const char *filename);
 
 #endif
 

@@ -11,7 +11,6 @@
 #include <scene/scene.h>
 #include <utils/linmath.h>
 #include <cameras/fly_camera.h>
-#include <errors/errors.h>
 #include <counters/time.h>
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
@@ -104,39 +103,41 @@ static GLuint create_texture_from_file(const char *path)
 	return texture;
 }
 
-static int load_mesh_from_obj(struct mesh *m, char *path, GLuint shader_program)
+static bool load_mesh_from_obj(struct mesh *m, char *path, GLuint shader_program)
 {
-	int err = 0;
+	bool ok;
 	struct model model;
 	GLuint texture;
 
-	err = loader_load_obj(&model, path);
-	if (err < 0) {
-		return err;
+	ok = loader_load_obj(&model, path);
+	if (!ok) {
+		log_e("unable to load obj file '%s'", path);
+		return false;
 	}
 
-	err = mesh_create_from_geometry(m, shader_program, model.vertices,
+	ok = mesh_create_from_geometry(m, shader_program, model.vertices,
 			model.vertex_count, model.normals, model.normal_count);
-	if (err < 0) {
+	if (!ok) {
+		log_e("unable to create mesh");
 		goto exit;
 	}
 
 	if (model.texture_path) {
 		texture = create_texture_from_file(model.texture_path);
 		if (!texture) {
-			err = -ERR_NO_FILE;
+			ok = false;
 			goto exit;
 		}
 
-		err = mesh_texture(m, texture, model.uvs, model.uv_count);
+		ok = mesh_texture(m, texture, model.uvs, model.uv_count);
 	}
 
 exit:
 	free_model(&model);
-	return err;
+	return ok;
 }
 
-static int load_shaders(void)
+static bool load_shaders(void)
 {
 	shader_sky = compile_simple_program("shaders/simple.vert",
 			"shaders/skybox.frag");
@@ -146,40 +147,40 @@ static int load_shaders(void)
 			"shaders/simple.frag");
 
 	if (shader_sky == 0 || shader_horse == 0 || shader_land == 0) {
-		return -ERR_SHADER_INVALID;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-static int load_assets(struct render_state *state)
+static bool load_assets(struct render_state *state)
 {
-	int err;
+	bool ok;
 
 	fly_camera_reset(&state->fly_camera);
 
-	err = load_mesh_from_obj(&state->ship, "res/horse.obj", shader_horse);
-	if (err < 0) {
+	ok = load_mesh_from_obj(&state->ship, "res/horse.obj", shader_horse);
+	if (!ok) {
 		log_e("No horse!");
-		return err;
+		return false;
 	}
 
-	err = load_mesh_from_obj(&state->skybox, "res/skybox.obj", shader_sky);
-	if (err < 0) {
+	ok = load_mesh_from_obj(&state->skybox, "res/skybox.obj", shader_sky);
+	if (!ok) {
 		log_e("No skybox!");
-		return err;
+		return false;
 	}
 
-	err = load_mesh_from_obj(&state->land, "res/land.obj", shader_land);
-	if (err < 0) {
+	ok = load_mesh_from_obj(&state->land, "res/land.obj", shader_land);
+	if (!ok) {
 		log_e("No land!");
-		return err;
+		return false;
 	}
 
-	err = load_mesh_from_obj(&state->wall, "res/wall.obj", shader_land);
-	if (err < 0) {
+	ok = load_mesh_from_obj(&state->wall, "res/wall.obj", shader_land);
+	if (!ok) {
 		log_e("No wall!");
-		return err;
+		return false;
 	}
 
 	mat4x4_translate(state->land.model, 0.0f, -6.0f, 0.0f);
@@ -190,7 +191,7 @@ static int load_assets(struct render_state *state)
 	scene_add_mesh(&state->scene, &state->ship);
 	scene_add_mesh(&state->scene, &state->wall);
 
-	return 0;
+	return true;
 }
 
 static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
@@ -234,32 +235,32 @@ static void glfw_on_exit(GLFWwindow *window, void *user)
 	mesh_free(&state->skybox);
 }
 
-static int glfw_on_init(GLFWwindow *window, void *user)
+static bool glfw_on_init(GLFWwindow *window, void *user)
 {
-	int err;
+	bool ok;
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
 	/* TODO: exit path cleanups */
-	err = load_shaders();
-	if (err < 0) {
+	ok = load_shaders();
+	if (!ok) {
 		log_e("unable to load shaders!");
-		return err;
+		return false;
 	}
 
-	err = load_assets(user);
-	if (err < 0) {
-		log_e("unable to load assets!");
-		return err;
+	ok = load_assets(user);
+	if (!ok) {
+		log_e("unable to load all assets");
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 int main(void)
 {
-	int err;
+	bool ret;
 	struct render_state state;
 
 	memset(&state, 0, sizeof(state));
@@ -273,11 +274,10 @@ int main(void)
 		.user = &state,
 	};
 
-	err = glfw_ctx_main(WINDOW_TITLE, &callbacks);
-	if (err < 0) {
-		log_e("context helper exited with error code %d", err);
+	ret = glfw_ctx_main(WINDOW_TITLE, &callbacks);
+	if (!ret) {
+		log_e("context helper exited with an error");
 	}
 
-	log_d("time counter value is %f s", global_time_counter);
 	return 0;
 }
