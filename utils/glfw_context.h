@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 typedef bool (*glfw_init_cb)(GLFWwindow *window, void *user);

@@ -2,19 +2,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
-#include <utils/log.h>
+#include <utils/glfw_context.h> /* This should go before other GL includes */
 #include <utils/gl/shaders.h>
 #include <utils/gl/textures.h>
-#include <scene/scene.h>
+#include <utils/log.h>
+#include <utils/files.h>
 #include <utils/linmath.h>
+#include <scene/scene.h>
 #include <cameras/fly_camera.h>
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
-#include <utils/files.h>
-#include <utils/glfw_context.h>
 
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
