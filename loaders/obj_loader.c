@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <logger/logger.h>
+#include <utils/log.h>
 
 #include <utils/files.h>
 #include "obj_loader.h"

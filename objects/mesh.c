@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <string.h>
-#include <logger/logger.h>
+#include <utils/log.h>
 
 #include <utils/gl/shaders.h>
 

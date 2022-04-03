@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <logger/logger.h>
+#include <utils/log.h>
 #include <stdbool.h>
 
 #include "glfw_ctx_helper.h"

@@ -20,7 +20,7 @@ objects := \
 	utils/glfw_ctx_helper.o \
 	objects/mesh.o \
 	utils/list.o \
-	logger/logger.o
+	utils/log.o
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm
 CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g

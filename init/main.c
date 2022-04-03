@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <logger/logger.h>
+#include <utils/log.h>
 #include <utils/gl/shaders.h>
 #include <utils/gl/textures.h>
 #include <scene/scene.h>
