@@ -8,14 +8,16 @@ exe	:= opengl
 libs	:= glfw3 glew
 
 objects := \
-	init/main.o \
-	scene/scene.o \
+	main.o \
+	render/render.o \
+	render/scene.o \
 	cameras/fly_camera.o \
 	loaders/stb_image.o \
 	loaders/obj_loader.o \
 	loaders/model.o \
 	utils/gl/shaders.o \
 	utils/gl/textures.o \
+	utils/gl/io.o \
 	utils/files.o \
 	utils/glfw_context.o \
 	objects/mesh.o \

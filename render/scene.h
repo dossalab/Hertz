@@ -1,5 +1,5 @@
-#ifndef SCENE_SCENE_H
-#define SCENE_SCENE_H
+#ifndef RENDER_SCENE_H
+#define RENDER_SCENE_H
 
 #include <utils/list.h>
 #include <objects/mesh.h>

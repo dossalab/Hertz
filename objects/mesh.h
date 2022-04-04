@@ -4,6 +4,7 @@
 #include <GL/gl.h>
 #include <utils/linmath.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 struct mesh {
 	GLuint vao, vbo, nbo, tbo;

@@ -6,83 +6,19 @@
 #include <utils/glfw_context.h> /* This should go before other GL includes */
 #include <utils/gl/shaders.h>
 #include <utils/gl/textures.h>
+#include <utils/gl/io.h>
 #include <utils/log.h>
 #include <utils/files.h>
 #include <utils/linmath.h>
-#include <scene/scene.h>
 #include <cameras/fly_camera.h>
 #include <loaders/obj_loader.h>
 #include <loaders/stb_image.h>
 
+#include "render.h"
+#include "scene.h"
+
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
-#define WINDOW_TITLE	"My cool application"
-
-static GLuint shader_sky;
-static GLuint shader_horse;
-static GLuint shader_land;
-
-struct render_state {
-	struct mesh ship, skybox, land, wall;
-	struct camera fly_camera;
-	struct scene scene;
-	double time;
-};
-
-GLuint load_shader_from_file(const char *filename, GLenum type)
-{
-	GLuint shader;
-	char *source;
-	char *compilation_logs;
-
-	source = read_text_file(filename);
-	if (!source) {
-		log_e("unable to read shader %s", filename);
-		return 0;
-	}
-
-	shader = compile_single_shader(source, &compilation_logs, type);
-	free(source);
-
-	if (!shader) {
-		if (compilation_logs) {
-			log_i("shader compilation logs:\n%s", compilation_logs);
-			free(compilation_logs);
-		}
-	}
-
-	return shader;
-}
-
-static GLuint compile_simple_program(const char *vert_path, const char *frag_path)
-{
-	GLuint vertex, frag;
-	GLuint program = 0;
-
-	vertex = load_shader_from_file(vert_path, GL_VERTEX_SHADER);
-	if (!vertex) {
-		log_e("unable to load vertex shader (%s)", vert_path);
-		return 0;
-	}
-
-	frag = load_shader_from_file(frag_path, GL_FRAGMENT_SHADER);
-	if (!frag) {
-		log_e("unable to load fragment shader (%s)", frag_path);
-		glDeleteShader(vertex);
-		return 0;
-	}
-
-	program = create_shader_program(2, vertex, frag);
-	if (!program) {
-		log_e("unable to create program!");
-
-		glDeleteShader(vertex);
-		glDeleteShader(frag);
-		return 0;
-	}
-
-	return program;
-}
 
 static GLuint create_texture_from_file(const char *path)
 {
@@ -135,20 +71,16 @@ exit:
 	return ok;
 }
 
-static bool load_shaders(void)
+static bool load_shaders(struct render_state *state)
 {
-	shader_sky = compile_simple_program("shaders/simple.vert",
+	state->shader_sky = create_program_from_files("shaders/simple.vert",
 			"shaders/skybox.frag");
-	shader_horse = compile_simple_program("shaders/psycho.vert",
+	state->shader_horse = create_program_from_files("shaders/psycho.vert",
 			"shaders/simple.frag");
-	shader_land = compile_simple_program("shaders/simple.vert",
+	state->shader_land = create_program_from_files("shaders/simple.vert",
 			"shaders/simple.frag");
 
-	if (shader_sky == 0 || shader_horse == 0 || shader_land == 0) {
-		return false;
-	}
-
-	return true;
+	return state->shader_sky && state->shader_horse && state->shader_land;
 }
 
 static bool load_assets(struct render_state *state)
@@ -157,25 +89,25 @@ static bool load_assets(struct render_state *state)
 
 	fly_camera_reset(&state->fly_camera);
 
-	ok = load_mesh_from_obj(&state->ship, "res/horse.obj", shader_horse);
+	ok = load_mesh_from_obj(&state->ship, "res/horse.obj", state->shader_horse);
 	if (!ok) {
 		log_e("No horse!");
 		return false;
 	}
 
-	ok = load_mesh_from_obj(&state->skybox, "res/skybox.obj", shader_sky);
+	ok = load_mesh_from_obj(&state->skybox, "res/skybox.obj", state->shader_sky);
 	if (!ok) {
 		log_e("No skybox!");
 		return false;
 	}
 
-	ok = load_mesh_from_obj(&state->land, "res/land.obj", shader_land);
+	ok = load_mesh_from_obj(&state->land, "res/land.obj", state->shader_land);
 	if (!ok) {
 		log_e("No land!");
 		return false;
 	}
 
-	ok = load_mesh_from_obj(&state->wall, "res/wall.obj", shader_land);
+	ok = load_mesh_from_obj(&state->wall, "res/wall.obj", state->shader_land);
 	if (!ok) {
 		log_e("No wall!");
 		return false;
@@ -241,7 +173,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	glDepthFunc(GL_LESS);
 
 	/* TODO: exit path cleanups */
-	ok = load_shaders();
+	ok = load_shaders(user);
 	if (!ok) {
 		log_e("unable to load shaders!");
 		return false;
@@ -256,26 +188,20 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	return true;
 }
 
-int main(void)
+bool render_init(struct render_state *state)
 {
-	bool ok;
-	struct render_state state;
+	memset(state, 0, sizeof(struct render_state));
 
-	memset(&state, 0, sizeof(state));
+	state->glfw_callbacks.on_init = glfw_on_init;
+	state->glfw_callbacks.on_draw = glfw_on_draw;
+	state->glfw_callbacks.on_resize = glfw_on_resize;
+	state->glfw_callbacks.on_exit = glfw_on_exit;
+	state->glfw_callbacks.user = state;
 
-	struct glfw_ctx_callbacks callbacks = {
-		.on_init = glfw_on_init,
-		.on_draw = glfw_on_draw,
-		.on_resize = glfw_on_resize,
-		.on_exit = glfw_on_exit,
+	return true;
+}
 
-		.user = &state,
-	};
-
-	ok = glfw_ctx_main(WINDOW_TITLE, &callbacks);
-	if (!ok) {
-		log_e("context helper exited with an error");
-	}
-
-	return 0;
+void render_exit(struct render_state *state)
+{
+	/* pass */
 }
