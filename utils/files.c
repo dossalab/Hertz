@@ -4,58 +4,53 @@
 
 #include "utils.h"
 
-static char *terminate_buffer(char *buffer, size_t len, size_t boundary)
+#define FILE_IO_CHUNKSIZE	(1024 * 1024)
+#define FILE_IO_SLOP		8
+
+static char *mem2str(void *data, size_t written)
 {
-	char *new_buffer;
-	const size_t slop = 8;
+	char *str = data;
 
-	if (boundary >= len) {
-		new_buffer = realloc(buffer, len + slop);
-		if (!new_buffer) {
-			/* ah, come on! */
-			free(buffer);
-			return NULL;
+	for (size_t i = 0; i < written; i++) {
+		if (!str[i]) {
+			str[i] = ' ';
 		}
-
-		buffer = new_buffer;
 	}
 
-	buffer[boundary] = '\0';
-	return buffer;
+	str[written] = '\0';
+	return str;
 }
 
-static char *read_all_from_stream(FILE *file)
+static char *read_text_file_from_stream(FILE *file)
 {
-	const size_t chunksize = 1024;
+	const size_t chunksize = FILE_IO_CHUNKSIZE, slop = FILE_IO_SLOP;
 
-	char *buffer = NULL, *new_buffer;
-	size_t buffer_len = 0;
-	size_t written = 0;
+	void *data = NULL, *tmp;
+	size_t allocated = 0, written = 0;
 
 	for (;;) {
-		size_t free_space = buffer_len - written;
-		size_t amount_read;
+		size_t nread, space = allocated - written;
 
-		if (!free_space) {
-			new_buffer = realloc(buffer, buffer_len + chunksize);
-			if (!new_buffer) {
+		if (space < slop) {
+			tmp = realloc(data, slop + allocated + chunksize);
+			if (!tmp) {
 				break;
 			}
 
-			buffer = new_buffer;
-			buffer_len += chunksize;
-			free_space += chunksize;
+			data = tmp;
+			allocated += slop + chunksize;
+			space += slop + chunksize;
 		}
 
-		amount_read = fread(buffer + written, 1, free_space, file);
-		if (amount_read <= 0) {
+		nread = fread(data + written, 1, space, file);
+		if (!nread) {
 			break;
 		}
 
-		written += amount_read;
+		written += nread;
 	}
 
-	return terminate_buffer(buffer, buffer_len, written);
+	return mem2str(data, written);
 }
 
 char *read_text_file(const char *filename)
@@ -68,7 +63,7 @@ char *read_text_file(const char *filename)
 		return NULL;
 	}
 
-	data = read_all_from_stream(file);
+	data = read_text_file_from_stream(file);
 	fclose(file);
 
 	return data;
