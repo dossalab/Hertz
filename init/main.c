@@ -258,7 +258,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 
 int main(void)
 {
-	bool ret;
+	bool ok;
 	struct render_state state;
 
 	memset(&state, 0, sizeof(state));
@@ -272,8 +272,8 @@ int main(void)
 		.user = &state,
 	};
 
-	ret = glfw_ctx_main(WINDOW_TITLE, &callbacks);
-	if (!ret) {
+	ok = glfw_ctx_main(WINDOW_TITLE, &callbacks);
+	if (!ok) {
 		log_e("context helper exited with an error");
 	}
 
