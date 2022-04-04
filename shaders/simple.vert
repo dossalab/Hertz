@@ -6,11 +6,11 @@ uniform float time;
 
 attribute vec3 in_position;
 attribute vec3 in_normal;
-attribute vec2 in_texcoords;
+attribute vec3 in_texcoords;
 
 varying vec3 normal;
 varying vec3 vertex;
-varying vec2 texcoord;
+varying vec3 texcoord;
 varying float _time;
 
 #define PI 3.1415926538

@@ -14,6 +14,7 @@ GLint get_shader_uniform_handle(GLuint shader, const char *name);
 void set_shader_uniform_matrix(GLint uniform, mat4x4 value);
 void set_shader_uniform_float(GLint uniform, float value);
 
+GLuint create_gl_buffer(void *data, size_t len);
 GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 		size_t components, void *data, size_t len);
 

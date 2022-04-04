@@ -96,6 +96,21 @@ void set_shader_uniform_float(GLint uniform, float value)
 	glUniform1f(uniform, value);
 }
 
+GLuint create_gl_buffer(void *data, size_t len)
+{
+	GLuint buffer;
+
+	glGenBuffers(1, &buffer);
+	if (!buffer) {
+		return 0;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, len, data, GL_STATIC_DRAW);
+
+	return buffer;
+}
+
 GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 		size_t components, void *data, size_t len)
 {
@@ -109,13 +124,10 @@ GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 		return 0;
 	}
 
-	glGenBuffers(1, &buffer);
+	buffer = create_gl_buffer(data, byte_len);
 	if (!buffer) {
 		return 0;
 	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, byte_len, data, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(attribute, components, data_type, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(attribute);

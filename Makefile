@@ -5,7 +5,7 @@ LD	:= gcc
 ECHO	:= @ printf "[%s]\t%s\n"
 
 exe	:= opengl
-libs	:= glfw3 glew
+libs	:= glfw3 glew assimp
 
 objects := \
 	main.o \
@@ -13,8 +13,7 @@ objects := \
 	render/scene.o \
 	cameras/fly_camera.o \
 	loaders/stb_image.o \
-	loaders/obj_loader.o \
-	loaders/model.o \
+	loaders/assimp.o \
 	utils/gl/shaders.o \
 	utils/gl/textures.o \
 	utils/gl/io.o \

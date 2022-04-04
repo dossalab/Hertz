@@ -7,9 +7,8 @@
 #include "scene.h"
 
 struct render_state {
-	struct mesh ship, skybox, land, wall;
-	struct camera fly_camera;
 	struct scene scene;
+	struct camera fly_camera;
 	double time;
 	GLuint shader_sky;
 	GLuint shader_horse;

@@ -7,20 +7,28 @@
 #include "mesh.h"
 
 static bool mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
-		size_t vertex_count, vec3 *normals, size_t normal_count)
+		vec3 *normals, size_t nvertices,
+		unsigned *indices, size_t nindices)
 {
 	glGenVertexArrays(1, &m->vao);
 	glBindVertexArray(m->vao);
 
 	m->vbo = create_shader_attribute_buffer(m->program, "in_position",
-			3, vertices, vertex_count);
+			3, vertices, nvertices);
 	if (!m->vbo) {
 		log_e("unable to create vbo");
 		return false;
 	}
 
+	m->ebo = create_gl_buffer(indices, sizeof(unsigned) * nindices);
+	if (!m->ebo) {
+		log_e("unable to create ebo");
+	}
+
+	m->nindices = nindices;
+
 	m->nbo = create_shader_attribute_buffer(m->program, "in_normal",
-			3, normals, normal_count);
+			3, normals, nvertices);
 	m->nbo_presented = m->nbo? true : false;
 
 	return true;
@@ -30,6 +38,7 @@ static bool find_uniforms(struct mesh *m)
 {
 	m->mvp_handle = get_shader_uniform_handle(m->program, "MVP");
 	if (m->mvp_handle < 0) {
+		log_e("no MVP handle");
 		return false;
 	}
 
@@ -67,15 +76,16 @@ void mesh_redraw(struct mesh *m, float time)
 		set_shader_uniform_float(m->time_handle, time);
 	}
 
-	glDrawArrays(GL_TRIANGLES, 0, m->vertex_count);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
+	glDrawElements(GL_TRIANGLES, m->nindices, GL_UNSIGNED_INT, 0);
 }
 
-bool mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count)
+bool mesh_texture(struct mesh *m, GLuint texture, vec3 *uvs, size_t uv_count)
 {
 	m->texture = texture;
 
 	m->tbo = create_shader_attribute_buffer(m->program, "in_texcoords",
-			2, uvs, uv_count);
+			3, uvs, uv_count);
 	if (!m->tbo) {
 		log_i("no texture buffer object");
 		return false;
@@ -86,15 +96,14 @@ bool mesh_texture(struct mesh *m, GLuint texture, vec2 *uvs, size_t uv_count)
 }
 
 bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
-		vec3 *vertices, size_t vertex_count,
-		vec3 *normals, size_t normal_count)
+		vec3 *vertices, vec3 *normals, size_t nvertices,
+		unsigned *indices, size_t nindices)
 {
 	bool ok;
 
 	mat4x4_identity(mesh->model);
 	mat4x4_identity(mesh->mvp);
 	mesh->program = shader_program;
-	mesh->vertex_count = vertex_count;
 
 	mesh->texture_attached = false;
 	mesh->nbo_presented = false;
@@ -105,8 +114,8 @@ bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
 		return false;
 	}
 
-	return mesh_create_geometry_buffers(mesh, vertices, vertex_count,
-			normals, normal_count);
+	return mesh_create_geometry_buffers(mesh, vertices, normals,
+			nvertices, indices, nindices);
 }
 
 void mesh_free(struct mesh *m)
