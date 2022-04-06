@@ -6,8 +6,8 @@
 #include <utils/gl/textures.h>
 #include <render/scene.h>
 
+#include "loader.h"
 #include "stb_image.h"
-#include "assimp.h"
 
 extern int assimp_shader;
 
@@ -174,7 +174,7 @@ static void load_scene_recursive(struct scene *s, const struct aiScene *scene,
 	}
 }
 
-bool assimp_import_scene(const char *path, struct scene *s)
+static bool assimp_import_scene(const char *path, struct scene *s)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
@@ -192,3 +192,9 @@ bool assimp_import_scene(const char *path, struct scene *s)
 
 	return true;
 }
+
+struct loader_proto assimp_loader_proto = {
+	.import_scene = assimp_import_scene,
+};
+
+export_loader_proto(assimp_loader_proto);

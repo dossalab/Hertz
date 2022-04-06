@@ -8,12 +8,13 @@ exe	:= opengl
 libs	:= glfw3 glew assimp
 
 objects := \
+	assets/assimp.o \
+	assets/loader.o \
+	assets/stb_image.o \
 	main.o \
 	render/render.o \
 	render/scene.o \
 	cameras/fly_camera.o \
-	loaders/stb_image.o \
-	loaders/assimp.o \
 	utils/gl/shaders.o \
 	utils/gl/textures.o \
 	utils/gl/io.o \

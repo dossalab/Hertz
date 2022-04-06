@@ -11,8 +11,7 @@
 #include <utils/files.h>
 #include <utils/linmath.h>
 #include <cameras/fly_camera.h>
-#include <loaders/assimp.h>
-#include <loaders/stb_image.h>
+#include <assets/loader.h>
 
 #include "render.h"
 #include "scene.h"
@@ -42,7 +41,7 @@ static bool load_assets(struct render_state *state)
 
 	fly_camera_reset(&state->fly_camera);
 
-	ok = assimp_import_scene("res/scene.glb", &state->scene);
+	ok = loader_import_scene("res/scene.glb", &state->scene);
 	if (!ok) {
 		log_e("unable to import scene");
 		return false;
