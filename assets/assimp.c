@@ -22,6 +22,16 @@ static inline void copy_aimat4x4(mat4x4 to, struct aiMatrix4x4 *_from) {
 	}
 }
 
+static inline bool ai_get_texture_helper(struct aiMaterial *material,
+		enum aiTextureType type, unsigned index, struct aiString *path)
+{
+	aiReturn ret;
+
+	ret = aiGetMaterialString(material, AI_MATKEY_TEXTURE(type, index), path);
+	return ret == AI_SUCCESS;
+}
+
+
 static GLuint create_texture_from_memory(void *buffer, size_t len)
 {
 	int w, h, n;
@@ -45,7 +55,7 @@ static GLuint create_texture_from_mesh(struct aiMesh *ai_mesh,
 	struct aiMaterial *material;
 	struct aiString path;
 	struct aiTexture *texture;
-	int err;
+	bool ok;
 	int texture_index;
 
 	material = ai_scene->mMaterials[ai_mesh->mMaterialIndex];
@@ -53,9 +63,8 @@ static GLuint create_texture_from_mesh(struct aiMesh *ai_mesh,
 		return 0;
 	}
 
-	err = aiGetMaterialTexture(material, aiTextureType_DIFFUSE, 0, &path,
-			NULL, NULL, NULL, NULL, NULL, NULL);
-	if (err) {
+	ok = ai_get_texture_helper(material, aiTextureType_DIFFUSE, 0, &path);
+	if (!ok) {
 		return 0;
 	}
 
