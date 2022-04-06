@@ -4,10 +4,10 @@
 #include <utils/log.h>
 #include <stdlib.h>
 #include <utils/gl/textures.h>
+#include <utils/3rdparty/stb/stb_image.h>
 #include <render/scene.h>
 
 #include "loader.h"
-#include "stb_image.h"
 
 extern int assimp_shader;
 

@@ -10,7 +10,6 @@ libs	:= glfw3 glew assimp
 objects := \
 	assets/assimp.o \
 	assets/loader.o \
-	assets/stb_image.o \
 	main.o \
 	render/render.o \
 	render/scene.o \
@@ -22,7 +21,8 @@ objects := \
 	utils/glfw_context.o \
 	objects/mesh.o \
 	utils/list.o \
-	utils/log.o
+	utils/log.o \
+	utils/stb_image.o
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm
 CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g
