@@ -6,8 +6,12 @@
 #include <utils/gl/textures.h>
 #include <utils/3rdparty/stb/stb_image.h>
 #include <render/scene.h>
+#include <assert.h>
 
 #include "loader.h"
+
+/* Make sure we can copy assimp buffers directly */
+static_assert(sizeof(ai_real) == sizeof(float));
 
 extern int assimp_shader;
 
