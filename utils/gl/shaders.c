@@ -71,31 +71,6 @@ GLuint create_shader_program(size_t shader_count, ...)
 	return program;
 }
 
-void use_shader_program(GLuint shader)
-{
-	glUseProgram(shader);
-}
-
-GLint get_shader_attribute_handle(GLuint shader, const char *name)
-{
-	return glGetAttribLocation(shader, name);
-}
-
-GLint get_shader_uniform_handle(GLuint shader, const char *name)
-{
-	return glGetUniformLocation(shader, name);
-}
-
-void set_shader_uniform_matrix(GLint uniform, mat4x4 value)
-{
-	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
-}
-
-void set_shader_uniform_float(GLint uniform, float value)
-{
-	glUniform1f(uniform, value);
-}
-
 GLuint create_gl_buffer(void *data, size_t len)
 {
 	GLuint buffer;
@@ -119,7 +94,7 @@ GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 	const GLenum data_type = GL_FLOAT;
 	const size_t byte_len = sizeof(float) * len * components;
 
-	attribute = get_shader_attribute_handle(shader, name);
+	attribute = glGetAttribLocation(shader, name);
 	if (attribute < 0) {
 		return 0;
 	}
@@ -135,7 +110,7 @@ GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 	return buffer;
 }
 
-void delete_shader_attribute_buffer(GLuint buffer)
+void delete_gl_buffer(GLuint buffer)
 {
 	glDeleteBuffers(1, &buffer);
 }

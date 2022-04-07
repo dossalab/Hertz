@@ -6,6 +6,10 @@
 
 #include "mesh.h"
 
+static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
+	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
+}
+
 static bool mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 		vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices)
@@ -36,16 +40,16 @@ static bool mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 
 static bool find_uniforms(struct mesh *m)
 {
-	m->mvp_handle = get_shader_uniform_handle(m->program, "MVP");
+	m->mvp_handle = glGetUniformLocation(m->program, "MVP");
 	if (m->mvp_handle < 0) {
 		log_e("no MVP handle");
 		return false;
 	}
 
-	m->model_handle = get_shader_uniform_handle(m->program, "model");
+	m->model_handle = glGetUniformLocation(m->program, "model");
 	m->model_presented = !(m->model_handle < 0);
 
-	m->time_handle = get_shader_uniform_handle(m->program, "time");
+	m->time_handle = glGetUniformLocation(m->program, "time");
 	m->time_presented = !(m->time_handle < 0);
 
 	return true;
@@ -59,21 +63,21 @@ void mesh_update_mvp(struct mesh *m, mat4x4 vp)
 void mesh_redraw(struct mesh *m, float time)
 {
 	glBindVertexArray(m->vao);
-	use_shader_program(m->program);
+	glUseProgram(m->program);
 
 	/* so the previous one will be used (if exists) :) */
 	if (m->texture_attached) {
 		glBindTexture(GL_TEXTURE_2D, m->texture);
 	}
 
-	set_shader_uniform_matrix(m->mvp_handle, m->mvp);
+	set_uniform_matrix(m->mvp_handle, m->mvp);
 
 	if (m->model_presented) {
-		set_shader_uniform_matrix(m->model_handle, m->model);
+		set_uniform_matrix(m->model_handle, m->model);
 	}
 
 	if (m->time_presented) {
-		set_shader_uniform_float(m->time_handle, time);
+		glUniform1f(m->time_handle, time);
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
@@ -120,13 +124,13 @@ bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
 
 void mesh_free(struct mesh *m)
 {
-	delete_shader_attribute_buffer(m->vbo);
+	delete_gl_buffer(m->vbo);
 
 	if (m->nbo_presented) {
-		delete_shader_attribute_buffer(m->nbo);
+		delete_gl_buffer(m->nbo);
 	}
 
 	if (m->texture_attached) {
-		delete_shader_attribute_buffer(m->tbo);
+		delete_gl_buffer(m->tbo);
 	}
 }
