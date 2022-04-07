@@ -35,21 +35,6 @@ static bool load_shaders(struct render_state *state)
 	return state->shader_sky && state->shader_horse && state->shader_land;
 }
 
-static bool load_assets(struct render_state *state)
-{
-	bool ok;
-
-	fly_camera_reset(&state->fly_camera);
-
-	ok = loader_import_scene("res/scene.glb", &state->scene);
-	if (!ok) {
-		log_e("unable to import scene");
-		return false;
-	}
-
-	return true;
-}
-
 static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 {
 	float aspect;
@@ -85,9 +70,12 @@ static void glfw_on_exit(GLFWwindow *window, void *user)
 static bool glfw_on_init(GLFWwindow *window, void *user)
 {
 	bool ok;
+	struct render_state *state = user;
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
+	fly_camera_reset(&state->fly_camera);
 
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
@@ -96,9 +84,9 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	ok = load_assets(user);
+	ok = loader_import_scene("res/scene.glb", &state->scene);
 	if (!ok) {
-		log_e("unable to load all assets");
+		log_e("unable to import scene");
 		return false;
 	}
 
