@@ -94,6 +94,8 @@ bool glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
 {
 	bool ok;
 
+	log_i("running with GLFW %s", glfwGetVersionString());
+
 	if (!glfwInit()) {
 		log_e("unable to init glfw!");
 		return false;

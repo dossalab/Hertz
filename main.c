@@ -23,5 +23,7 @@ int main(void)
 	}
 
 	render_exit(&state);
+	log_i("we're done");
+
 	return ok? 0 : EXIT_NOT_OK;
 }
