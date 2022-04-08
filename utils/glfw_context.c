@@ -50,7 +50,7 @@ static bool create_glfw_window_and_draw(const char *title,
 		struct glfw_ctx_callbacks *callbacks)
 {
 	GLFWwindow *window;
-	double now, spent, past;
+	double now, spent, past = glfwGetTime();
 	bool ok;
 
 	window = create_context_window(title);

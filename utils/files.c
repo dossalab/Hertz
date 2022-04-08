@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
+#include "files.h"
 
 #define FILE_IO_CHUNKSIZE	(1024 * 1024)
 #define FILE_IO_SLOP		8
