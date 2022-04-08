@@ -12,19 +12,9 @@
 
 /* Make sure we can copy assimp buffers directly */
 static_assert(sizeof(ai_real) == sizeof(float));
+static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
 
 extern int assimp_shader;
-
-static inline void copy_aimat4x4(mat4x4 to, struct aiMatrix4x4 *_from) {
-	ai_real *from = (ai_real *)_from;
-	const unsigned side = 4;
-
-	for (unsigned j = 0; j < side; j++) {
-		for (unsigned i = 0; i < side; i++) {
-			to[i][j] = from[i + side * j];
-		}
-	}
-}
 
 static inline bool ai_get_texture_helper(struct aiMaterial *material,
 		enum aiTextureType type, unsigned index, struct aiString *path)
@@ -152,7 +142,7 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 		log_e("unable to apply textures for mesh '%s'", ai_mesh->mName.data);
 	}
 
-	copy_aimat4x4(m->model, ai_model);
+	mat4x4_transpose(m->model, (void *)ai_model);
 	scene_add_mesh(s, m);
 	return true;
 }
