@@ -15,7 +15,7 @@ void main()
 	vec3 light = vec3(100, 100, 100);
 	vec3 dir = normalize(light - vertex);
 	float diffuse = max(dot(normalize(normal), dir), 0.0);
-	float ambient = 0.4;
+	float ambient = 0.2;
 
 	float lighting = diffuse + ambient;
 
