@@ -5,6 +5,8 @@
 #include "io.h"
 #include "shaders.h"
 
+static const char *tag = "glio";
+
 GLuint create_shader_from_file(const char *filename, GLenum type)
 {
 	GLuint shader;
@@ -13,7 +15,7 @@ GLuint create_shader_from_file(const char *filename, GLenum type)
 
 	source = read_text_file(filename);
 	if (!source) {
-		log_e("unable to read shader %s", filename);
+		log_e(tag, "unable to read shader %s", filename);
 		return 0;
 	}
 
@@ -21,8 +23,10 @@ GLuint create_shader_from_file(const char *filename, GLenum type)
 	free(source);
 
 	if (!shader) {
+		log_e(tag, "unable to compile shader %s", filename);
+
 		if (compilation_logs) {
-			log_i("shader compilation logs:\n%s", compilation_logs);
+			log_i(tag, "compilation logs:\n%s", compilation_logs);
 			free(compilation_logs);
 		}
 	}
@@ -37,20 +41,20 @@ GLuint create_program_from_files(const char *vert_path, const char *frag_path)
 
 	vertex = create_shader_from_file(vert_path, GL_VERTEX_SHADER);
 	if (!vertex) {
-		log_e("unable to load vertex shader (%s)", vert_path);
+		log_e(tag, "unable to load vertex shader (%s)", vert_path);
 		return 0;
 	}
 
 	frag = create_shader_from_file(frag_path, GL_FRAGMENT_SHADER);
 	if (!frag) {
-		log_e("unable to load fragment shader (%s)", frag_path);
+		log_e(tag, "unable to load fragment shader (%s)", frag_path);
 		glDeleteShader(vertex);
 		return 0;
 	}
 
 	program = create_shader_program(2, vertex, frag);
 	if (!program) {
-		log_e("unable to create program!");
+		log_e(tag, "unable to create program!");
 
 		glDeleteShader(vertex);
 		glDeleteShader(frag);

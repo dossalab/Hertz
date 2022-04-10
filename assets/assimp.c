@@ -10,6 +10,8 @@
 
 #include "loader.h"
 
+static const char *tag = "aimp";
+
 /* Make sure we can copy assimp buffers directly */
 static_assert(sizeof(ai_real) == sizeof(float));
 static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
@@ -63,7 +65,7 @@ static GLuint create_texture_from_mesh(struct aiMesh *ai_mesh,
 	}
 
 	if (path.data[0] != '*') {
-		log_e("mesh is not using embedded texture, not trying to load");
+		log_e(tag, "mesh is not using embedded texture, not trying to load");
 		return 0;
 	}
 
@@ -139,7 +141,7 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 	ok = apply_textures(m, ai_mesh, ai_scene);
 	if (!ok) {
 		/* not an error */
-		log_e("unable to apply textures for mesh '%s'", ai_mesh->mName.data);
+		log_e(tag, "unable to apply textures for mesh '%s'", ai_mesh->mName.data);
 	}
 
 	mat4x4_transpose(m->model, (void *)ai_model);
@@ -157,9 +159,9 @@ static void load_scene_node(struct scene *s, const struct aiScene *scene,
 		mesh_index = node->mMeshes[i];
 		mesh = scene->mMeshes[mesh_index];
 
-		log_i("loading mesh '%s'", mesh->mName.data);
+		log_i(tag, "loading mesh '%s'", mesh->mName.data);
 		if (!import_ai_mesh(s, mesh, &node->mTransformation, scene)) {
-			log_e("unable to load mesh '%s'", mesh->mName.data);
+			log_e(tag, "unable to load mesh '%s'", mesh->mName.data);
 		}
 	}
 }

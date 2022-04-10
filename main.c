@@ -4,6 +4,7 @@
 
 #define EXIT_NOT_OK	1
 
+static const char *tag = "mn";
 static const char *window_title = "My cool application";
 
 int main(void)
@@ -11,19 +12,21 @@ int main(void)
 	bool ok;
 	struct render_state state;
 
+	logger_init(LOGLEVEL_INFO);
+
 	ok = render_init(&state);
 	if (!ok) {
-		log_e("unable to init render");
+		log_e(tag, "unable to init render");
 		return EXIT_NOT_OK;
 	}
 
 	ok = glfw_ctx_main(window_title, &state.glfw_callbacks);
 	if (!ok) {
-		log_e("render finished with an error");
+		log_e(tag, "render finished with an error");
 	}
 
 	render_exit(&state);
-	log_i("we're done");
+	log_i(tag, "we're done");
 
 	return ok? 0 : EXIT_NOT_OK;
 }

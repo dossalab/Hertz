@@ -6,6 +6,8 @@
 
 #include "mesh.h"
 
+static const char *tag = "mesh";
+
 static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
 }
@@ -20,13 +22,13 @@ static bool mesh_create_geometry_buffers(struct mesh *m, vec3 *vertices,
 	m->vbo = create_shader_attribute_buffer(m->program, "in_position",
 			3, vertices, nvertices);
 	if (!m->vbo) {
-		log_e("unable to create vbo");
+		log_e(tag, "unable to create vbo");
 		return false;
 	}
 
 	m->ebo = create_gl_buffer(indices, sizeof(unsigned) * nindices);
 	if (!m->ebo) {
-		log_e("unable to create ebo");
+		log_e(tag, "unable to create ebo");
 	}
 
 	m->nindices = nindices;
@@ -42,7 +44,7 @@ static bool find_uniforms(struct mesh *m)
 {
 	m->mvp_handle = glGetUniformLocation(m->program, "MVP");
 	if (m->mvp_handle < 0) {
-		log_e("no MVP handle");
+		log_e(tag, "no MVP handle");
 		return false;
 	}
 
@@ -91,7 +93,7 @@ bool mesh_texture(struct mesh *m, GLuint texture, vec3 *uvs, size_t uv_count)
 	m->tbo = create_shader_attribute_buffer(m->program, "in_texcoords",
 			3, uvs, uv_count);
 	if (!m->tbo) {
-		log_i("no texture buffer object");
+		log_i(tag, "no texture buffer object");
 		return false;
 	}
 
@@ -114,7 +116,7 @@ bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
 
 	ok = find_uniforms(mesh);
 	if (!ok) {
-		log_e("unable to find uniforms");
+		log_e(tag, "unable to find uniforms");
 		return false;
 	}
 

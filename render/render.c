@@ -19,6 +19,7 @@
 #define ENG_PI		3.14159265359f
 #define ENG_FOV		(70.0f * ENG_PI / 180.0f)
 
+static const char *tag = "render";
 int assimp_shader;
 
 static bool load_shaders(struct render_state *state)
@@ -80,13 +81,13 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
 	if (!ok) {
-		log_e("unable to load shaders!");
+		log_e(tag, "unable to load shaders!");
 		return false;
 	}
 
 	ok = loader_import_scene("res/scene.glb", &state->scene);
 	if (!ok) {
-		log_e("unable to import scene");
+		log_e(tag, "unable to import scene");
 		return false;
 	}
 

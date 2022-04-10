@@ -1,14 +1,19 @@
 #include <stdio.h>
-#include <stdarg.h>
 #include "log.h"
 
-void _log(const char *expl, const char *fmt, ...)
-{
-	va_list args;
-	char line[LOGLINE_MAXLEN];
+static int sink(const char *fmt, ...) {
+	return 0;
+}
 
-	va_start(args, fmt);
-	vsnprintf(line, LOGLINE_MAXLEN, fmt, args);
-	printf("%s%s\n", expl, line);
-	va_end(args);
+logger do_log_i = sink;
+logger do_log_e = sink;
+
+static void assign_logger(logger *l, enum loglevel level, enum loglevel setting) {
+	*l = (setting > level)? sink : printf;
+}
+
+void logger_init(enum loglevel level)
+{
+	assign_logger(&do_log_i, LOGLEVEL_INFO, level);
+	assign_logger(&do_log_e, LOGLEVEL_ERROR, level);
 }

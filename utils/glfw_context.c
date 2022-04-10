@@ -5,6 +5,8 @@
 
 #include "glfw_context.h"
 
+static const char *tag = "glfw";
+
 static void glfw_window_resize_callback(GLFWwindow *window, int width, int height)
 {
 	struct glfw_ctx_callbacks *callbacks;
@@ -23,7 +25,7 @@ static GLFWwindow *create_context_window(const char *title)
 
 	window = glfwCreateWindow(640, 480, title, NULL, NULL);
 	if (!window) {
-		log_e("unable to create window handle!");
+		log_e(tag, "unable to create window handle!");
 		return NULL;
 	}
 
@@ -35,14 +37,14 @@ static GLFWwindow *create_context_window(const char *title)
 	 */
 	glew_ret = glewInit();
 	if (glew_ret != GLEW_OK) {
-		log_e("unable to init GLEW! %s", glewGetErrorString(glew_ret));
+		log_e(tag, "unable to init GLEW! %s", glewGetErrorString(glew_ret));
 		glfwDestroyWindow(window);
 		return NULL;
 	}
 
 	glfwSetFramebufferSizeCallback(window, glfw_window_resize_callback);
 
-	log_i("created window with GLEW %s", glewGetString(GLEW_VERSION));
+	log_i(tag, "created window with GLEW %s", glewGetString(GLEW_VERSION));
 	return window;
 }
 
@@ -55,7 +57,7 @@ static bool create_glfw_window_and_draw(const char *title,
 
 	window = create_context_window(title);
 	if (!window) {
-		log_e("unable to create a window!");
+		log_e(tag, "unable to create a window!");
 		return false;
 	}
 
@@ -63,7 +65,7 @@ static bool create_glfw_window_and_draw(const char *title,
 
 	ok = callbacks->on_init(window, callbacks->user);
 	if (!ok) {
-		log_e("'on_init' failed, canceling drawing");
+		log_e(tag, "'on_init' failed, canceling drawing");
 		goto cleanup;
 	}
 
@@ -94,10 +96,10 @@ bool glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
 {
 	bool ok;
 
-	log_i("running with GLFW %s", glfwGetVersionString());
+	log_i(tag, "running with GLFW %s", glfwGetVersionString());
 
 	if (!glfwInit()) {
-		log_e("unable to init glfw!");
+		log_e(tag, "unable to init glfw!");
 		return false;
 	}
 
