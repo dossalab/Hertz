@@ -4,7 +4,7 @@
 
 #define EXIT_NOT_OK	1
 
-static const char *tag = "mn";
+static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 int main(void)
