@@ -145,7 +145,7 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 		log_e(tag, "unable to apply textures for mesh '%s'", ai_mesh->mName.data);
 	}
 
-	mat4x4_transpose(o->model, (void *)ai_model);
+	mat4x4_transpose(o->transform.model, (void *)ai_model);
 	scene_attach(s, &o->as_object);
 	return true;
 }

@@ -11,25 +11,31 @@
 struct basic_object {
 	struct object as_object;
 
-	GLuint vbo, nbo, tbo, ebo;
+	struct {
+		GLuint vertices, normals, uvs, indices;
+	} buffers;
 
-	/* variables from shaders */
-	GLint mvp_handle, model_handle, time_handle;
-	bool model_presented, time_presented, nbo_presented;
+	struct {
+		GLint mvp, model;
+	} uniforms;
 
-	mat4x4 model;
-	mat4x4 mvp;
+	struct {
+		mat4x4 model;
+		mat4x4 mvp;
+	} transform;
+
 	GLuint program;
 	GLuint texture;
 
 	bool texture_attached;
-	unsigned nindices;
+	size_t nindices;
 };
 
 #define cast_basic_object(ptr) \
 	container_of(ptr, struct basic_object, as_object)
 
-bool basic_object_texture(struct basic_object *o, GLuint texture, vec3 *uvs, size_t uv_count);
+bool basic_object_texture(struct basic_object *o, GLuint texture,
+		vec3 *uvs, size_t uv_count);
 
 bool basic_object_create_from_geometry(struct basic_object *o, GLuint shader_program,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
