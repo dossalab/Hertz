@@ -10,50 +10,15 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
 }
 
-static bool create_geometry_buffers(struct basic_object *o,
-		vec3 *vertices, vec3 *normals, size_t nvertices,
-		unsigned *indices, size_t nindices)
-{
-	o->buffers.vertices = create_shader_attribute_buffer(o->program,
-			"in_position", 3, vertices, nvertices);
-	if (!o->buffers.vertices) {
-		log_e(tag, "unable to create vertex buffer");
-		goto fail;
-	}
-
-	o->buffers.indices = create_gl_buffer(indices, sizeof(unsigned) * nindices);
-	if (!o->buffers.indices) {
-		log_e(tag, "unable to create index buffer");
-		goto fail_delete_vertices;
-	}
-
-	o->buffers.normals = create_shader_attribute_buffer(o->program, "in_normal",
-			3, normals, nvertices);
-	if (!o->buffers.normals) {
-		log_e(tag, "unable to create normal buffer");
-		goto fail_delete_indices_and_vertices;
-	}
-
-	o->nindices = nindices;
-	return true;
-
-fail_delete_indices_and_vertices:
-	glDeleteBuffers(1, &o->buffers.indices);
-fail_delete_vertices:
-	glDeleteBuffers(1, &o->buffers.vertices);
-fail:
-	return false;
-}
-
 static bool find_uniforms(struct basic_object *o)
 {
-	o->uniforms.mvp = glGetUniformLocation(o->program, "MVP");
+	o->uniforms.mvp = glGetUniformLocation(o->as_object.program, "MVP");
 	if (o->uniforms.mvp < 0) {
 		log_e(tag, "unable to find MVP matrix in the given shader");
 		return false;
 	}
 
-	o->uniforms.model = glGetUniformLocation(o->program, "model");
+	o->uniforms.model = glGetUniformLocation(o->as_object.program, "model");
 	if (o->uniforms.model < 0) {
 		log_e(tag, "unable to find model matrix in the given shader");
 		return false;
@@ -72,8 +37,6 @@ static void basic_object_update_mvp(struct object *_o, mat4x4 vp)
 static void basic_object_redraw(struct object *_o)
 {
 	struct basic_object *o = cast_basic_object(_o);
-
-	glUseProgram(o->program);
 
 	if (o->texture_attached) {
 		glBindTexture(GL_TEXTURE_2D, o->texture);
@@ -98,17 +61,29 @@ static void basic_object_free(struct object *_o)
 	}
 }
 
-const struct object_proto basic_object_proto = {
-	.draw = basic_object_redraw,
-	.update_mvp = basic_object_update_mvp,
-	.free = basic_object_free,
-};
-
-bool basic_object_texture(struct basic_object *o, GLuint texture, vec3 *uvs,
-		size_t uv_count)
+static bool basic_object_init(struct object *_o)
 {
-	o->buffers.uvs = create_shader_attribute_buffer(o->program, "in_texcoords",
-			3, uvs, uv_count);
+	struct basic_object *o = cast_basic_object(_o);
+	bool ok;
+
+	mat4x4_identity(o->transform.model);
+	mat4x4_identity(o->transform.mvp);
+
+	o->texture_attached = false;
+
+	ok = find_uniforms(o);
+	if (!ok) {
+		log_e(tag, "unable to find uniforms");
+	}
+
+	return ok;
+}
+
+bool basic_object_set_texture(struct basic_object *o, GLuint texture,
+		vec3 *uvs, size_t uv_count)
+{
+	o->buffers.uvs = create_shader_attribute_buffer(o->as_object.program,
+			"in_texcoords", 3, uvs, uv_count);
 	if (!o->buffers.uvs) {
 		log_i(tag, "unable to create UV buffer");
 		return false;
@@ -120,27 +95,44 @@ bool basic_object_texture(struct basic_object *o, GLuint texture, vec3 *uvs,
 	return true;
 }
 
-bool basic_object_create_from_geometry(struct basic_object *o,
-		GLuint shader_program,
+bool basic_object_set_geometry(struct basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices)
 {
-	bool ok;
-
-	object_init(&o->as_object, &basic_object_proto);
-
-	mat4x4_identity(o->transform.model);
-	mat4x4_identity(o->transform.mvp);
-	o->program = shader_program;
-	o->texture_attached = false;
-
-	ok = find_uniforms(o);
-	if (!ok) {
-		log_e(tag, "unable to find uniforms");
-		return false;
+	o->buffers.vertices = create_shader_attribute_buffer(o->as_object.program,
+			"in_position", 3, vertices, nvertices);
+	if (!o->buffers.vertices) {
+		log_e(tag, "unable to create vertex buffer");
+		goto fail;
 	}
 
-	return create_geometry_buffers(o, vertices, normals,
-			nvertices, indices, nindices);
+	o->buffers.indices = create_gl_buffer(indices, sizeof(unsigned) * nindices);
+	if (!o->buffers.indices) {
+		log_e(tag, "unable to create index buffer");
+		goto fail_delete_vertices;
+	}
+
+	o->buffers.normals = create_shader_attribute_buffer(o->as_object.program,
+			"in_normal", 3, normals, nvertices);
+	if (!o->buffers.normals) {
+		log_e(tag, "unable to create normal buffer");
+		goto fail_delete_indices_and_vertices;
+	}
+
+	o->nindices = nindices;
+	return true;
+
+fail_delete_indices_and_vertices:
+	glDeleteBuffers(1, &o->buffers.indices);
+fail_delete_vertices:
+	glDeleteBuffers(1, &o->buffers.vertices);
+fail:
+	return false;
 }
 
+const struct object_proto basic_object_proto = {
+	.draw = basic_object_redraw,
+	.update_mvp = basic_object_update_mvp,
+	.free = basic_object_free,
+	.init = basic_object_init,
+};

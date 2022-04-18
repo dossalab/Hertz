@@ -24,7 +24,6 @@ struct basic_object {
 		mat4x4 mvp;
 	} transform;
 
-	GLuint program;
 	GLuint texture;
 
 	bool texture_attached;
@@ -34,11 +33,13 @@ struct basic_object {
 #define cast_basic_object(ptr) \
 	container_of(ptr, struct basic_object, as_object)
 
-bool basic_object_texture(struct basic_object *o, GLuint texture,
+bool basic_object_set_texture(struct basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count);
 
-bool basic_object_create_from_geometry(struct basic_object *o, GLuint shader_program,
+bool basic_object_set_geometry(struct basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices);
+
+extern const struct object_proto basic_object_proto;
 
 #endif

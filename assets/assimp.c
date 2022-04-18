@@ -86,7 +86,7 @@ static bool apply_textures(struct basic_object *o, struct aiMesh *ai_mesh,
 		return false;
 	}
 
-	basic_object_texture(o, texture, (vec3 *)ai_mesh->mTextureCoords[0],
+	basic_object_set_texture(o, texture, (vec3 *)ai_mesh->mTextureCoords[0],
 			ai_mesh->mNumVertices);
 
 	return true;
@@ -113,7 +113,7 @@ static bool create_object_from_ai(struct basic_object *o, struct aiMesh *ai_mesh
 		}
 	}
 
-	ok = basic_object_create_from_geometry(o, assimp_shader,
+	ok = basic_object_set_geometry(o,
 		(vec3 *)ai_mesh->mVertices, (vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
 		indices, nindices);
@@ -129,8 +129,14 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 	bool ok;
 	struct basic_object *o;
 
+	/* fuckery */
 	o = calloc(1, sizeof(struct basic_object));
 	if (!o) {
+		return false;
+	}
+
+	ok = object_init(&o->as_object, assimp_shader, &basic_object_proto);
+	if (!ok) {
 		return false;
 	}
 
