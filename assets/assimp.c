@@ -6,6 +6,7 @@
 #include <utils/gl/textures.h>
 #include <utils/3rdparty/stb/stb_image.h>
 #include <render/scene.h>
+#include <objects/basic.h>
 #include <assert.h>
 
 #include "loader.h"
@@ -75,7 +76,7 @@ static GLuint create_texture_from_mesh(struct aiMesh *ai_mesh,
 	return create_texture_from_memory(texture->pcData, texture->mWidth);
 }
 
-static bool apply_textures(struct mesh *m, struct aiMesh *ai_mesh,
+static bool apply_textures(struct basic_object *o, struct aiMesh *ai_mesh,
 		const struct aiScene *ai_scene)
 {
 	GLuint texture;
@@ -85,13 +86,13 @@ static bool apply_textures(struct mesh *m, struct aiMesh *ai_mesh,
 		return false;
 	}
 
-	mesh_texture(m, texture, (vec3 *)ai_mesh->mTextureCoords[0],
+	basic_object_texture(o, texture, (vec3 *)ai_mesh->mTextureCoords[0],
 			ai_mesh->mNumVertices);
 
 	return true;
 }
 
-static bool create_mesh_from_ai(struct mesh *m, struct aiMesh *ai_mesh)
+static bool create_object_from_ai(struct basic_object *o, struct aiMesh *ai_mesh)
 {
 	const size_t nindices = ai_mesh->mNumFaces * ai_mesh->mFaces[0].mNumIndices;
 	unsigned *indices;
@@ -112,7 +113,7 @@ static bool create_mesh_from_ai(struct mesh *m, struct aiMesh *ai_mesh)
 		}
 	}
 
-	ok = mesh_create_from_geometry(m, assimp_shader,
+	ok = basic_object_create_from_geometry(o, assimp_shader,
 		(vec3 *)ai_mesh->mVertices, (vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
 		indices, nindices);
@@ -126,26 +127,26 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 		struct aiMatrix4x4 *ai_model, const struct aiScene *ai_scene)
 {
 	bool ok;
-	struct mesh *m;
+	struct basic_object *o;
 
-	m = calloc(1, sizeof(struct mesh));
-	if (!m) {
+	o = calloc(1, sizeof(struct basic_object));
+	if (!o) {
 		return false;
 	}
 
-	ok = create_mesh_from_ai(m, ai_mesh);
+	ok = create_object_from_ai(o, ai_mesh);
 	if (!ok) {
 		return false;
 	}
 
-	ok = apply_textures(m, ai_mesh, ai_scene);
+	ok = apply_textures(o, ai_mesh, ai_scene);
 	if (!ok) {
 		/* not an error */
 		log_e(tag, "unable to apply textures for mesh '%s'", ai_mesh->mName.data);
 	}
 
-	mat4x4_transpose(m->model, (void *)ai_model);
-	scene_add_mesh(s, m);
+	mat4x4_transpose(o->model, (void *)ai_model);
+	scene_add_object(s, o);
 	return true;
 }
 

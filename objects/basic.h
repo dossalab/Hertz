@@ -1,12 +1,12 @@
-#ifndef OBJECTS_MESH_H
-#define OBJECTS_MESH_H
+#ifndef RENDER_OBJECT_H
+#define RENDER_OBJECT_H
 
 #include <GL/gl.h>
 #include <utils/3rdparty/linmath/linmath.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-struct mesh {
+struct basic_object {
 	GLuint vao, vbo, nbo, tbo, ebo;
 
 	/* variables from shaders */
@@ -22,15 +22,15 @@ struct mesh {
 	unsigned nindices;
 };
 
-void mesh_update_mvp(struct mesh *m, mat4x4 pv);
-void mesh_redraw(struct mesh *m, float time);
+void basic_object_update_mvp(struct basic_object *o, mat4x4 pv);
+void basic_object_redraw(struct basic_object *o, float time);
 
-bool mesh_texture(struct mesh *m, GLuint texture, vec3 *uvs, size_t uv_count);
+bool basic_object_texture(struct basic_object *o, GLuint texture, vec3 *uvs, size_t uv_count);
 
-bool mesh_create_from_geometry(struct mesh *mesh, GLuint shader_program,
+bool basic_object_create_from_geometry(struct basic_object *o, GLuint shader_program,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices);
 
-void mesh_free(struct mesh *m);
+void basic_object_free(struct basic_object *o);
 
 #endif

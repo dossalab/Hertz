@@ -11,6 +11,7 @@ objects := \
 	assets/assimp.o \
 	assets/loader.o \
 	main.o \
+	objects/basic.o \
 	render/render.o \
 	render/scene.o \
 	cameras/fly_camera.o \
@@ -19,7 +20,6 @@ objects := \
 	utils/gl/io.o \
 	utils/files.o \
 	utils/glfw_context.o \
-	objects/mesh.o \
 	utils/list.o \
 	utils/log.o \
 	utils/stb_image.o

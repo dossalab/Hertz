@@ -2,7 +2,6 @@
 #define RENDER_RENDER_H
 
 #include <stdbool.h>
-#include <objects/mesh.h>
 #include <cameras/fly_camera.h>
 #include "scene.h"
 
