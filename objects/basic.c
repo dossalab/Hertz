@@ -83,7 +83,7 @@ bool basic_object_set_texture(struct basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count)
 {
 	o->buffers.uvs = create_shader_attribute_buffer(o->as_object.program,
-			"in_texcoords", 3, uvs, uv_count);
+			"uv", 3, uvs, uv_count);
 	if (!o->buffers.uvs) {
 		log_i(tag, "unable to create UV buffer");
 		return false;
@@ -100,7 +100,7 @@ bool basic_object_set_geometry(struct basic_object *o,
 		unsigned *indices, size_t nindices)
 {
 	o->buffers.vertices = create_shader_attribute_buffer(o->as_object.program,
-			"in_position", 3, vertices, nvertices);
+			"position", 3, vertices, nvertices);
 	if (!o->buffers.vertices) {
 		log_e(tag, "unable to create vertex buffer");
 		goto fail;
@@ -113,7 +113,7 @@ bool basic_object_set_geometry(struct basic_object *o,
 	}
 
 	o->buffers.normals = create_shader_attribute_buffer(o->as_object.program,
-			"in_normal", 3, normals, nvertices);
+			"normal", 3, normals, nvertices);
 	if (!o->buffers.normals) {
 		log_e(tag, "unable to create normal buffer");
 		goto fail_delete_indices_and_vertices;
