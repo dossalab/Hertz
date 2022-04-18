@@ -1,9 +1,7 @@
 #include <GL/glew.h>
 #include <string.h>
 #include <utils/log.h>
-
 #include <utils/gl/shaders.h>
-
 #include "basic.h"
 
 static const char *tag = "bobj";
@@ -17,9 +15,6 @@ static bool basic_object_create_geometry_buffers(struct basic_object *o,
 		vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices)
 {
-	glGenVertexArrays(1, &o->vao);
-	glBindVertexArray(o->vao);
-
 	o->vbo = create_shader_attribute_buffer(o->program, "in_position",
 			3, vertices, nvertices);
 	if (!o->vbo) {
@@ -58,14 +53,17 @@ static bool find_uniforms(struct basic_object *o)
 	return true;
 }
 
-void basic_object_update_mvp(struct basic_object *o, mat4x4 vp)
+static void basic_object_update_mvp(struct object *_o, mat4x4 vp)
 {
+	struct basic_object *o = cast_basic_object(_o);
+
 	mat4x4_mul(o->mvp, vp, o->model);
 }
 
-void basic_object_redraw(struct basic_object *o, float time)
+static void basic_object_redraw(struct object *_o)
 {
-	glBindVertexArray(o->vao);
+	struct basic_object *o = cast_basic_object(_o);
+
 	glUseProgram(o->program);
 
 	/* so the previous one will be used (if exists) :) */
@@ -80,12 +78,33 @@ void basic_object_redraw(struct basic_object *o, float time)
 	}
 
 	if (o->time_presented) {
-		glUniform1f(o->time_handle, time);
+		// glUniform1f(o->time_handle, time);
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, o->ebo);
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
 }
+
+static void basic_object_free(struct object *_o)
+{
+	struct basic_object *o = cast_basic_object(_o);
+
+	delete_gl_buffer(o->vbo);
+
+	if (o->nbo_presented) {
+		delete_gl_buffer(o->nbo);
+	}
+
+	if (o->texture_attached) {
+		delete_gl_buffer(o->tbo);
+	}
+}
+
+const struct object_proto basic_object_proto = {
+	.draw = basic_object_redraw,
+	.update_mvp = basic_object_update_mvp,
+	.free = basic_object_free,
+};
 
 bool basic_object_texture(struct basic_object *o, GLuint texture, vec3 *uvs,
 		size_t uv_count)
@@ -110,6 +129,8 @@ bool basic_object_create_from_geometry(struct basic_object *o,
 {
 	bool ok;
 
+	object_init(&o->as_object, &basic_object_proto);
+
 	mat4x4_identity(o->model);
 	mat4x4_identity(o->mvp);
 	o->program = shader_program;
@@ -127,15 +148,3 @@ bool basic_object_create_from_geometry(struct basic_object *o,
 			nvertices, indices, nindices);
 }
 
-void basic_object_free(struct basic_object *o)
-{
-	delete_gl_buffer(o->vbo);
-
-	if (o->nbo_presented) {
-		delete_gl_buffer(o->nbo);
-	}
-
-	if (o->texture_attached) {
-		delete_gl_buffer(o->tbo);
-	}
-}

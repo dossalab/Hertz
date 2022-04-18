@@ -2,7 +2,7 @@
 #include <utils/list.h>
 #include <utils/common.h>
 
-#include <objects/basic.h>
+#include "object.h"
 #include "scene.h"
 
 void scene_init(struct scene *s)
@@ -10,55 +10,40 @@ void scene_init(struct scene *s)
 	list_init(&s->drawing_list);
 }
 
-bool scene_add_object(struct scene *s, struct basic_object *o)
+void scene_attach(struct scene *s, struct object *o)
 {
-	struct scene_node *node = malloc(sizeof(struct scene_node));
-	if (!node) {
-		return false;
-	}
-
-	node->object = o;
-
-	list_push(&node->head, &s->drawing_list);
-	return true;
+	list_push(&o->scene_node, &s->drawing_list);
 }
 
 void scene_update_mvp(struct scene *s, mat4x4 vp)
 {
 	struct list_item *ptr;
-	struct scene_node *node;
-	struct basic_object *o;
+	struct object *o;
 
 	list_backward(ptr, &s->drawing_list) {
-		node = container_of(ptr, struct scene_node, head);
-		o = node->object;
-
-		basic_object_update_mvp(o, vp);
+		o = container_of(ptr, struct object, scene_node);
+		object_update_mvp(o, vp);
 	}
 }
 
 void scene_redraw(struct scene *s, float time)
 {
 	struct list_item *ptr;
-	struct scene_node *node;
-	struct basic_object *o;
+	struct object *o;
 
 	list_backward(ptr, &s->drawing_list) {
-		node = container_of(ptr, struct scene_node, head);
-		o = node->object;
-
-		basic_object_redraw(o, time);
+		o = container_of(ptr, struct object, scene_node);
+		object_draw(o);
 	}
 }
 
 void scene_free(struct scene *s)
 {
-	struct list_item *ptr, *n;
-	struct scene_node *node;
+	struct list_item *ptr;
+	struct object *o;
 
-	list_backward_safe(ptr, n, &s->drawing_list) {
-		node = container_of(ptr, struct scene_node, head);
-		free(node);
+	list_backward(ptr, &s->drawing_list) {
+		o = container_of(ptr, struct object, scene_node);
+		object_free(o);
 	}
 }
-

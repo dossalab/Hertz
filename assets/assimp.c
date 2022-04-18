@@ -146,7 +146,7 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 	}
 
 	mat4x4_transpose(o->model, (void *)ai_model);
-	scene_add_object(s, o);
+	scene_attach(s, &o->as_object);
 	return true;
 }
 
