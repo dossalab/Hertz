@@ -19,6 +19,31 @@ static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
 
 extern int assimp_shader;
 
+static struct basic_object *basic_object_new(GLuint program)
+{
+	struct basic_object *o;
+	bool ok;
+
+	o = calloc(1, sizeof(struct basic_object));
+	if (!o) {
+		return NULL;
+	}
+
+	ok = object_init(&o->as_object, program, &basic_object_proto);
+	if (!ok) {
+		free(o);
+		return NULL;
+	}
+
+	return o;
+}
+
+static void basic_object_free(struct basic_object *o)
+{
+	object_deinit(&o->as_object);
+	free(o);
+}
+
 static inline bool ai_get_texture_helper(struct aiMaterial *material,
 		enum aiTextureType type, unsigned index, struct aiString *path)
 {
@@ -92,7 +117,7 @@ static bool apply_textures(struct basic_object *o, struct aiMesh *ai_mesh,
 	return true;
 }
 
-static bool create_object_from_ai(struct basic_object *o, struct aiMesh *ai_mesh)
+static bool attach_geometry(struct basic_object *o, struct aiMesh *ai_mesh)
 {
 	const size_t nindices = ai_mesh->mNumFaces * ai_mesh->mFaces[0].mNumIndices;
 	unsigned *indices;
@@ -129,19 +154,14 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 	bool ok;
 	struct basic_object *o;
 
-	/* fuckery */
-	o = calloc(1, sizeof(struct basic_object));
+	o = basic_object_new(assimp_shader);
 	if (!o) {
 		return false;
 	}
 
-	ok = object_init(&o->as_object, assimp_shader, &basic_object_proto);
+	ok = attach_geometry(o, ai_mesh);
 	if (!ok) {
-		return false;
-	}
-
-	ok = create_object_from_ai(o, ai_mesh);
-	if (!ok) {
+		basic_object_free(o);
 		return false;
 	}
 

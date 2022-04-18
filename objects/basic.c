@@ -49,7 +49,7 @@ static void basic_object_redraw(struct object *_o)
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
 }
 
-static void basic_object_free(struct object *_o)
+static void basic_object_deinit(struct object *_o)
 {
 	struct basic_object *o = cast_basic_object(_o);
 
@@ -133,6 +133,6 @@ fail:
 const struct object_proto basic_object_proto = {
 	.draw = basic_object_redraw,
 	.update_mvp = basic_object_update_mvp,
-	.free = basic_object_free,
 	.init = basic_object_init,
+	.deinit = basic_object_deinit,
 };

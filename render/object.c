@@ -13,9 +13,9 @@ void object_update_mvp(struct object *o, mat4x4 vp)
 	o->proto->update_mvp(o, vp);
 }
 
-void object_free(struct object *o)
+void object_deinit(struct object *o)
 {
-	o->proto->free(o);
+	o->proto->deinit(o);
 	glDeleteVertexArrays(1, &o->vao);
 }
 

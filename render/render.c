@@ -64,8 +64,7 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
 {
-	struct render_state *state = user;
-	scene_free(&state->scene);
+	/* pass */
 }
 
 static bool glfw_on_init(GLFWwindow *window, void *user)

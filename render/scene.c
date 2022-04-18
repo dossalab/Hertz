@@ -36,14 +36,3 @@ void scene_redraw(struct scene *s, float time)
 		object_draw(o);
 	}
 }
-
-void scene_free(struct scene *s)
-{
-	struct list_item *ptr;
-	struct object *o;
-
-	list_backward(ptr, &s->drawing_list) {
-		o = container_of(ptr, struct object, scene_node);
-		object_free(o);
-	}
-}

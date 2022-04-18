@@ -15,7 +15,6 @@ void scene_init(struct scene *s);
 void scene_attach(struct scene *s, struct object *o);
 void scene_update_mvp(struct scene *s, mat4x4 vp);
 void scene_redraw(struct scene *s, float time);
-void scene_free(struct scene *s);
 
 #endif
 

@@ -10,8 +10,8 @@ struct object;
 struct object_proto {
 	void (*draw)(struct object *o);
 	void (*update_mvp)(struct object *o, mat4x4 vp);
-	void (*free)(struct object *o);
 	bool (*init)(struct object *o);
+	void (*deinit)(struct object *o);
 };
 
 struct object {
@@ -23,7 +23,7 @@ struct object {
 
 void object_draw(struct object *o);
 void object_update_mvp(struct object *o, mat4x4 vp);
-void object_free(struct object *o);
 bool object_init(struct object *o, GLuint program, const struct object_proto *proto);
+void object_deinit(struct object *o);
 
 #endif
