@@ -1,7 +1,7 @@
 #include <math.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <utils/linmath.h>
+#include <utils/3rdparty/linmath/linmath.h>
 
 #include "fly_camera.h"
 

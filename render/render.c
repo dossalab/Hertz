@@ -9,7 +9,7 @@
 #include <utils/gl/io.h>
 #include <utils/log.h>
 #include <utils/files.h>
-#include <utils/linmath.h>
+#include <utils/3rdparty/linmath/linmath.h>
 #include <cameras/fly_camera.h>
 #include <assets/loader.h>
 

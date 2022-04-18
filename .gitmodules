@@ -1,3 +1,6 @@
 [submodule "utils/3rdparty/stb"]
 	path = utils/3rdparty/stb
 	url = https://github.com/nothings/stb
+[submodule "utils/3rdparty/linmath"]
+	path = utils/3rdparty/linmath
+	url = https://github.com/datenwolf/linmath.h
