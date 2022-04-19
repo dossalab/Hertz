@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
-#include <GL/glew.h>
+#include GL_EXTENSIONS_HEADER
 
 #include "shaders.h"
 

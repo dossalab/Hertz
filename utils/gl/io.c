@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <GL/glew.h>
+#include GL_EXTENSIONS_HEADER
 #include <utils/log.h>
 #include <utils/files.h>
 #include "io.h"

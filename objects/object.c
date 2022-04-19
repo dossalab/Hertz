@@ -1,4 +1,4 @@
-#include <utils/glfw_context.h>
+#include GL_EXTENSIONS_HEADER
 #include "object.h"
 
 void object_draw(struct object *o)

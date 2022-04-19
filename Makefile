@@ -26,7 +26,8 @@ objects := \
 	utils/stb_image.o
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm
-CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g
+CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g \
+	-DGL_EXTENSIONS_HEADER="<GL/glew.h>"
 
 all: $(exe)
 

@@ -1,3 +1,4 @@
+#include GL_EXTENSIONS_HEADER
 #include "textures.h"
 
 GLuint create_texture_from_rgb(void *texture_data, size_t w, size_t h)
