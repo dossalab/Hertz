@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <utils/list.h>
-#include <utils/common.h>
 
+#include <hz/utils/container_of.h>
 #include <hz/object.h>
 #include <hz/scene.h>
 
@@ -21,7 +21,7 @@ void hz_scene_update_mvp(struct hz_scene *s, mat4x4 vp)
 	struct hz_object *o;
 
 	list_backward(ptr, &s->drawing_list) {
-		o = container_of(ptr, struct hz_object, scene_node);
+		o = hz_container_of(ptr, struct hz_object, scene_node);
 		hz_object_update_mvp(o, vp);
 	}
 }
@@ -32,7 +32,7 @@ void hz_scene_redraw(struct hz_scene *s, float time)
 	struct hz_object *o;
 
 	list_backward(ptr, &s->drawing_list) {
-		o = container_of(ptr, struct hz_object, scene_node);
+		o = hz_container_of(ptr, struct hz_object, scene_node);
 		hz_object_draw(o);
 	}
 }

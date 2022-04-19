@@ -5,7 +5,7 @@
 #include <utils/3rdparty/linmath/linmath.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <utils/common.h>
+#include <hz/utils/container_of.h>
 #include <hz/object.h>
 
 struct hz_basic_object {
@@ -31,7 +31,7 @@ struct hz_basic_object {
 };
 
 #define hz_cast_basic_object(ptr) \
-	container_of(ptr, struct hz_basic_object, as_object)
+	hz_container_of(ptr, struct hz_basic_object, as_object)
 
 bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count);
