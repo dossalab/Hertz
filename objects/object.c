@@ -1,25 +1,26 @@
 #include GL_EXTENSIONS_HEADER
 #include "object.h"
 
-void object_draw(struct object *o)
+void hz_object_draw(struct hz_object *o)
 {
 	glBindVertexArray(o->vao);
 	glUseProgram(o->program);
 	o->proto->draw(o);
 }
 
-void object_update_mvp(struct object *o, mat4x4 vp)
+void hz_object_update_mvp(struct hz_object *o, mat4x4 vp)
 {
 	o->proto->update_mvp(o, vp);
 }
 
-void object_deinit(struct object *o)
+void hz_object_deinit(struct hz_object *o)
 {
 	o->proto->deinit(o);
 	glDeleteVertexArrays(1, &o->vao);
 }
 
-bool object_init(struct object *o, GLuint program, const struct object_proto *proto)
+bool hz_object_init(struct hz_object *o, GLuint program,
+		const struct hz_object_proto *proto)
 {
 	o->proto = proto;
 	o->program = program;

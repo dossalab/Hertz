@@ -10,7 +10,7 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
 }
 
-static bool find_uniforms(struct basic_object *o)
+static bool find_uniforms(struct hz_basic_object *o)
 {
 	o->uniforms.mvp = glGetUniformLocation(o->as_object.program, "MVP");
 	if (o->uniforms.mvp < 0) {
@@ -27,16 +27,16 @@ static bool find_uniforms(struct basic_object *o)
 	return true;
 }
 
-static void basic_object_update_mvp(struct object *_o, mat4x4 vp)
+static void basic_object_update_mvp(struct hz_object *_o, mat4x4 vp)
 {
-	struct basic_object *o = cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(_o);
 
 	mat4x4_mul(o->transform.mvp, vp, o->transform.model);
 }
 
-static void basic_object_redraw(struct object *_o)
+static void basic_object_redraw(struct hz_object *_o)
 {
-	struct basic_object *o = cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(_o);
 
 	if (o->texture_attached) {
 		glBindTexture(GL_TEXTURE_2D, o->texture);
@@ -49,9 +49,9 @@ static void basic_object_redraw(struct object *_o)
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
 }
 
-static void basic_object_deinit(struct object *_o)
+static void basic_object_deinit(struct hz_object *_o)
 {
-	struct basic_object *o = cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(_o);
 
 	delete_gl_buffer(o->buffers.vertices);
 	delete_gl_buffer(o->buffers.normals);
@@ -61,9 +61,9 @@ static void basic_object_deinit(struct object *_o)
 	}
 }
 
-static bool basic_object_init(struct object *_o)
+static bool basic_object_init(struct hz_object *_o)
 {
-	struct basic_object *o = cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(_o);
 	bool ok;
 
 	mat4x4_identity(o->transform.model);
@@ -79,7 +79,7 @@ static bool basic_object_init(struct object *_o)
 	return ok;
 }
 
-bool basic_object_set_texture(struct basic_object *o, GLuint texture,
+bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count)
 {
 	o->buffers.uvs = create_shader_attribute_buffer(o->as_object.program,
@@ -95,7 +95,7 @@ bool basic_object_set_texture(struct basic_object *o, GLuint texture,
 	return true;
 }
 
-bool basic_object_set_geometry(struct basic_object *o,
+bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices)
 {
@@ -130,7 +130,7 @@ fail:
 	return false;
 }
 
-const struct object_proto basic_object_proto = {
+const struct hz_object_proto hz_basic_object_proto = {
 	.draw = basic_object_redraw,
 	.update_mvp = basic_object_update_mvp,
 	.init = basic_object_init,

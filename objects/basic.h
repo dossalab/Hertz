@@ -8,8 +8,8 @@
 #include <utils/common.h>
 #include "object.h"
 
-struct basic_object {
-	struct object as_object;
+struct hz_basic_object {
+	struct hz_object as_object;
 
 	struct {
 		GLuint vertices, normals, uvs, indices;
@@ -30,16 +30,16 @@ struct basic_object {
 	size_t nindices;
 };
 
-#define cast_basic_object(ptr) \
-	container_of(ptr, struct basic_object, as_object)
+#define hz_cast_basic_object(ptr) \
+	container_of(ptr, struct hz_basic_object, as_object)
 
-bool basic_object_set_texture(struct basic_object *o, GLuint texture,
+bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count);
 
-bool basic_object_set_geometry(struct basic_object *o,
+bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices);
 
-extern const struct object_proto basic_object_proto;
+extern const struct hz_object_proto hz_basic_object_proto;
 
 #endif

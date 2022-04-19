@@ -17,7 +17,7 @@ static inline void mat4x4_rotate_vec(mat4x4 res, mat4x4 mat, vec3 vec, float a) 
 	mat4x4_rotate(res, mat, vec[0], vec[1], vec[2], a);
 }
 
-static void apply_pitch_limits(struct fly_camera *c, float *delta_pitch)
+static void apply_pitch_limits(struct hz_fly_camera *c, float *delta_pitch)
 {
 	float pitch = acosf(vec3_mul_inner(c->look, c->up));
 
@@ -30,8 +30,8 @@ static void apply_pitch_limits(struct fly_camera *c, float *delta_pitch)
 	}
 }
 
-void fly_camera_update_helper(struct fly_camera *c, float time_spent, int dx, int dy,
-	bool forward, bool left, bool backward, bool right)
+static void fly_camera_update_helper(struct hz_fly_camera *c, float time_spent,
+		int dx, int dy, bool forward, bool left, bool backward, bool right)
 {
 	mat4x4 rotation;
 	vec3 across, upward, x_vec, z_vec, xz_vec, look_point;
@@ -69,9 +69,10 @@ void fly_camera_update_helper(struct fly_camera *c, float time_spent, int dx, in
 	mat4x4_look_at(c->as_camera.view, c->position, look_point, c->up);
 }
 
-static void fly_camera_update(struct camera *_c, GLFWwindow *window, float time_spent)
+static void fly_camera_update(struct hz_camera *_c,
+		GLFWwindow *window, float time_spent)
 {
-	struct fly_camera *c = cast_fly_camera(_c);
+	struct hz_fly_camera *c = hz_cast_fly_camera(_c);
 
 	double pos_x, pos_y;
 	static double old_pos_x, old_pos_y;
@@ -91,9 +92,9 @@ static void fly_camera_update(struct camera *_c, GLFWwindow *window, float time_
 	old_pos_y = pos_y;
 }
 
-static void fly_camera_init(struct camera *_c)
+static void fly_camera_init(struct hz_camera *_c)
 {
-	struct fly_camera *c = cast_fly_camera(_c);
+	struct hz_fly_camera *c = hz_cast_fly_camera(_c);
 
 	c->speed = 10.f;
 
@@ -102,7 +103,7 @@ static void fly_camera_init(struct camera *_c)
 	vec3_dup(c->up, (vec3) { 0.0f, 1.0f, 0.0f });
 }
 
-const struct camera_proto fly_camera_proto = {
+const struct hz_camera_proto hz_fly_camera_proto = {
 	.init = fly_camera_init,
 	.update = fly_camera_update,
 };

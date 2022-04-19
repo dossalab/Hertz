@@ -19,17 +19,17 @@ static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
 
 extern int assimp_shader;
 
-static struct basic_object *basic_object_new(GLuint program)
+static struct hz_basic_object *hz_basic_object_new(GLuint program)
 {
-	struct basic_object *o;
+	struct hz_basic_object *o;
 	bool ok;
 
-	o = calloc(1, sizeof(struct basic_object));
+	o = calloc(1, sizeof(struct hz_basic_object));
 	if (!o) {
 		return NULL;
 	}
 
-	ok = object_init(&o->as_object, program, &basic_object_proto);
+	ok = hz_object_init(&o->as_object, program, &hz_basic_object_proto);
 	if (!ok) {
 		free(o);
 		return NULL;
@@ -38,9 +38,9 @@ static struct basic_object *basic_object_new(GLuint program)
 	return o;
 }
 
-static void basic_object_free(struct basic_object *o)
+static void basic_object_free(struct hz_basic_object *o)
 {
-	object_deinit(&o->as_object);
+	hz_object_deinit(&o->as_object);
 	free(o);
 }
 
@@ -101,7 +101,7 @@ static GLuint create_texture_from_mesh(struct aiMesh *ai_mesh,
 	return create_texture_from_memory(texture->pcData, texture->mWidth);
 }
 
-static bool apply_textures(struct basic_object *o, struct aiMesh *ai_mesh,
+static bool apply_textures(struct hz_basic_object *o, struct aiMesh *ai_mesh,
 		const struct aiScene *ai_scene)
 {
 	GLuint texture;
@@ -111,13 +111,13 @@ static bool apply_textures(struct basic_object *o, struct aiMesh *ai_mesh,
 		return false;
 	}
 
-	basic_object_set_texture(o, texture, (vec3 *)ai_mesh->mTextureCoords[0],
+	hz_basic_object_set_texture(o, texture, (vec3 *)ai_mesh->mTextureCoords[0],
 			ai_mesh->mNumVertices);
 
 	return true;
 }
 
-static bool attach_geometry(struct basic_object *o, struct aiMesh *ai_mesh)
+static bool attach_geometry(struct hz_basic_object *o, struct aiMesh *ai_mesh)
 {
 	const size_t nindices = ai_mesh->mNumFaces * ai_mesh->mFaces[0].mNumIndices;
 	unsigned *indices;
@@ -138,7 +138,7 @@ static bool attach_geometry(struct basic_object *o, struct aiMesh *ai_mesh)
 		}
 	}
 
-	ok = basic_object_set_geometry(o,
+	ok = hz_basic_object_set_geometry(o,
 		(vec3 *)ai_mesh->mVertices, (vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
 		indices, nindices);
@@ -148,13 +148,13 @@ static bool attach_geometry(struct basic_object *o, struct aiMesh *ai_mesh)
 	return ok;
 }
 
-static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
+static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 		struct aiMatrix4x4 *ai_model, const struct aiScene *ai_scene)
 {
 	bool ok;
-	struct basic_object *o;
+	struct hz_basic_object *o;
 
-	o = basic_object_new(assimp_shader);
+	o = hz_basic_object_new(assimp_shader);
 	if (!o) {
 		return false;
 	}
@@ -172,11 +172,11 @@ static bool import_ai_mesh(struct scene *s, struct aiMesh *ai_mesh,
 	}
 
 	mat4x4_transpose(o->transform.model, (void *)ai_model);
-	scene_attach(s, &o->as_object);
+	hz_scene_attach(s, &o->as_object);
 	return true;
 }
 
-static void load_scene_node(struct scene *s, const struct aiScene *scene,
+static void load_scene_node(struct hz_scene *s, const struct aiScene *scene,
 		struct aiNode *node)
 {
 	struct aiMesh *mesh;
@@ -193,7 +193,7 @@ static void load_scene_node(struct scene *s, const struct aiScene *scene,
 	}
 }
 
-static void load_scene_recursive(struct scene *s, const struct aiScene *scene,
+static void load_scene_recursive(struct hz_scene *s, const struct aiScene *scene,
 		struct aiNode *node)
 {
 	struct aiNode *child;
@@ -206,13 +206,13 @@ static void load_scene_recursive(struct scene *s, const struct aiScene *scene,
 	}
 }
 
-static bool assimp_import_scene(const char *path, struct scene *s)
+static bool assimp_import_scene(const char *path, struct hz_scene *s)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
 		| aiProcess_JoinIdenticalVertices;
 
-	scene_init(s);
+	hz_scene_init(s);
 
 	scene = aiImportFile(path, flags);
 	if (!scene) {
@@ -225,8 +225,8 @@ static bool assimp_import_scene(const char *path, struct scene *s)
 	return true;
 }
 
-struct loader_proto assimp_loader_proto = {
+static struct hz_loader_proto assimp_loader_proto = {
 	.import_scene = assimp_import_scene,
 };
 
-export_loader_proto(assimp_loader_proto);
+hz_export_loader_proto(assimp_loader_proto);

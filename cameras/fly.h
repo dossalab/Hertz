@@ -5,15 +5,15 @@
 #include <utils/common.h>
 #include "camera.h"
 
-struct fly_camera {
-	struct camera as_camera;
+struct hz_fly_camera {
+	struct hz_camera as_camera;
 	vec3 position, look, up;
 	float speed;
 };
 
-#define cast_fly_camera(ptr) \
-	container_of(ptr, struct fly_camera, as_camera)
+#define hz_cast_fly_camera(ptr) \
+	container_of(ptr, struct hz_fly_camera, as_camera)
 
-extern const struct camera_proto fly_camera_proto;
+extern const struct hz_camera_proto hz_fly_camera_proto;
 
 #endif

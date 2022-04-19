@@ -5,25 +5,26 @@
 #include <utils/3rdparty/linmath/linmath.h>
 #include <scene/scene.h>
 
-struct object;
+struct hz_object;
 
-struct object_proto {
-	void (*draw)(struct object *o);
-	void (*update_mvp)(struct object *o, mat4x4 vp);
-	bool (*init)(struct object *o);
-	void (*deinit)(struct object *o);
+struct hz_object_proto {
+	void (*draw)(struct hz_object *o);
+	void (*update_mvp)(struct hz_object *o, mat4x4 vp);
+	bool (*init)(struct hz_object *o);
+	void (*deinit)(struct hz_object *o);
 };
 
-struct object {
+struct hz_object {
 	GLuint vao;
 	GLuint program;
 	struct list_item scene_node;
-	const struct object_proto *proto;
+	const struct hz_object_proto *proto;
 };
 
-void object_draw(struct object *o);
-void object_update_mvp(struct object *o, mat4x4 vp);
-bool object_init(struct object *o, GLuint program, const struct object_proto *proto);
-void object_deinit(struct object *o);
+void hz_object_draw(struct hz_object *o);
+void hz_object_update_mvp(struct hz_object *o, mat4x4 vp);
+bool hz_object_init(struct hz_object *o, GLuint program,
+		const struct hz_object_proto *proto);
+void hz_object_deinit(struct hz_object *o);
 
 #endif

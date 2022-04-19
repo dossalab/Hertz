@@ -11,8 +11,8 @@ static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 struct render_state {
-	struct scene scene;
-	struct fly_camera camera;
+	struct hz_scene scene;
+	struct hz_fly_camera camera;
 	double time;
 	GLuint shader_sky;
 	GLuint shader_horse;
@@ -43,18 +43,18 @@ static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 	aspect = (float)w / (float)h;
 
 	glViewport(0, 0, w, h);
-	camera_update_perspective(&state->camera.as_camera, aspect);
+	hz_camera_update_perspective(&state->camera.as_camera, aspect);
 }
 
 static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 {
 	struct render_state *state = user;
 
-	camera_update(&state->camera.as_camera, window, spent);
-	scene_update_mvp(&state->scene, state->camera.as_camera.vp);
+	hz_camera_update(&state->camera.as_camera, window, spent);
+	hz_scene_update_mvp(&state->scene, state->camera.as_camera.vp);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	scene_redraw(&state->scene, state->time);
+	hz_scene_redraw(&state->scene, state->time);
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
@@ -70,7 +70,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	camera_init(&state->camera.as_camera, &fly_camera_proto);
+	hz_camera_init(&state->camera.as_camera, &hz_fly_camera_proto);
 
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
@@ -79,7 +79,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	ok = loader_import_scene("res/scene.glb", &state->scene);
+	ok = hz_loader_import_scene("res/scene.glb", &state->scene);
 	if (!ok) {
 		log_e(tag, "unable to import scene");
 		return false;

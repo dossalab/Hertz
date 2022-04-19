@@ -3,17 +3,17 @@
 
 #include <stdbool.h>
 
-struct scene;
+struct hz_scene;
 
-struct loader_proto {
-	bool (*import_scene)(const char *, struct scene *);
+struct hz_loader_proto {
+	bool (*import_scene)(const char *, struct hz_scene *);
 };
 
-#define export_loader_proto(x) \
-	struct loader_proto *default_loader_proto = &(x)
+#define hz_export_loader_proto(x) \
+	struct hz_loader_proto *hz_default_loader_proto = &(x)
 
-extern struct loader_proto *default_loader_proto;
+extern struct hz_loader_proto *hz_default_loader_proto;
 
-bool loader_import_scene(const char *path, struct scene *s);
+bool hz_loader_import_scene(const char *path, struct hz_scene *s);
 
 #endif
