@@ -1,9 +1,4 @@
-#include <math.h>
-#include <assert.h>
-#include <stdbool.h>
-#include <utils/3rdparty/linmath/linmath.h>
-
-#include "fly_camera.h"
+#include "fly.h"
 
 #define CAM_PI	3.14159265359f
 
@@ -22,7 +17,7 @@ static inline void mat4x4_rotate_vec(mat4x4 res, mat4x4 mat, vec3 vec, float a) 
 	mat4x4_rotate(res, mat, vec[0], vec[1], vec[2], a);
 }
 
-static void apply_pitch_limits(struct camera *c, float *delta_pitch)
+static void apply_pitch_limits(struct fly_camera *c, float *delta_pitch)
 {
 	float pitch = acosf(vec3_mul_inner(c->look, c->up));
 
@@ -35,7 +30,7 @@ static void apply_pitch_limits(struct camera *c, float *delta_pitch)
 	}
 }
 
-void fly_camera_update_helper(struct camera *c, float time_spent, int dx, int dy,
+void fly_camera_update_helper(struct fly_camera *c, float time_spent, int dx, int dy,
 	bool forward, bool left, bool backward, bool right)
 {
 	mat4x4 rotation;
@@ -70,11 +65,14 @@ void fly_camera_update_helper(struct camera *c, float time_spent, int dx, int dy
 
 	mat4x4_mul_vec3(c->look, rotation, c->look);
 	vec3_add(look_point, c->look, c->position);
-	mat4x4_look_at(c->view, c->position, look_point, c->up);
+
+	mat4x4_look_at(c->as_camera.view, c->position, look_point, c->up);
 }
 
-void fly_camera_update(struct camera *c, GLFWwindow *window, float time_spent)
+static void fly_camera_update(struct camera *_c, GLFWwindow *window, float time_spent)
 {
+	struct fly_camera *c = cast_fly_camera(_c);
+
 	double pos_x, pos_y;
 	static double old_pos_x, old_pos_y;
 
@@ -89,26 +87,22 @@ void fly_camera_update(struct camera *c, GLFWwindow *window, float time_spent)
 		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
 		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
 
-	mat4x4_mul(c->vp, c->projection, c->view);
-
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
 }
 
-void fly_camera_update_projection(struct camera *c, float fov, float aspect)
+static void fly_camera_init(struct camera *_c)
 {
-	mat4x4_perspective(c->projection, fov, aspect, 0.1f, 1000.0f);
-}
+	struct fly_camera *c = cast_fly_camera(_c);
 
-void fly_camera_reset(struct camera *c)
-{
 	c->speed = 10.f;
-
-	mat4x4_identity(c->projection);
-	mat4x4_identity(c->view);
-	mat4x4_identity(c->vp);
 
 	vec3_dup(c->look, (vec3) { 1.0f, 1.0f, 1.0f });
 	vec3_dup(c->position, (vec3) { 5.0f, 5.0f, 5.0f });
 	vec3_dup(c->up, (vec3) { 0.0f, 1.0f, 0.0f });
 }
+
+const struct camera_proto fly_camera_proto = {
+	.init = fly_camera_init,
+	.update = fly_camera_update,
+};

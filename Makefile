@@ -14,8 +14,9 @@ objects := \
 	objects/basic.o \
 	render/render.o \
 	render/scene.o \
+	render/camera.o \
 	render/object.o \
-	cameras/fly_camera.o \
+	cameras/fly.o \
 	utils/gl/shaders.o \
 	utils/gl/textures.o \
 	utils/gl/io.o \

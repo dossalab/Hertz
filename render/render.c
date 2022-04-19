@@ -10,14 +10,12 @@
 #include <utils/log.h>
 #include <utils/files.h>
 #include <utils/3rdparty/linmath/linmath.h>
-#include <cameras/fly_camera.h>
+#include <cameras/fly.h>
 #include <assets/loader.h>
 
 #include "render.h"
 #include "scene.h"
-
-#define ENG_PI		3.14159265359f
-#define ENG_FOV		(70.0f * ENG_PI / 180.0f)
+#include "camera.h"
 
 static const char *tag = "render";
 int assimp_shader;
@@ -44,7 +42,7 @@ static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 	aspect = (float)w / (float)h;
 
 	glViewport(0, 0, w, h);
-	fly_camera_update_projection(&state->fly_camera, ENG_FOV, aspect);
+	camera_update_perspective(&state->camera.as_camera, aspect);
 }
 
 static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
@@ -54,8 +52,8 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 
 	mat4x4_identity(identity);
 
-	fly_camera_update(&state->fly_camera, window, spent);
-	scene_update_mvp(&state->scene, state->fly_camera.vp);
+	camera_update(&state->camera.as_camera, window, spent);
+	scene_update_mvp(&state->scene, state->camera.as_camera.vp);
 	state->time += spent;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -75,7 +73,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	fly_camera_reset(&state->fly_camera);
+	camera_init(&state->camera.as_camera, &fly_camera_proto);
 
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);

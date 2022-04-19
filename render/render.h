@@ -2,12 +2,12 @@
 #define RENDER_RENDER_H
 
 #include <stdbool.h>
-#include <cameras/fly_camera.h>
 #include "scene.h"
+#include <cameras/fly.h>
 
 struct render_state {
 	struct scene scene;
-	struct camera fly_camera;
+	struct fly_camera camera;
 	double time;
 	GLuint shader_sky;
 	GLuint shader_horse;
