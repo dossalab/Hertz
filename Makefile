@@ -19,11 +19,11 @@ objects := \
 	src/helpers/shaders.o \
 	src/helpers/textures.o \
 	src/helpers/io.o \
+	src/misc/stb_image.o \
 	utils/files.o \
 	utils/glfw_context.o \
 	utils/list.o \
 	utils/log.o \
-	utils/stb_image.o
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm
 CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g -Iinclude \

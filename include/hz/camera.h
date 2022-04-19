@@ -1,7 +1,7 @@
 #ifndef HZ_CAMERA_H
 #define HZ_CAMERA_H
 
-#include <utils/3rdparty/linmath/linmath.h>
+#include <vendor/linmath/linmath.h>
 #include <utils/glfw_context.h>
 
 struct hz_camera;

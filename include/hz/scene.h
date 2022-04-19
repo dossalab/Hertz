@@ -2,8 +2,8 @@
 #define HZ_SCENE_H
 
 #include <utils/list.h>
+#include <vendor/linmath/linmath.h>
 #include <stdbool.h>
-#include <utils/3rdparty/linmath/linmath.h>
 
 struct hz_object;
 

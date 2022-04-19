@@ -2,7 +2,7 @@
 #define HZ_OBJECT_H
 
 #include <GL/gl.h>
-#include <utils/3rdparty/linmath/linmath.h>
+#include <vendor/linmath/linmath.h>
 #include "scene.h"
 
 struct hz_object;

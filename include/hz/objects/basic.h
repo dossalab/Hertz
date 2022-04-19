@@ -2,7 +2,7 @@
 #define HZ_OBJECTS_BASIC_H
 
 #include <GL/gl.h>
-#include <utils/3rdparty/linmath/linmath.h>
+#include <vendor/linmath/linmath.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <hz/utils/container_of.h>

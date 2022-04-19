@@ -3,8 +3,9 @@
 #include <assimp/postprocess.h>
 #include <utils/log.h>
 #include <stdlib.h>
-#include <utils/3rdparty/stb/stb_image.h>
 #include <assert.h>
+
+#include <vendor/stb/stb_image.h>
 
 #include <hz/helpers/textures.h>
 #include <hz/objects/basic.h>
