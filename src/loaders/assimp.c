@@ -3,10 +3,10 @@
 #include <assimp/postprocess.h>
 #include <utils/log.h>
 #include <stdlib.h>
-#include <utils/gl/textures.h>
 #include <utils/3rdparty/stb/stb_image.h>
 #include <assert.h>
 
+#include <hz/helpers/textures.h>
 #include <hz/objects/basic.h>
 #include <hz/scene.h>
 #include <hz/loader.h>
@@ -19,7 +19,7 @@ static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
 
 extern int assimp_shader;
 
-static struct hz_basic_object *hz_basic_object_new(GLuint program)
+static struct hz_basic_object *basic_object_new(GLuint program)
 {
 	struct hz_basic_object *o;
 	bool ok;
@@ -65,7 +65,7 @@ static GLuint create_texture_from_memory(void *buffer, size_t len)
 		return 0;
 	}
 
-	texture = create_texture_from_rgb(data, w, h);
+	texture = hz_create_texture_from_rgb(data, w, h);
 	stbi_image_free(data);
 
 	return texture;
@@ -154,7 +154,7 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 	bool ok;
 	struct hz_basic_object *o;
 
-	o = hz_basic_object_new(assimp_shader);
+	o = basic_object_new(assimp_shader);
 	if (!o) {
 		return false;
 	}

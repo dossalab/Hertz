@@ -16,9 +16,9 @@ objects := \
 	src/camera.o \
 	src/objects/basic.o \
 	src/cameras/fly.o \
-	utils/gl/shaders.o \
-	utils/gl/textures.o \
-	utils/gl/io.o \
+	src/helpers/shaders.o \
+	src/helpers/textures.o \
+	src/helpers/io.o \
 	utils/files.o \
 	utils/glfw_context.o \
 	utils/list.o \

@@ -1,7 +1,7 @@
 #include <utils/glfw_context.h> /* should be the first one */
 #include <utils/log.h>
-#include <utils/gl/io.h>
 
+#include <hz/helpers/io.h>
 #include <hz/cameras/fly.h>
 #include <hz/scene.h>
 #include <hz/loader.h>
@@ -24,11 +24,11 @@ int assimp_shader;
 
 static bool load_shaders(struct render_state *state)
 {
-	state->shader_sky = create_program_from_files("shaders/simple.vert",
+	state->shader_sky = hz_create_program_from_files("shaders/simple.vert",
 			"shaders/skybox.frag");
-	state->shader_horse = create_program_from_files("shaders/psycho.vert",
+	state->shader_horse = hz_create_program_from_files("shaders/psycho.vert",
 			"shaders/simple.frag");
-	state->shader_land = create_program_from_files("shaders/simple.vert",
+	state->shader_land = hz_create_program_from_files("shaders/simple.vert",
 			"shaders/simple.frag");
 
 	assimp_shader = state->shader_land;

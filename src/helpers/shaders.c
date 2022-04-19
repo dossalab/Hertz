@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include GL_EXTENSIONS_HEADER
 
-#include "shaders.h"
+#include <hz/helpers/shaders.h>
 
 static char *get_shader_compilation_results(GLuint handle)
 {
@@ -23,7 +23,7 @@ static char *get_shader_compilation_results(GLuint handle)
 	return buffer;
 }
 
-GLuint compile_single_shader(const char *source, char **logs, GLenum type)
+GLuint hz_compile_single_shader(const char *source, char **logs, GLenum type)
 {
 	GLuint handle;
 	GLint compilation_status;
@@ -47,7 +47,7 @@ GLuint compile_single_shader(const char *source, char **logs, GLenum type)
 	return handle;
 }
 
-GLuint create_shader_program(size_t shader_count, ...)
+GLuint hz_create_shader_program(size_t shader_count, ...)
 {
 	GLuint program;
 	GLuint shader;
@@ -71,7 +71,7 @@ GLuint create_shader_program(size_t shader_count, ...)
 	return program;
 }
 
-GLuint create_gl_buffer(void *data, size_t len)
+GLuint hz_create_gl_buffer(void *data, size_t len)
 {
 	GLuint buffer;
 
@@ -86,7 +86,7 @@ GLuint create_gl_buffer(void *data, size_t len)
 	return buffer;
 }
 
-GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
+GLuint hz_create_shader_attribute_buffer(GLuint shader, const char *name,
 		size_t components, void *data, size_t len)
 {
 	GLuint buffer;
@@ -99,7 +99,7 @@ GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 		return 0;
 	}
 
-	buffer = create_gl_buffer(data, byte_len);
+	buffer = hz_create_gl_buffer(data, byte_len);
 	if (!buffer) {
 		return 0;
 	}
@@ -110,7 +110,7 @@ GLuint create_shader_attribute_buffer(GLuint shader, const char *name,
 	return buffer;
 }
 
-void delete_gl_buffer(GLuint buffer)
+void hz_delete_gl_buffer(GLuint buffer)
 {
 	glDeleteBuffers(1, &buffer);
 }

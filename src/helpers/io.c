@@ -2,12 +2,12 @@
 #include GL_EXTENSIONS_HEADER
 #include <utils/log.h>
 #include <utils/files.h>
-#include "io.h"
-#include "shaders.h"
+#include <hz/helpers/io.h>
+#include <hz/helpers/shaders.h>
 
 static const char *tag = "glio";
 
-GLuint create_shader_from_file(const char *filename, GLenum type)
+GLuint hz_create_shader_from_file(const char *filename, GLenum type)
 {
 	GLuint shader;
 	char *source;
@@ -19,7 +19,7 @@ GLuint create_shader_from_file(const char *filename, GLenum type)
 		return 0;
 	}
 
-	shader = compile_single_shader(source, &compilation_logs, type);
+	shader = hz_compile_single_shader(source, &compilation_logs, type);
 	free(source);
 
 	if (!shader) {
@@ -34,25 +34,25 @@ GLuint create_shader_from_file(const char *filename, GLenum type)
 	return shader;
 }
 
-GLuint create_program_from_files(const char *vert_path, const char *frag_path)
+GLuint hz_create_program_from_files(const char *vert_path, const char *frag_path)
 {
 	GLuint vertex, frag;
 	GLuint program = 0;
 
-	vertex = create_shader_from_file(vert_path, GL_VERTEX_SHADER);
+	vertex = hz_create_shader_from_file(vert_path, GL_VERTEX_SHADER);
 	if (!vertex) {
 		log_e(tag, "unable to load vertex shader (%s)", vert_path);
 		return 0;
 	}
 
-	frag = create_shader_from_file(frag_path, GL_FRAGMENT_SHADER);
+	frag = hz_create_shader_from_file(frag_path, GL_FRAGMENT_SHADER);
 	if (!frag) {
 		log_e(tag, "unable to load fragment shader (%s)", frag_path);
 		glDeleteShader(vertex);
 		return 0;
 	}
 
-	program = create_shader_program(2, vertex, frag);
+	program = hz_create_shader_program(2, vertex, frag);
 	if (!program) {
 		log_e(tag, "unable to create program!");
 

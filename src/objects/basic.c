@@ -1,7 +1,7 @@
 #include <string.h>
 #include <utils/log.h>
 #include GL_EXTENSIONS_HEADER
-#include <utils/gl/shaders.h>
+#include <hz/helpers/shaders.h>
 #include <hz/objects/basic.h>
 
 static const char *tag = "bobj";
@@ -53,11 +53,11 @@ static void basic_object_deinit(struct hz_object *_o)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(_o);
 
-	delete_gl_buffer(o->buffers.vertices);
-	delete_gl_buffer(o->buffers.normals);
+	hz_delete_gl_buffer(o->buffers.vertices);
+	hz_delete_gl_buffer(o->buffers.normals);
 
 	if (o->texture_attached) {
-		delete_gl_buffer(o->buffers.uvs);
+		hz_delete_gl_buffer(o->buffers.uvs);
 	}
 }
 
@@ -82,7 +82,7 @@ static bool basic_object_init(struct hz_object *_o)
 bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count)
 {
-	o->buffers.uvs = create_shader_attribute_buffer(o->as_object.program,
+	o->buffers.uvs = hz_create_shader_attribute_buffer(o->as_object.program,
 			"uv", 3, uvs, uv_count);
 	if (!o->buffers.uvs) {
 		log_i(tag, "unable to create UV buffer");
@@ -99,20 +99,20 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices)
 {
-	o->buffers.vertices = create_shader_attribute_buffer(o->as_object.program,
+	o->buffers.vertices = hz_create_shader_attribute_buffer(o->as_object.program,
 			"position", 3, vertices, nvertices);
 	if (!o->buffers.vertices) {
 		log_e(tag, "unable to create vertex buffer");
 		goto fail;
 	}
 
-	o->buffers.indices = create_gl_buffer(indices, sizeof(unsigned) * nindices);
+	o->buffers.indices = hz_create_gl_buffer(indices, sizeof(unsigned) * nindices);
 	if (!o->buffers.indices) {
 		log_e(tag, "unable to create index buffer");
 		goto fail_delete_vertices;
 	}
 
-	o->buffers.normals = create_shader_attribute_buffer(o->as_object.program,
+	o->buffers.normals = hz_create_shader_attribute_buffer(o->as_object.program,
 			"normal", 3, normals, nvertices);
 	if (!o->buffers.normals) {
 		log_e(tag, "unable to create normal buffer");
