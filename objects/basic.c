@@ -2,7 +2,7 @@
 #include <utils/log.h>
 #include GL_EXTENSIONS_HEADER
 #include <utils/gl/shaders.h>
-#include "basic.h"
+#include <hz/objects/basic.h>
 
 static const char *tag = "bobj";
 

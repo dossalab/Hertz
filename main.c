@@ -1,9 +1,10 @@
 #include <utils/glfw_context.h> /* should be the first one */
-#include <assets/loader.h>
 #include <utils/log.h>
 #include <utils/gl/io.h>
-#include <scene/scene.h>
-#include <cameras/fly.h>
+
+#include <hz/cameras/fly.h>
+#include <hz/scene.h>
+#include <hz/loader.h>
 
 #define EXIT_NOT_OK	1
 

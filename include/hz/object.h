@@ -3,7 +3,7 @@
 
 #include <GL/gl.h>
 #include <utils/3rdparty/linmath/linmath.h>
-#include <scene/scene.h>
+#include "scene.h"
 
 struct hz_object;
 

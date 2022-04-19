@@ -1,4 +1,4 @@
-#include "loader.h"
+#include <hz/loader.h>
 
 bool hz_loader_import_scene(const char *path, struct hz_scene *s)
 {

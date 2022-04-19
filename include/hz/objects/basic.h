@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <utils/common.h>
-#include "object.h"
+#include <hz/object.h>
 
 struct hz_basic_object {
 	struct hz_object as_object;

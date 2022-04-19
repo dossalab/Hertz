@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <utils/gl/textures.h>
 #include <utils/3rdparty/stb/stb_image.h>
-#include <scene/scene.h>
-#include <objects/basic.h>
 #include <assert.h>
 
-#include "loader.h"
+#include <hz/objects/basic.h>
+#include <hz/scene.h>
+#include <hz/loader.h>
 
 static const char *tag = "aimp";
 

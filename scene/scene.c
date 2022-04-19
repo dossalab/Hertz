@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <utils/list.h>
 #include <utils/common.h>
-#include <objects/object.h>
 
-#include "scene.h"
+#include <hz/object.h>
+#include <hz/scene.h>
 
 void hz_scene_init(struct hz_scene *s)
 {

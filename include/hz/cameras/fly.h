@@ -3,7 +3,7 @@
 
 #include <utils/3rdparty/linmath/linmath.h>
 #include <utils/common.h>
-#include "camera.h"
+#include <hz/camera.h>
 
 struct hz_fly_camera {
 	struct hz_camera as_camera;
