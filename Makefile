@@ -19,10 +19,10 @@ objects := \
 	src/helpers/shaders.o \
 	src/helpers/textures.o \
 	src/helpers/io.o \
+	src/adt/list.o \
 	src/misc/stb_image.o \
 	utils/files.o \
 	utils/glfw_context.o \
-	utils/list.o \
 	utils/log.o \
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm

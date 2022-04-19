@@ -1,14 +1,13 @@
 #ifndef HZ_SCENE_H
 #define HZ_SCENE_H
 
-#include <utils/list.h>
 #include <vendor/linmath/linmath.h>
-#include <stdbool.h>
+#include <hz/adt/list.h>
 
 struct hz_object;
 
 struct hz_scene {
-	struct list_item drawing_list;
+	struct hz_list_item drawing_list;
 };
 
 void hz_scene_init(struct hz_scene *s);
