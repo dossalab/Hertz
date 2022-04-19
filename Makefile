@@ -12,7 +12,6 @@ objects := \
 	assets/loader.o \
 	main.o \
 	objects/basic.o \
-	render/render.o \
 	render/scene.o \
 	render/camera.o \
 	render/object.o \
