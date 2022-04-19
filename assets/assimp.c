@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <utils/gl/textures.h>
 #include <utils/3rdparty/stb/stb_image.h>
-#include <render/scene.h>
+#include <scene/scene.h>
 #include <objects/basic.h>
 #include <assert.h>
 

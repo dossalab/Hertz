@@ -11,11 +11,11 @@ objects := \
 	assets/assimp.o \
 	assets/loader.o \
 	main.o \
+	scene/scene.o \
 	objects/basic.o \
-	render/scene.o \
-	render/camera.o \
-	render/object.o \
+	objects/object.o \
 	cameras/fly.o \
+	cameras/camera.o \
 	utils/gl/shaders.o \
 	utils/gl/textures.o \
 	utils/gl/io.o \

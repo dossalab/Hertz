@@ -1,5 +1,5 @@
-#ifndef RENDER_CAMERA_H
-#define RENDER_CAMERA_H
+#ifndef CAMERAS_CAMERA_H
+#define CAMERAS_CAMERA_H
 
 #include <utils/3rdparty/linmath/linmath.h>
 #include <utils/glfw_context.h>

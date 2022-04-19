@@ -2,7 +2,7 @@
 #include <assets/loader.h>
 #include <utils/log.h>
 #include <utils/gl/io.h>
-#include <render/scene.h>
+#include <scene/scene.h>
 #include <cameras/fly.h>
 
 #define EXIT_NOT_OK	1

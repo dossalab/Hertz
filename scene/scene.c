@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <utils/list.h>
 #include <utils/common.h>
+#include <objects/object.h>
 
-#include "object.h"
 #include "scene.h"
 
 void scene_init(struct scene *s)

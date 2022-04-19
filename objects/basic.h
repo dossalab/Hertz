@@ -5,8 +5,8 @@
 #include <utils/3rdparty/linmath/linmath.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <render/object.h>
 #include <utils/common.h>
+#include "object.h"
 
 struct basic_object {
 	struct object as_object;

@@ -1,9 +1,9 @@
 #ifndef CAMERAS_FLY_H
 #define CAMERAS_FLY_H
 
-#include <render/camera.h>
 #include <utils/3rdparty/linmath/linmath.h>
 #include <utils/common.h>
+#include "camera.h"
 
 struct fly_camera {
 	struct camera as_camera;

@@ -1,9 +1,9 @@
-#ifndef RENDER_OBJECT_H
-#define RENDER_OBJECT_H
+#ifndef OBJECTS_OBJECT_H
+#define OBJECTS_OBJECT_H
 
 #include <GL/gl.h>
 #include <utils/3rdparty/linmath/linmath.h>
-#include "scene.h"
+#include <scene/scene.h>
 
 struct object;
 
