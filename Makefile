@@ -8,14 +8,14 @@ exe	:= opengl
 libs	:= glfw3 glew assimp
 
 objects := \
-	assets/assimp.o \
-	assets/loader.o \
 	main.o \
-	scene/scene.o \
-	objects/basic.o \
-	objects/object.o \
-	cameras/fly.o \
-	cameras/camera.o \
+	src/loaders/assimp.o \
+	src/loader.o \
+	src/scene.o \
+	src/object.o \
+	src/camera.o \
+	src/objects/basic.o \
+	src/cameras/fly.o \
 	utils/gl/shaders.o \
 	utils/gl/textures.o \
 	utils/gl/io.o \
