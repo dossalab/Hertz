@@ -1,5 +1,5 @@
-#ifndef UTILS_COMMON_H
-#define UTILS_COMMON_H
+#ifndef HZ_UTILS_CONTAINER_OF_H
+#define HZ_UTILS_CONTAINER_OF_H
 
 #include <stddef.h>
 

@@ -1,5 +1,5 @@
-#ifndef CAMERAS_FLY_H
-#define CAMERAS_FLY_H
+#ifndef HZ_CAMERAS_FLY_H
+#define HZ_CAMERAS_FLY_H
 
 #include <utils/3rdparty/linmath/linmath.h>
 #include <hz/utils/container_of.h>

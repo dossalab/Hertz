@@ -1,5 +1,5 @@
-#ifndef ASSETS_LOADER_H
-#define ASSETS_LOADER_H
+#ifndef HZ_LOADER_H
+#define HZ_LOADER_H
 
 #include <stdbool.h>
 

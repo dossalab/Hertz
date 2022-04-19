@@ -1,5 +1,5 @@
-#ifndef UTILS_GL_IO_H
-#define UTILS_GL_IO_H
+#ifndef HZ_HELPERS_IO_H
+#define HZ_HELPERS_IO_H
 
 #include <GL/gl.h>
 

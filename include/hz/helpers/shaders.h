@@ -1,5 +1,5 @@
-#ifndef UTILS_GL_SHADERS_H
-#define UTILS_GL_SHADERS_H
+#ifndef HZ_HELPERS_SHADERS_H
+#define HZ_HELPERS_SHADERS_H
 
 #include <GL/gl.h>
 #include <stddef.h>

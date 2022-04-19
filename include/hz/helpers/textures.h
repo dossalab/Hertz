@@ -1,5 +1,5 @@
-#ifndef UTILS_GL_TEXTURES_H
-#define UTILS_GL_TEXTURES_H
+#ifndef HZ_HELPERS_TEXTURES_H
+#define HZ_HELPERS_TEXTURES_H
 
 #include <stddef.h>
 #include <GL/gl.h>

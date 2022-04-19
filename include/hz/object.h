@@ -1,5 +1,5 @@
-#ifndef OBJECTS_OBJECT_H
-#define OBJECTS_OBJECT_H
+#ifndef HZ_OBJECT_H
+#define HZ_OBJECT_H
 
 #include <GL/gl.h>
 #include <utils/3rdparty/linmath/linmath.h>

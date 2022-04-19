@@ -1,5 +1,5 @@
-#ifndef SCENE_SCENE_H
-#define SCENE_SCENE_H
+#ifndef HZ_SCENE_H
+#define HZ_SCENE_H
 
 #include <utils/list.h>
 #include <stdbool.h>
