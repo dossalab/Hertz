@@ -1,9 +1,9 @@
 #include "glfw_context.h" /* should be the first one */
-#include <utils/log.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <hz/cameras/fly.h>
+#include <hz/logger.h>
 #include <hz/scene.h>
 #include <hz/loader.h>
 #include <hz/helpers/shaders.h>
@@ -33,9 +33,9 @@ static bool load_shaders(struct render_state *state)
 				hz_simple_fragment_shader_source, &logs);
 
 	if (!state->shader) {
-		log_e(tag, "shader program compilation failed!");
+		hz_log_e(tag, "shader program compilation failed!");
 		if (logs) {
-			log_e(tag, "compilation logs:\n%s", logs);
+			hz_log_e(tag, "compilation logs:\n%s", logs);
 			free(logs);
 		}
 
@@ -86,13 +86,13 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
 	if (!ok) {
-		log_e(tag, "unable to load shaders!");
+		hz_log_e(tag, "unable to load shaders!");
 		return false;
 	}
 
 	ok = hz_loader_import_scene(state->scene_path, &state->scene);
 	if (!ok) {
-		log_e(tag, "unable to import scene");
+		hz_log_e(tag, "unable to import scene");
 		return false;
 	}
 
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 		return EXIT_NOT_OK;
 	}
 
-	logger_init(LOGLEVEL_INFO);
+	hz_logger_init(HZ_LOGLEVEL_INFO);
 	state.scene_path = argv[1];
 
 	struct glfw_ctx_callbacks callbacks = {
@@ -122,10 +122,10 @@ int main(int argc, char **argv)
 
 	ok = glfw_ctx_main(window_title, &callbacks);
 	if (!ok) {
-		log_e(tag, "render finished with an error");
+		hz_log_e(tag, "render finished with an error");
 	}
 
-	log_i(tag, "we're done");
+	hz_log_i(tag, "we're done");
 
 	return ok? 0 : EXIT_NOT_OK;
 }

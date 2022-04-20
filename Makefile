@@ -17,12 +17,12 @@ objects := \
 	src/camera.o \
 	src/objects/basic.o \
 	src/cameras/fly.o \
+	src/logger.o \
 	src/built-in/shaders/simple.o \
 	src/helpers/shaders.o \
 	src/helpers/textures.o \
 	src/adt/list.o \
 	src/misc/stb_image.o \
-	utils/log.o \
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm
 CFLAGS	:= $(shell pkg-config --cflags $(libs)) -Wall -I. -g -Iinclude \
