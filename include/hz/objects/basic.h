@@ -9,7 +9,7 @@
 #include <hz/object.h>
 
 struct hz_basic_object {
-	struct hz_object as_object;
+	struct hz_object super;
 
 	struct {
 		GLuint vertices, normals, uvs, indices;
@@ -31,7 +31,7 @@ struct hz_basic_object {
 };
 
 #define hz_cast_basic_object(ptr) \
-	hz_container_of(ptr, struct hz_basic_object, as_object)
+	hz_container_of(ptr, struct hz_basic_object, super)
 
 bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count);

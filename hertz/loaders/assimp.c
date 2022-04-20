@@ -30,7 +30,7 @@ static struct hz_basic_object *basic_object_new(GLuint program)
 		return NULL;
 	}
 
-	ok = hz_object_init(&o->as_object, program, &hz_basic_object_proto);
+	ok = hz_object_init(hz_cast_object(o), program, &hz_basic_object_proto);
 	if (!ok) {
 		free(o);
 		return NULL;
@@ -41,7 +41,7 @@ static struct hz_basic_object *basic_object_new(GLuint program)
 
 static void basic_object_free(struct hz_basic_object *o)
 {
-	hz_object_deinit(&o->as_object);
+	hz_object_deinit(hz_cast_object(o));
 	free(o);
 }
 
@@ -183,7 +183,7 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 	}
 
 	mat4x4_transpose(o->transform.model, (void *)ai_model);
-	hz_scene_attach(s, &o->as_object);
+	hz_scene_attach(s, hz_cast_object(o));
 	return true;
 }
 
