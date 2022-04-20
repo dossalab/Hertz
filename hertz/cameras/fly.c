@@ -74,19 +74,19 @@ void fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 	mat4x4_mul(super->vp, super->projection, super->view);
 }
 
-static void fly_camera_update(struct hz_camera *c, size_t width, size_t height)
+static void fly_camera_update(struct hz_camera *super, size_t w, size_t h)
 {
 	float aspect;
 
-	aspect = (float)width / height;
+	aspect = (float)w / h;
 
-	mat4x4_perspective(c->projection, CAM_FOV, aspect, 0.1f, 1000.0f);
-	mat4x4_mul(c->vp, c->projection, c->view);
+	mat4x4_perspective(super->projection, CAM_FOV, aspect, 0.1f, 1000.0f);
+	mat4x4_mul(super->vp, super->projection, super->view);
 }
 
-static void fly_camera_init(struct hz_camera *_c)
+static void fly_camera_init(struct hz_camera *super)
 {
-	struct hz_fly_camera *c = hz_cast_fly_camera(_c);
+	struct hz_fly_camera *c = hz_cast_fly_camera(super);
 
 	c->speed = 10.f;
 

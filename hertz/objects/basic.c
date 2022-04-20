@@ -29,16 +29,16 @@ static bool find_uniforms(struct hz_basic_object *o)
 	return true;
 }
 
-static void basic_object_update_mvp(struct hz_object *_o, mat4x4 vp)
+static void basic_object_update_mvp(struct hz_object *super, mat4x4 vp)
 {
-	struct hz_basic_object *o = hz_cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(super);
 
 	mat4x4_mul(o->transform.mvp, vp, o->transform.model);
 }
 
-static void basic_object_redraw(struct hz_object *_o)
+static void basic_object_redraw(struct hz_object *super)
 {
-	struct hz_basic_object *o = hz_cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(super);
 
 	if (o->texture_attached) {
 		glBindTexture(GL_TEXTURE_2D, o->texture);
@@ -51,9 +51,9 @@ static void basic_object_redraw(struct hz_object *_o)
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
 }
 
-static void basic_object_deinit(struct hz_object *_o)
+static void basic_object_deinit(struct hz_object *super)
 {
-	struct hz_basic_object *o = hz_cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(super);
 
 	hz_delete_gl_buffer(o->buffers.vertices);
 	hz_delete_gl_buffer(o->buffers.normals);
@@ -63,9 +63,9 @@ static void basic_object_deinit(struct hz_object *_o)
 	}
 }
 
-static bool basic_object_init(struct hz_object *_o)
+static bool basic_object_init(struct hz_object *super)
 {
-	struct hz_basic_object *o = hz_cast_basic_object(_o);
+	struct hz_basic_object *o = hz_cast_basic_object(super);
 	bool ok;
 
 	mat4x4_identity(o->transform.model);
