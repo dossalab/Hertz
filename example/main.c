@@ -46,22 +46,40 @@ static bool load_shaders(struct render_state *state)
 	return true;
 }
 
+static void camera_update(struct render_state *s, GLFWwindow *window, float spent)
+{
+	double pos_x, pos_y;
+	static double old_pos_x, old_pos_y;
+
+	glfwGetCursorPos(window, &pos_x, &pos_y);
+
+	fly_camera_move(&s->camera,
+		spent,
+		pos_x - old_pos_x,
+		pos_y - old_pos_y,
+		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
+		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
+
+	old_pos_x = pos_x;
+	old_pos_y = pos_y;
+}
+
+
 static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 {
-	float aspect;
 	struct render_state *state = user;
 
-	aspect = (float)w / (float)h;
-
 	glViewport(0, 0, w, h);
-	hz_camera_update_perspective(&state->camera.as_camera, aspect);
+	hz_camera_update(&state->camera.as_camera, w, h);
 }
 
 static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 {
 	struct render_state *state = user;
 
-	hz_camera_update(&state->camera.as_camera, window, spent);
+	camera_update(state, window, spent);
 	hz_scene_update_mvp(&state->scene, state->camera.as_camera.vp);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

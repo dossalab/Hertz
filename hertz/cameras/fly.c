@@ -3,6 +3,7 @@
 #include <vendor/linmath/linmath.h>
 
 #define CAM_PI	3.14159265359f
+#define CAM_FOV	(70.0f * CAM_PI / 180.0f)
 
 static const float pitch_margin = 0.5f;
 static const float sensitivity = 0.5f * CAM_PI / 180.0f;
@@ -32,12 +33,12 @@ static void apply_pitch_limits(struct hz_fly_camera *c, float *delta_pitch)
 	}
 }
 
-static void fly_camera_update_helper(struct hz_fly_camera *c, float time_spent,
-		int dx, int dy, bool forward, bool left, bool backward, bool right)
+void fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
+		bool forward, bool left, bool backward, bool right)
 {
 	mat4x4 rotation;
 	vec3 across, upward, x_vec, z_vec, xz_vec, look_point;
-	float delta_yaw, delta_pitch, move_distance = c->speed * time_spent;
+	float delta_yaw, delta_pitch, move_distance = c->speed * dt;
 
 	mat4x4_identity(rotation);
 
@@ -69,29 +70,17 @@ static void fly_camera_update_helper(struct hz_fly_camera *c, float time_spent,
 	vec3_add(look_point, c->look, c->position);
 
 	mat4x4_look_at(c->as_camera.view, c->position, look_point, c->up);
+	mat4x4_mul(c->as_camera.vp, c->as_camera.projection, c->as_camera.view);
 }
 
-static void fly_camera_update(struct hz_camera *_c,
-		GLFWwindow *window, float time_spent)
+static void fly_camera_update(struct hz_camera *c, size_t width, size_t height)
 {
-	struct hz_fly_camera *c = hz_cast_fly_camera(_c);
+	float aspect;
 
-	double pos_x, pos_y;
-	static double old_pos_x, old_pos_y;
+	aspect = (float)width / height;
 
-	glfwGetCursorPos(window, &pos_x, &pos_y);
-
-	fly_camera_update_helper(c,
-		time_spent,
-		pos_x - old_pos_x,
-		pos_y - old_pos_y,
-		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
-
-	old_pos_x = pos_x;
-	old_pos_y = pos_y;
+	mat4x4_perspective(c->projection, CAM_FOV, aspect, 0.1f, 1000.0f);
+	mat4x4_mul(c->vp, c->projection, c->view);
 }
 
 static void fly_camera_init(struct hz_camera *_c)
@@ -107,5 +96,5 @@ static void fly_camera_init(struct hz_camera *_c)
 
 const struct hz_camera_proto hz_fly_camera_proto = {
 	.init = fly_camera_init,
-	.update = fly_camera_update,
+	.update = fly_camera_update
 };
