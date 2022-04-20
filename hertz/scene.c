@@ -2,6 +2,7 @@
 
 #include <hz/adt/list.h>
 #include <hz/utils/container_of.h>
+#include <vendor/linmath/linmath.h>
 #include <hz/object.h>
 #include <hz/scene.h>
 

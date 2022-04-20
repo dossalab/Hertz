@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <hz/cameras/fly.h>
+#include <vendor/linmath/linmath.h>
 
 #define CAM_PI	3.14159265359f
 

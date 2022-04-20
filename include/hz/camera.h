@@ -1,7 +1,7 @@
 #ifndef HZ_CAMERA_H
 #define HZ_CAMERA_H
 
-#include <vendor/linmath/linmath.h>
+#include <hz/types.h>
 #include <GLFW/glfw3.h>
 
 struct hz_camera;
@@ -12,7 +12,7 @@ struct hz_camera_proto {
 };
 
 struct hz_camera {
-	mat4x4 view, projection, vp;
+	hz_mat4x4 view, projection, vp;
 	const struct hz_camera_proto *proto;
 };
 

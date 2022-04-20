@@ -1,13 +1,13 @@
 #ifndef HZ_CAMERAS_FLY_H
 #define HZ_CAMERAS_FLY_H
 
-#include <vendor/linmath/linmath.h>
 #include <hz/utils/container_of.h>
 #include <hz/camera.h>
+#include <hz/types.h>
 
 struct hz_fly_camera {
 	struct hz_camera as_camera;
-	vec3 position, look, up;
+	hz_vec3 position, look, up;
 	float speed;
 };
 

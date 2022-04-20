@@ -1,5 +1,6 @@
 #include GL_EXTENSIONS_HEADER
 #include <hz/object.h>
+#include <vendor/linmath/linmath.h>
 
 void hz_object_draw(struct hz_object *o)
 {
