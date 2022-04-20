@@ -1,5 +1,5 @@
-#ifndef UTILS_GLFW_CONTEXT_H
-#define UTILS_GLFW_CONTEXT_H
+#ifndef EXAMPLE_GLFW_CONTEXT_H
+#define EXAMPLE_GLFW_CONTEXT_H
 
 #include <stddef.h>
 #include <stdbool.h>

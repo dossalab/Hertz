@@ -8,7 +8,8 @@ exe	:= opengl
 libs	:= glfw3 glew assimp
 
 objects := \
-	main.o \
+	example/main.o \
+	example/glfw_context.o \
 	src/loaders/assimp.o \
 	src/loader.o \
 	src/scene.o \
@@ -16,13 +17,11 @@ objects := \
 	src/camera.o \
 	src/objects/basic.o \
 	src/cameras/fly.o \
+	src/built-in/shaders/simple.o \
 	src/helpers/shaders.o \
 	src/helpers/textures.o \
-	src/helpers/io.o \
 	src/adt/list.o \
 	src/misc/stb_image.o \
-	utils/files.o \
-	utils/glfw_context.o \
 	utils/log.o \
 
 LDFLAGS	:= $(shell pkg-config --libs $(libs)) -lm

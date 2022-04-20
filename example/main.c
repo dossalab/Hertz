@@ -1,10 +1,13 @@
-#include <utils/glfw_context.h> /* should be the first one */
+#include "glfw_context.h" /* should be the first one */
 #include <utils/log.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <hz/helpers/io.h>
 #include <hz/cameras/fly.h>
 #include <hz/scene.h>
 #include <hz/loader.h>
+#include <hz/helpers/shaders.h>
+#include <hz/built-in/shaders/simple.h>
 
 #define EXIT_NOT_OK	1
 
@@ -14,26 +17,33 @@ static const char *window_title = "My cool application";
 struct render_state {
 	struct hz_scene scene;
 	struct hz_fly_camera camera;
+	const char *scene_path;
 	double time;
-	GLuint shader_sky;
-	GLuint shader_horse;
-	GLuint shader_land;
+	GLuint shader;
 };
 
 int assimp_shader;
 
 static bool load_shaders(struct render_state *state)
 {
-	state->shader_sky = hz_create_program_from_files("shaders/simple.vert",
-			"shaders/skybox.frag");
-	state->shader_horse = hz_create_program_from_files("shaders/psycho.vert",
-			"shaders/simple.frag");
-	state->shader_land = hz_create_program_from_files("shaders/simple.vert",
-			"shaders/simple.frag");
+	char *logs;
 
-	assimp_shader = state->shader_land;
+	state->shader = hz_create_program_from_source(
+				hz_simple_vertex_shader_source,
+				hz_simple_fragment_shader_source, &logs);
 
-	return state->shader_sky && state->shader_horse && state->shader_land;
+	if (!state->shader) {
+		log_e(tag, "shader program compilation failed!");
+		if (logs) {
+			log_e(tag, "compilation logs:\n%s", logs);
+			free(logs);
+		}
+
+		return false;
+	}
+
+	assimp_shader = state->shader;
+	return true;
 }
 
 static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
@@ -80,7 +90,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	ok = hz_loader_import_scene("res/scene.glb", &state->scene);
+	ok = hz_loader_import_scene(state->scene_path, &state->scene);
 	if (!ok) {
 		log_e(tag, "unable to import scene");
 		return false;
@@ -89,12 +99,18 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	return true;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	bool ok;
 	struct render_state state;
 
+	if (argc != 2) {
+		printf("usage: %s <scene>\n", argv[0]);
+		return EXIT_NOT_OK;
+	}
+
 	logger_init(LOGLEVEL_INFO);
+	state.scene_path = argv[1];
 
 	struct glfw_ctx_callbacks callbacks = {
 		.on_init = glfw_on_init,

@@ -47,7 +47,7 @@ GLuint hz_compile_single_shader(const char *source, char **logs, GLenum type)
 	return handle;
 }
 
-GLuint hz_create_shader_program(size_t shader_count, ...)
+GLuint hz_create_program(size_t shader_count, ...)
 {
 	GLuint program;
 	GLuint shader;
@@ -69,6 +69,37 @@ GLuint hz_create_shader_program(size_t shader_count, ...)
 
 	glLinkProgram(program);
 	return program;
+}
+
+GLuint hz_create_program_from_source(const char *vert_src,
+		const char *frag_src, char **logs)
+{
+	GLuint vertex, frag;
+	GLuint program;
+
+	vertex = hz_compile_single_shader(vert_src, logs, GL_VERTEX_SHADER);
+	if (!vertex) {
+		goto fail;
+	}
+
+	frag = hz_compile_single_shader(frag_src, logs, GL_FRAGMENT_SHADER);
+	if (!frag) {
+		goto fail_delete_vertex_shader;
+	}
+
+	program = hz_create_program(2, vertex, frag);
+	if (!program) {
+		goto fail_delete_all_shaders;
+	}
+
+	return program;
+
+fail_delete_all_shaders:
+	glDeleteShader(frag);
+fail_delete_vertex_shader:
+	glDeleteShader(vertex);
+fail:
+	return 0;
 }
 
 GLuint hz_create_gl_buffer(void *data, size_t len)
