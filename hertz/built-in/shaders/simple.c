@@ -18,9 +18,12 @@ const char *hz_simple_fragment_shader_source = \
 	"\n"
 	"	float lighting = diffuse + ambient;\n"
 	"\n"
-	"	vec3 color = texture2D(tex, _uv.xy).xyz;\n"
+	"	vec4 color = texture2D(tex, _uv.xy);\n"
+	"	if (color.a < 0.1) {\n"
+	"		discard;\n"
+	"	}\n"
 	"\n"
-	"	gl_FragColor = vec4(color * lighting, 1.0);\n"
+	"	gl_FragColor = vec4(color.xyz * lighting, 1.0);\n"
 	"}\n"
 ;
 

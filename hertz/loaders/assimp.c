@@ -61,14 +61,24 @@ static GLuint create_texture_from_memory(void *buffer, size_t len)
 	uint8_t *data;
 	GLuint texture;
 
-	data = stbi_load_from_memory(buffer, len, &w, &h, &n, 3);
+	data = stbi_load_from_memory(buffer, len, &w, &h, &n, 0);
 	if (!data) {
 		return 0;
 	}
 
-	texture = hz_create_texture_from_rgb(data, w, h);
-	stbi_image_free(data);
+	switch (n) {
+	case 3:
+		texture = hz_create_texture(data, GL_RGB, w, h);
+		break;
+	case 4:
+		texture = hz_create_texture(data, GL_RGBA, w, h);
+		break;
+	default:
+		texture = 0;
+		break;
+	}
 
+	stbi_image_free(data);
 	return texture;
 }
 

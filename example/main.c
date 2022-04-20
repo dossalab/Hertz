@@ -78,8 +78,10 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	bool ok;
 	struct render_state *state = user;
 
+	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	hz_camera_init(&state->camera.as_camera, &hz_fly_camera_proto);
 
