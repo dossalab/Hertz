@@ -36,6 +36,7 @@ static void apply_pitch_limits(struct hz_fly_camera *c, float *delta_pitch)
 void fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 		bool forward, bool left, bool backward, bool right)
 {
+	struct hz_camera *super = hz_cast_camera(c);
 	mat4x4 rotation;
 	vec3 across, upward, x_vec, z_vec, xz_vec, look_point;
 	float delta_yaw, delta_pitch, move_distance = c->speed * dt;
@@ -69,8 +70,8 @@ void fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 	mat4x4_mul_vec3(c->look, rotation, c->look);
 	vec3_add(look_point, c->look, c->position);
 
-	mat4x4_look_at(c->as_camera.view, c->position, look_point, c->up);
-	mat4x4_mul(c->as_camera.vp, c->as_camera.projection, c->as_camera.view);
+	mat4x4_look_at(super->view, c->position, look_point, c->up);
+	mat4x4_mul(super->vp, super->projection, super->view);
 }
 
 static void fly_camera_update(struct hz_camera *c, size_t width, size_t height)

@@ -12,13 +12,15 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 
 static bool find_uniforms(struct hz_basic_object *o)
 {
-	o->uniforms.mvp = glGetUniformLocation(o->as_object.program, "MVP");
+	struct hz_object *super = hz_cast_object(o);
+
+	o->uniforms.mvp = glGetUniformLocation(super->program, "MVP");
 	if (o->uniforms.mvp < 0) {
 		hz_log_e(tag, "unable to find MVP matrix in the given shader");
 		return false;
 	}
 
-	o->uniforms.model = glGetUniformLocation(o->as_object.program, "model");
+	o->uniforms.model = glGetUniformLocation(super->program, "model");
 	if (o->uniforms.model < 0) {
 		hz_log_e(tag, "unable to find model matrix in the given shader");
 		return false;
@@ -82,7 +84,9 @@ static bool basic_object_init(struct hz_object *_o)
 bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count)
 {
-	o->buffers.uvs = hz_create_shader_attribute_buffer(o->as_object.program,
+	struct hz_object *super = hz_cast_object(o);
+
+	o->buffers.uvs = hz_create_shader_attribute_buffer(super->program,
 			"uv", 3, uvs, uv_count);
 	if (!o->buffers.uvs) {
 		hz_log_i(tag, "unable to create UV buffer");
@@ -99,7 +103,9 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices)
 {
-	o->buffers.vertices = hz_create_shader_attribute_buffer(o->as_object.program,
+	struct hz_object *super = hz_cast_object(o);
+
+	o->buffers.vertices = hz_create_shader_attribute_buffer(super->program,
 			"position", 3, vertices, nvertices);
 	if (!o->buffers.vertices) {
 		hz_log_e(tag, "unable to create vertex buffer");
@@ -112,7 +118,7 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		goto fail_delete_vertices;
 	}
 
-	o->buffers.normals = hz_create_shader_attribute_buffer(o->as_object.program,
+	o->buffers.normals = hz_create_shader_attribute_buffer(super->program,
 			"normal", 3, normals, nvertices);
 	if (!o->buffers.normals) {
 		hz_log_e(tag, "unable to create normal buffer");

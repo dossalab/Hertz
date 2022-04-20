@@ -16,6 +16,8 @@ struct hz_camera {
 	const struct hz_camera_proto *proto;
 };
 
+#define hz_cast_camera(ptr) &(ptr)->as_camera
+
 void hz_camera_update(struct hz_camera *c, size_t width, size_t height);
 void hz_camera_init(struct hz_camera *c, const struct hz_camera_proto *proto);
 
