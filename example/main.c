@@ -7,6 +7,7 @@
 #include <hz/scene.h>
 #include <hz/loader.h>
 #include <hz/helpers/shaders.h>
+#include <hz/objects/light.h>
 #include <hz/built-in/shaders/simple.h>
 
 #define EXIT_NOT_OK	1
@@ -16,6 +17,7 @@ static const char *window_title = "My cool application";
 
 struct render_state {
 	struct hz_scene scene;
+	struct hz_light light;
 	struct hz_fly_camera camera;
 	const char *scene_path;
 	double time;
@@ -64,6 +66,9 @@ static void camera_update(struct render_state *s, GLFWwindow *window, float spen
 
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
+
+	hz_light_move(&s->light, s->camera.position[0],
+			s->camera.position[1], s->camera.position[2]);
 }
 
 
@@ -114,6 +119,9 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		hz_log_e(tag, "unable to import scene");
 		return false;
 	}
+
+	hz_object_init(hz_cast_object(&state->light), assimp_shader, &hz_light_proto);
+	hz_scene_attach(&state->scene, hz_cast_object(&state->light));
 
 	return true;
 }

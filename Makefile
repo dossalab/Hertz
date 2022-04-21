@@ -16,6 +16,7 @@ hertz-objects := \
 	hertz/object.o \
 	hertz/camera.o \
 	hertz/objects/basic.o \
+	hertz/objects/light.o \
 	hertz/cameras/fly.o \
 	hertz/logger.o \
 	hertz/built-in/shaders/simple.o \
