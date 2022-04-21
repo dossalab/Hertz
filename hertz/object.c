@@ -1,17 +1,13 @@
 #include GL_EXTENSIONS_HEADER
 #include <hz/object.h>
+#include <hz/camera.h>
 #include <vendor/linmath/linmath.h>
 
-void hz_object_draw(struct hz_object *o)
+void hz_object_draw(struct hz_object *o, struct hz_camera *c)
 {
 	glBindVertexArray(o->vao);
 	glUseProgram(o->program);
-	o->proto->draw(o);
-}
-
-void hz_object_update_mvp(struct hz_object *o, mat4x4 vp)
-{
-	o->proto->update_mvp(o, vp);
+	o->proto->draw(o, c);
 }
 
 void hz_object_deinit(struct hz_object *o)

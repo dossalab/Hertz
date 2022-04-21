@@ -2,6 +2,7 @@
 #include GL_EXTENSIONS_HEADER
 #include <hz/helpers/shaders.h>
 #include <hz/objects/basic.h>
+#include <hz/camera.h>
 #include <hz/logger.h>
 
 static const char *tag = "bobj";
@@ -29,20 +30,15 @@ static bool find_uniforms(struct hz_basic_object *o)
 	return true;
 }
 
-static void basic_object_update_mvp(struct hz_object *super, mat4x4 vp)
-{
-	struct hz_basic_object *o = hz_cast_basic_object(super);
-
-	mat4x4_mul(o->transform.mvp, vp, o->transform.model);
-}
-
-static void basic_object_redraw(struct hz_object *super)
+static void basic_object_redraw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 
 	if (o->texture_attached) {
 		glBindTexture(GL_TEXTURE_2D, o->texture);
 	}
+
+	mat4x4_mul(o->transform.mvp, c->vp, o->transform.model);
 
 	set_uniform_matrix(o->uniforms.mvp, o->transform.mvp);
 	set_uniform_matrix(o->uniforms.model, o->transform.model);
@@ -138,7 +134,6 @@ fail:
 
 const struct hz_object_proto hz_basic_object_proto = {
 	.draw = basic_object_redraw,
-	.update_mvp = basic_object_update_mvp,
 	.init = basic_object_init,
 	.deinit = basic_object_deinit,
 };

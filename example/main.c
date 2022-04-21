@@ -72,7 +72,7 @@ static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 	struct render_state *state = user;
 
 	glViewport(0, 0, w, h);
-	hz_camera_update(&state->camera.as_camera, w, h);
+	hz_camera_update(hz_cast_camera(&state->camera), w, h);
 }
 
 static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
@@ -80,10 +80,9 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	struct render_state *state = user;
 
 	camera_update(state, window, spent);
-	hz_scene_update_mvp(&state->scene, state->camera.as_camera.vp);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_scene_redraw(&state->scene, state->time);
+	hz_scene_redraw(&state->scene, hz_cast_camera(&state->camera), state->time);
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
@@ -101,7 +100,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	glDepthFunc(GL_LESS);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	hz_camera_init(&state->camera.as_camera, &hz_fly_camera_proto);
+	hz_camera_init(hz_cast_camera(&state->camera), &hz_fly_camera_proto);
 
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
