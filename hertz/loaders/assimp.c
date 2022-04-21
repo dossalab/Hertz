@@ -7,6 +7,7 @@
 
 #include <vendor/stb/stb_image.h>
 
+#include <vendor/linmath/linmath.h>
 #include <hz/helpers/textures.h>
 #include <hz/objects/basic.h>
 #include <hz/scene.h>

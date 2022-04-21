@@ -4,6 +4,7 @@
 #include <hz/objects/basic.h>
 #include <hz/camera.h>
 #include <hz/logger.h>
+#include <vendor/linmath/linmath.h>
 
 static const char *tag = "bobj";
 

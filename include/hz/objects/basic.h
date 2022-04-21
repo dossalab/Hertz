@@ -2,11 +2,11 @@
 #define HZ_OBJECTS_BASIC_H
 
 #include <GL/gl.h>
-#include <vendor/linmath/linmath.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <hz/utils/container_of.h>
 #include <hz/object.h>
+#include <hz/types.h>
 
 struct hz_basic_object {
 	struct hz_object super;
@@ -20,8 +20,7 @@ struct hz_basic_object {
 	} uniforms;
 
 	struct {
-		mat4x4 model;
-		mat4x4 mvp;
+		hz_mat4x4 model, mvp;
 	} transform;
 
 	GLuint texture;
@@ -34,10 +33,10 @@ struct hz_basic_object {
 	hz_container_of(ptr, struct hz_basic_object, super)
 
 bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
-		vec3 *uvs, size_t uv_count);
+		hz_vec3 *uvs, size_t uv_count);
 
 bool hz_basic_object_set_geometry(struct hz_basic_object *o,
-		vec3 *vertices, vec3 *normals, size_t nvertices,
+		hz_vec3 *vertices, hz_vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices);
 
 extern const struct hz_object_proto hz_basic_object_proto;
