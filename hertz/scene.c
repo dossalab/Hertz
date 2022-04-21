@@ -17,7 +17,7 @@ void hz_scene_attach(struct hz_scene *s, struct hz_object *o)
 	hz_list_push(&o->scene_node, &s->drawing_list);
 }
 
-void hz_scene_redraw(struct hz_scene *s, struct hz_camera *c, float time)
+void hz_scene_draw(struct hz_scene *s, struct hz_camera *c, float time)
 {
 	struct hz_list_item *ptr;
 	struct hz_object *o;

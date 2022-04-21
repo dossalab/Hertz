@@ -82,7 +82,7 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	camera_update(state, window, spent);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_scene_redraw(&state->scene, hz_cast_camera(&state->camera), state->time);
+	hz_scene_draw(&state->scene, hz_cast_camera(&state->camera), state->time);
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
