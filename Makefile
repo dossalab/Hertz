@@ -21,6 +21,7 @@ hertz-objects := \
 	hertz/logger.o \
 	hertz/built-in/shaders/simple.o \
 	hertz/helpers/shaders.o \
+	hertz/helpers/binders.o \
 	hertz/helpers/textures.o \
 	hertz/adt/list.o \
 	hertz/misc/stb_image.o

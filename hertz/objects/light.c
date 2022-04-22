@@ -2,21 +2,9 @@
 #include <hz/objects/light.h>
 #include <hz/logger.h>
 #include <vendor/linmath/linmath.h>
+#include <hz/helpers/binders.h>
 #include <stdio.h>
 #include <stdarg.h>
-
-static const char *tag = "light";
-
-static inline GLint glGetUniformLocationf(GLuint program, const char *fmt, ...) {
-	char str[128];
-	va_list list;
-
-	va_start(list, fmt);
-	vsnprintf(str, sizeof(str), fmt, list);
-	va_end(list);
-
-	return glGetUniformLocation(program, str);
-}
 
 void hz_light_move(struct hz_light *l, float x, float y, float z)
 {
@@ -32,18 +20,19 @@ void hz_light_dim(struct hz_light *l, float intensity)
 bool hz_light_assign(struct hz_light *l, unsigned int index)
 {
 	struct hz_object *super = hz_cast_object(l);
+	char intensity[64], position[64];
+	bool ok;
 
-	l->uniforms.position = glGetUniformLocationf(super->program,
-			"lights[%d].position", index);
-	if (l->uniforms.position < 0) {
-		hz_log_e(tag, "unable to find position uniform");
-		return false;
-	}
+	snprintf(position, sizeof(position), "lights[%d].position", index);
+	snprintf(intensity, sizeof(intensity), "lights[%d].intensity", index);
 
-	l->uniforms.intensity = glGetUniformLocationf(super->program,
-			"lights[%d].intensity", index);
-	if (l->uniforms.intensity < 0) {
-		hz_log_e(tag, "unable to find intensity uniform");
+	struct hz_uniform_binding bindings[] = {
+		{ &l->uniforms.position, position },
+		{ &l->uniforms.intensity, intensity },
+	};
+
+	ok = hz_bind_uniforms(bindings, super->program, HZ_ARRAY_SIZE(bindings));
+	if (!ok) {
 		return false;
 	}
 

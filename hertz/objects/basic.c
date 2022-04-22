@@ -1,34 +1,12 @@
-#include <string.h>
 #include GL_EXTENSIONS_HEADER
+#include <hz/helpers/binders.h>
 #include <hz/helpers/shaders.h>
 #include <hz/objects/basic.h>
 #include <hz/camera.h>
-#include <hz/logger.h>
 #include <vendor/linmath/linmath.h>
-
-static const char *tag = "bobj";
 
 static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
-}
-
-static bool find_uniforms(struct hz_basic_object *o)
-{
-	struct hz_object *super = hz_cast_object(o);
-
-	o->uniforms.mvp = glGetUniformLocation(super->program, "MVP");
-	if (o->uniforms.mvp < 0) {
-		hz_log_e(tag, "unable to find MVP matrix in the given shader");
-		return false;
-	}
-
-	o->uniforms.model = glGetUniformLocation(super->program, "model");
-	if (o->uniforms.model < 0) {
-		hz_log_e(tag, "unable to find model matrix in the given shader");
-		return false;
-	}
-
-	return true;
 }
 
 static void basic_object_redraw(struct hz_object *super, struct hz_camera *c)
@@ -65,28 +43,36 @@ static bool basic_object_init(struct hz_object *super)
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 	bool ok;
 
+	struct hz_uniform_binding bindings[] = {
+		{ &o->uniforms.mvp, "MVP" },
+		{ &o->uniforms.model, "model" },
+	};
+
+	ok = hz_bind_uniforms(bindings, super->program, HZ_ARRAY_SIZE(bindings));
+	if (!ok) {
+		return false;
+	}
+
 	mat4x4_identity(o->transform.model);
 	mat4x4_identity(o->transform.mvp);
 
 	o->texture_attached = false;
 
-	ok = find_uniforms(o);
-	if (!ok) {
-		hz_log_e(tag, "unable to find uniforms");
-	}
-
-	return ok;
+	return true;
 }
 
 bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
 		vec3 *uvs, size_t uv_count)
 {
 	struct hz_object *super = hz_cast_object(o);
+	bool ok;
 
-	o->buffers.uvs = hz_create_shader_attribute_buffer(super->program,
-			"uv", 3, uvs, uv_count);
-	if (!o->buffers.uvs) {
-		hz_log_i(tag, "unable to create UV buffer");
+	struct hz_buffer_binding bindings[] = {
+		{ &o->buffers.uvs, "uv", 3, uvs, uv_count },
+	};
+
+	ok = hz_bind_buffers(bindings, super->program, HZ_ARRAY_SIZE(bindings));
+	if (!ok) {
 		return false;
 	}
 
@@ -101,36 +87,21 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		unsigned *indices, size_t nindices)
 {
 	struct hz_object *super = hz_cast_object(o);
+	bool ok;
 
-	o->buffers.vertices = hz_create_shader_attribute_buffer(super->program,
-			"position", 3, vertices, nvertices);
-	if (!o->buffers.vertices) {
-		hz_log_e(tag, "unable to create vertex buffer");
-		goto fail;
-	}
+	struct hz_buffer_binding bindings[] = {
+		{ &o->buffers.vertices, "position", 3, vertices, nvertices },
+		{ &o->buffers.normals, "normal", 3, normals, nvertices },
+		{ &o->buffers.indices, NULL, 1, indices, nindices },
+	};
 
-	o->buffers.indices = hz_create_gl_buffer(indices, sizeof(unsigned) * nindices);
-	if (!o->buffers.indices) {
-		hz_log_e(tag, "unable to create index buffer");
-		goto fail_delete_vertices;
-	}
-
-	o->buffers.normals = hz_create_shader_attribute_buffer(super->program,
-			"normal", 3, normals, nvertices);
-	if (!o->buffers.normals) {
-		hz_log_e(tag, "unable to create normal buffer");
-		goto fail_delete_indices_and_vertices;
+	ok = hz_bind_buffers(bindings, super->program, HZ_ARRAY_SIZE(bindings));
+	if (!ok) {
+		return false;
 	}
 
 	o->nindices = nindices;
 	return true;
-
-fail_delete_indices_and_vertices:
-	glDeleteBuffers(1, &o->buffers.indices);
-fail_delete_vertices:
-	glDeleteBuffers(1, &o->buffers.vertices);
-fail:
-	return false;
 }
 
 const struct hz_object_proto hz_basic_object_proto = {
