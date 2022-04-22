@@ -36,8 +36,8 @@ example-objects := \
 	example/main.o \
 	example/glfw_context.o \
 
-$(example-exe): LDFLAGS := $(shell pkg-config --libs $(example-libs)) -lm -lhertz
-$(example-exe): CFLAGS  := $(shell pkg-config --cflags $(example-libs))
+$(example-exe): LDFLAGS += $(shell pkg-config --libs $(example-libs)) -lm -lhertz
+$(example-exe): CFLAGS  += $(shell pkg-config --cflags $(example-libs))
 
 to-remove += $(example-objects) $(example-exe)
 
