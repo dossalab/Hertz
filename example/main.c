@@ -17,7 +17,7 @@ static const char *window_title = "My cool application";
 
 struct render_state {
 	struct hz_scene scene;
-	struct hz_light light;
+	struct hz_light light, l1, l2;
 	struct hz_fly_camera camera;
 	const char *scene_path;
 	double time;
@@ -120,8 +120,19 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
+	hz_object_init(hz_cast_object(&state->l1), assimp_shader, &hz_light_proto);
+	hz_object_init(hz_cast_object(&state->l2), assimp_shader, &hz_light_proto);
 	hz_object_init(hz_cast_object(&state->light), assimp_shader, &hz_light_proto);
+	hz_light_assign(&state->light, 0);
+	hz_light_assign(&state->l1, 1);
+	hz_light_assign(&state->l2, 2);
+
+	hz_light_move(&state->l1, -8.f, 4.f, -1.f);
+	hz_light_move(&state->l2, 8.f, 4.f, -2.f);
+
 	hz_scene_attach(&state->scene, hz_cast_object(&state->light));
+	hz_scene_attach(&state->scene, hz_cast_object(&state->l1));
+	hz_scene_attach(&state->scene, hz_cast_object(&state->l2));
 
 	return true;
 }

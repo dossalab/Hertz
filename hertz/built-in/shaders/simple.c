@@ -1,13 +1,22 @@
+#include <hz/built-in/shaders/simple.h>
+
+#define GLSL_VERSION	"100"
+
+#define expand(x)	#x
+#define stringify(x)	expand(x)
+
 const char *hz_simple_fragment_shader_source = \
-	"#version 100\n"
+	"#version " GLSL_VERSION "\n"
 	"\n"
 	"precision highp float;\n"
 	"\n"
 	"struct Light {\n"
 	"	vec3 position;\n"
+	"	float intensity;\n"
 	"};\n"
 	"\n"
-	"uniform Light light;\n"
+	"const int num_lights = " stringify(HZ_SIMPLE_SHADER_NUM_LIGHTS) ";\n"
+	"uniform Light lights[num_lights];\n"
 	"uniform sampler2D tex;\n"
 	"\n"
 	"varying vec3 _position;\n"
@@ -15,13 +24,23 @@ const char *hz_simple_fragment_shader_source = \
 	"varying vec3 _uv;\n"
 	"varying vec3 _vertex;\n"
 	"\n"
+	"float calc_light(Light light, vec3 normal, vec3 vertex)\n"
+	"{\n"
+	"	vec3 dir = light.position - vertex;\n"
+	"	float diffuse = max(dot(normal, normalize(dir)), 0.0);\n"
+	"	float ambient = 0.2;\n"
+	"	float distance = length(dir);\n"
+	"	float attenuation = 1.f / (0.1f + 0.1f * distance * distance);\n"
+	"	return attenuation * light.intensity * (diffuse + ambient);\n"
+	"}\n"
+	"\n"
 	"void main()\n"
 	"{\n"
-	"	vec3 dir = normalize(light.position - _vertex);\n"
-	"	float diffuse = max(dot(_normal, dir), 0.0);\n"
-	"	float ambient = 0.2;\n"
+	"	float lighting = 0.0;\n"
 	"\n"
-	"	float lighting = diffuse + ambient;\n"
+	"       for (int i = 0; i < num_lights; i++) {\n"
+	"               lighting += calc_light(lights[i], _normal, _vertex);\n"
+	"       }\n"
 	"\n"
 	"	vec4 color = texture2D(tex, _uv.xy);\n"
 	"	if (color.a < 0.1) {\n"
@@ -33,7 +52,7 @@ const char *hz_simple_fragment_shader_source = \
 ;
 
 const char *hz_simple_vertex_shader_source = \
-	"#version 100\n"
+	"#version " GLSL_VERSION "\n"
 	"\n"
 	"uniform mat4 MVP;\n"
 	"uniform mat4 model;\n"
