@@ -39,6 +39,6 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		hz_vec3 *vertices, hz_vec3 *normals, size_t nvertices,
 		unsigned *indices, size_t nindices);
 
-extern const struct hz_object_proto hz_basic_object_proto;
+bool hz_basic_object_init(struct hz_basic_object *o, GLuint program);
 
 #endif

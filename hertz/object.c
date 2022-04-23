@@ -12,7 +12,7 @@ void hz_object_draw(struct hz_object *o, struct hz_camera *c)
 
 void hz_object_deinit(struct hz_object *o)
 {
-	o->proto->deinit(o);
+	o->proto->remove(o);
 	glDeleteVertexArrays(1, &o->vao);
 }
 
@@ -26,5 +26,5 @@ bool hz_object_init(struct hz_object *o, GLuint program,
 	glBindVertexArray(o->vao);
 	glUseProgram(o->program);
 
-	return o->proto->init(o);
+	return o->proto->probe(o);
 }

@@ -120,12 +120,9 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	hz_object_init(hz_cast_object(&state->l1), assimp_shader, &hz_light_proto);
-	hz_object_init(hz_cast_object(&state->l2), assimp_shader, &hz_light_proto);
-	hz_object_init(hz_cast_object(&state->light), assimp_shader, &hz_light_proto);
-	hz_light_assign(&state->light, 0);
-	hz_light_assign(&state->l1, 1);
-	hz_light_assign(&state->l2, 2);
+	hz_light_init(&state->l1, assimp_shader, 0);
+	hz_light_init(&state->l2, assimp_shader, 1);
+	hz_light_init(&state->light, assimp_shader, 2);
 
 	hz_light_move(&state->l1, -8.f, 4.f, -1.f);
 	hz_light_move(&state->l2, 8.f, 4.f, -2.f);

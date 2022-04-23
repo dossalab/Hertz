@@ -10,8 +10,8 @@ struct hz_object;
 
 struct hz_object_proto {
 	void (*draw)(struct hz_object *o, struct hz_camera *c);
-	bool (*init)(struct hz_object *o);
-	void (*deinit)(struct hz_object *o);
+	bool (*probe)(struct hz_object *o);
+	void (*remove)(struct hz_object *o);
 };
 
 struct hz_object {

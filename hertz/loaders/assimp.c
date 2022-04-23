@@ -31,7 +31,7 @@ static struct hz_basic_object *basic_object_new(GLuint program)
 		return NULL;
 	}
 
-	ok = hz_object_init(hz_cast_object(o), program, &hz_basic_object_proto);
+	ok = hz_basic_object_init(o, program);
 	if (!ok) {
 		free(o);
 		return NULL;

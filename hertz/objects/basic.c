@@ -26,7 +26,7 @@ static void basic_object_redraw(struct hz_object *super, struct hz_camera *c)
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
 }
 
-static void basic_object_deinit(struct hz_object *super)
+static void basic_object_remove(struct hz_object *super)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 
@@ -38,7 +38,7 @@ static void basic_object_deinit(struct hz_object *super)
 	}
 }
 
-static bool basic_object_init(struct hz_object *super)
+static bool basic_object_probe(struct hz_object *super)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 	bool ok;
@@ -106,6 +106,12 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 
 const struct hz_object_proto hz_basic_object_proto = {
 	.draw = basic_object_redraw,
-	.init = basic_object_init,
-	.deinit = basic_object_deinit,
+	.probe = basic_object_probe,
+	.remove = basic_object_remove,
 };
+
+bool hz_basic_object_init(struct hz_basic_object *o, GLuint program)
+{
+	struct hz_object *super = hz_cast_object(o);
+	return hz_object_init(super, program, &hz_basic_object_proto);
+}
