@@ -66,7 +66,7 @@ bool hz_bind_uniforms(struct hz_uniform_binding *bindings, GLuint program,
 		*b->handle = glGetUniformLocation(program, b->name);
 		if (*b->handle < 0) {
 			hz_log_e(tag, "unable to find '%s' uniform", b->name);
-			break;
+			return false;
 		}
 	}
 
