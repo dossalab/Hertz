@@ -69,7 +69,7 @@ install: $(hertz)
 
 phony += uninstall
 uninstall:
-	rm -f $(PREFIX)/lib/$(basename $(hertz-so))
+	rm -f $(PREFIX)/lib/$(notdir $(hertz-so))
 	rm -rf $(PREFIX)/include/hz
 
 phony += clean
