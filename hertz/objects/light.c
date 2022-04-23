@@ -5,9 +5,8 @@
 #include <hz/helpers/binders.h>
 #include <stdio.h>
 
-void hz_light_move(struct hz_light *l, float x, float y, float z)
+void hz_light_move(struct hz_light *l, vec3 position)
 {
-	hz_vec3 position = { x, y, z };
 	vec3_dup(l->position, position);
 }
 
@@ -47,7 +46,7 @@ static bool light_probe(struct hz_object *super)
 		return false;
 	}
 
-	hz_light_move(l, 0.f, 0.f, 0.f);
+	hz_light_move(l, (vec3) { 0.f, 0.f, 0.f });
 	hz_light_dim(l, 1.0);
 
 	return true;
@@ -64,7 +63,7 @@ const struct hz_object_proto hz_light_proto = {
 	.remove = light_remove,
 };
 
-bool hz_light_init(struct hz_light *l, GLuint program, unsigned int index)
+bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
 {
 	struct hz_object *super = hz_cast_object(l);
 

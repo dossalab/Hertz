@@ -67,8 +67,7 @@ static void camera_update(struct render_state *s, GLFWwindow *window, float spen
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
 
-	hz_light_move(&s->light, s->camera.position[0],
-			s->camera.position[1], s->camera.position[2]);
+	hz_light_move(&s->light, s->camera.position);
 }
 
 
@@ -124,8 +123,8 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	hz_light_init(&state->l2, assimp_shader, 1);
 	hz_light_init(&state->light, assimp_shader, 2);
 
-	hz_light_move(&state->l1, -8.f, 4.f, -1.f);
-	hz_light_move(&state->l2, 8.f, 4.f, -2.f);
+	hz_light_move(&state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
+	hz_light_move(&state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
 
 	hz_scene_attach(&state->scene, hz_cast_object(&state->light));
 	hz_scene_attach(&state->scene, hz_cast_object(&state->l1));

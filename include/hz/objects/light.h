@@ -23,7 +23,7 @@ struct hz_light {
 	hz_container_of(ptr, struct hz_light, super)
 
 void hz_light_dim(struct hz_light *l, float intensity);
-void hz_light_move(struct hz_light *o, float x, float y, float z);
+void hz_light_move(struct hz_light *l, hz_vec3 position);
 bool hz_light_init(struct hz_light *l, GLuint program, unsigned index);
 
 #endif
