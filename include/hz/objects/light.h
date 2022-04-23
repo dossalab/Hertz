@@ -11,8 +11,12 @@ struct hz_light {
 	struct hz_object super;
 
 	struct {
-		GLint position, intensity;
+		GLint position, intensity, constant, linear, quadratic;
 	} uniforms;
+
+	struct {
+		float constant, linear, quadratic;
+	} parameters;
 
 	int index;
 	float intensity;
@@ -22,6 +26,7 @@ struct hz_light {
 #define hz_cast_light(ptr) \
 	hz_container_of(ptr, struct hz_light, super)
 
+void hz_light_setup(struct hz_light *l, float kc, float kl, float kq);
 void hz_light_dim(struct hz_light *l, float intensity);
 void hz_light_move(struct hz_light *l, hz_vec3 position);
 bool hz_light_init(struct hz_light *l, GLuint program, unsigned index);
