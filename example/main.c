@@ -55,7 +55,7 @@ static void camera_update(struct render_state *s, GLFWwindow *window, float spen
 
 	glfwGetCursorPos(window, &pos_x, &pos_y);
 
-	fly_camera_move(&s->camera,
+	hz_fly_camera_move(&s->camera,
 		spent,
 		pos_x - old_pos_x,
 		pos_y - old_pos_y,
@@ -104,7 +104,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	glDepthFunc(GL_LESS);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	hz_camera_init(hz_cast_camera(&state->camera), &hz_fly_camera_proto);
+	hz_fly_camera_init(&state->camera);
 
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);

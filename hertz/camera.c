@@ -13,5 +13,5 @@ void hz_camera_init(struct hz_camera *c, const struct hz_camera_proto *proto)
 	mat4x4_identity(c->view);
 	mat4x4_identity(c->vp);
 
-	c->proto->init(c);
+	c->proto->probe(c);
 }

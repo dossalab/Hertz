@@ -33,7 +33,7 @@ static void apply_pitch_limits(struct hz_fly_camera *c, float *delta_pitch)
 	}
 }
 
-void fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
+void hz_fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 		bool forward, bool left, bool backward, bool right)
 {
 	struct hz_camera *super = hz_cast_camera(c);
@@ -84,7 +84,7 @@ static void fly_camera_update(struct hz_camera *super, size_t w, size_t h)
 	mat4x4_mul(super->vp, super->projection, super->view);
 }
 
-static void fly_camera_init(struct hz_camera *super)
+static void fly_camera_probe(struct hz_camera *super)
 {
 	struct hz_fly_camera *c = hz_cast_fly_camera(super);
 
@@ -96,6 +96,12 @@ static void fly_camera_init(struct hz_camera *super)
 }
 
 const struct hz_camera_proto hz_fly_camera_proto = {
-	.init = fly_camera_init,
+	.probe = fly_camera_probe,
 	.update = fly_camera_update
 };
+
+void hz_fly_camera_init(struct hz_fly_camera *c)
+{
+	struct hz_camera *super = hz_cast_camera(c);
+	hz_camera_init(super, &hz_fly_camera_proto);
+}

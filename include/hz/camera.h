@@ -7,7 +7,7 @@
 struct hz_camera;
 
 struct hz_camera_proto {
-	void (*init)(struct hz_camera *);
+	void (*probe)(struct hz_camera *);
 	void (*update)(struct hz_camera *, size_t width, size_t height);
 };
 
