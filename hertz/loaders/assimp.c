@@ -6,9 +6,7 @@
 #include <assert.h>
 
 #include <vendor/stb/stb_image.h>
-
 #include <vendor/linmath/linmath.h>
-#include <hz/helpers/textures.h>
 #include <hz/objects/basic.h>
 #include <hz/scene.h>
 #include <hz/loader.h>
@@ -21,7 +19,8 @@ static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
 
 extern int assimp_shader;
 
-static struct hz_basic_object *basic_object_new(GLuint program)
+static struct hz_basic_object *basic_object_new(GLuint program,
+		struct hz_material *m)
 {
 	struct hz_basic_object *o;
 	bool ok;
@@ -31,7 +30,26 @@ static struct hz_basic_object *basic_object_new(GLuint program)
 		return NULL;
 	}
 
-	ok = hz_basic_object_init(o, program);
+	ok = hz_basic_object_init(o, program, m);
+	if (!ok) {
+		free(o);
+		return NULL;
+	}
+
+	return o;
+}
+
+static struct hz_material *material_new(GLuint program)
+{
+	struct hz_material *o;
+	bool ok;
+
+	o = calloc(1, sizeof(struct hz_material));
+	if (!o) {
+		return NULL;
+	}
+
+	ok = hz_material_init(o, program);
 	if (!ok) {
 		free(o);
 		return NULL;
@@ -46,21 +64,12 @@ static void basic_object_free(struct hz_basic_object *o)
 	free(o);
 }
 
-static inline bool ai_get_texture_helper(struct aiMaterial *material,
-		enum aiTextureType type, unsigned index, struct aiString *path)
-{
-	aiReturn ret;
-
-	ret = aiGetMaterialString(material, AI_MATKEY_TEXTURE(type, index), path);
-	return ret == AI_SUCCESS;
-}
-
-
-static GLuint create_texture_from_memory(void *buffer, size_t len)
+static bool bind_aimp_texture(struct hz_material *m, void *buffer, size_t len)
 {
 	int w, h, n;
 	uint8_t *data;
-	GLuint texture;
+	bool ok;
+	GLenum format;
 
 	data = stbi_load_from_memory(buffer, len, &w, &h, &n, 0);
 	if (!data) {
@@ -69,64 +78,61 @@ static GLuint create_texture_from_memory(void *buffer, size_t len)
 
 	switch (n) {
 	case 3:
-		texture = hz_create_texture(data, GL_RGB, w, h);
+		format = GL_RGB;
 		break;
 	case 4:
-		texture = hz_create_texture(data, GL_RGBA, w, h);
+		format = GL_RGBA;
 		break;
 	default:
-		texture = 0;
-		break;
+		ok = false;
+		goto cleanup;
 	}
 
+	ok = hz_material_bind_texture(m, HZ_TEXTURE_DIFFUSE, data, format, w, h);
+
+cleanup:
 	stbi_image_free(data);
-	return texture;
+	return ok;
 }
 
-static GLuint create_texture_from_mesh(struct aiMesh *ai_mesh,
-		const struct aiScene *ai_scene)
+static struct aiTexture *ai_get_texture(struct aiMaterial *material,
+		const struct aiScene *ai_scene, enum aiTextureType type, unsigned index)
 {
-	struct aiMaterial *material;
+	aiReturn ret;
 	struct aiString path;
-	struct aiTexture *texture;
-	bool ok;
-	int texture_index;
+	int itexture;
 
-	material = ai_scene->mMaterials[ai_mesh->mMaterialIndex];
-	if (!material) {
-		return 0;
-	}
-
-	ok = ai_get_texture_helper(material, aiTextureType_DIFFUSE, 0, &path);
-	if (!ok) {
-		return 0;
+	ret = aiGetMaterialString(material, AI_MATKEY_TEXTURE(type, index), &path);
+	if (ret != AI_SUCCESS) {
+		return NULL;
 	}
 
 	if (path.data[0] != '*') {
 		hz_log_e(tag, "mesh is not using embedded texture, skipping");
-		return 0;
+		return NULL;
 	}
 
-	texture_index = atoi(path.data + 1);
-	texture = ai_scene->mTextures[texture_index];
-
-	return create_texture_from_memory(texture->pcData, texture->mWidth);
+	itexture = atoi(path.data + 1);
+	return ai_scene->mTextures[itexture];
 }
 
-static bool apply_textures(struct hz_basic_object *o, struct aiMesh *ai_mesh,
+static bool apply_textures(struct hz_material *m, struct aiMesh *ai_mesh,
 		const struct aiScene *ai_scene)
 {
-	GLuint texture;
+	struct aiMaterial *material;
+	struct aiTexture *diffuse;
 
-	texture = create_texture_from_mesh(ai_mesh, ai_scene);
-	if (!texture) {
+	material = ai_scene->mMaterials[ai_mesh->mMaterialIndex];
+	if (!material) {
 		return false;
 	}
 
-	hz_basic_object_set_texture(o, texture, (vec3 *)ai_mesh->mTextureCoords[0],
-			ai_mesh->mNumVertices);
+	diffuse = ai_get_texture(material, ai_scene, aiTextureType_DIFFUSE, 0);
+	if (!diffuse) {
+		return false;
+	}
 
-	return true;
+	return bind_aimp_texture(m, diffuse->pcData, diffuse->mWidth);
 }
 
 static bool attach_geometry(struct hz_basic_object *o, struct aiMesh *ai_mesh)
@@ -153,6 +159,7 @@ static bool attach_geometry(struct hz_basic_object *o, struct aiMesh *ai_mesh)
 	ok = hz_basic_object_set_geometry(o,
 		(vec3 *)ai_mesh->mVertices, (vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
+		(vec3 *)ai_mesh->mTextureCoords[0], ai_mesh->mNumVertices,
 		indices, nindices);
 
 	free(indices);
@@ -165,8 +172,14 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 {
 	bool ok;
 	struct hz_basic_object *o;
+	struct hz_material *m;
 
-	o = basic_object_new(assimp_shader);
+	m = material_new(assimp_shader);
+	if (!m) {
+		return false;
+	}
+
+	o = basic_object_new(assimp_shader, m);
 	if (!o) {
 		return false;
 	}
@@ -177,7 +190,7 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 		return false;
 	}
 
-	ok = apply_textures(o, ai_mesh, ai_scene);
+	ok = apply_textures(m, ai_mesh, ai_scene);
 	if (!ok) {
 		/* not an error */
 		hz_log_e(tag, "unable to apply textures for mesh '%s'", ai_mesh->mName.data);

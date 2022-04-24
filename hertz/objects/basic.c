@@ -13,9 +13,7 @@ static void basic_object_redraw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 
-	if (o->texture_attached) {
-		glBindTexture(GL_TEXTURE_2D, o->texture);
-	}
+	hz_material_use(o->material);
 
 	mat4x4_mul(o->transform.mvp, c->vp, o->transform.model);
 
@@ -32,10 +30,7 @@ static void basic_object_remove(struct hz_object *super)
 
 	hz_delete_gl_buffer(o->buffers.vertices);
 	hz_delete_gl_buffer(o->buffers.normals);
-
-	if (o->texture_attached) {
-		hz_delete_gl_buffer(o->buffers.uvs);
-	}
+	hz_delete_gl_buffer(o->buffers.uvs);
 }
 
 static bool basic_object_probe(struct hz_object *super)
@@ -56,34 +51,12 @@ static bool basic_object_probe(struct hz_object *super)
 	mat4x4_identity(o->transform.model);
 	mat4x4_identity(o->transform.mvp);
 
-	o->texture_attached = false;
-
-	return true;
-}
-
-bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
-		vec3 *uvs, size_t uv_count)
-{
-	struct hz_object *super = hz_cast_object(o);
-	bool ok;
-
-	struct hz_buffer_binding bindings[] = {
-		{ &o->buffers.uvs, "uv", 3, uvs, uv_count },
-	};
-
-	ok = hz_bind_buffers(bindings, super->program, HZ_ARRAY_SIZE(bindings));
-	if (!ok) {
-		return false;
-	}
-
-	o->texture_attached = true;
-	o->texture = texture;
-
 	return true;
 }
 
 bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
+		vec3 *uvs, size_t nuvs,
 		unsigned *indices, size_t nindices)
 {
 	struct hz_object *super = hz_cast_object(o);
@@ -92,6 +65,7 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 	struct hz_buffer_binding bindings[] = {
 		{ &o->buffers.vertices, "position", 3, vertices, nvertices },
 		{ &o->buffers.normals, "normal", 3, normals, nvertices },
+		{ &o->buffers.uvs, "uv", 3, uvs, nuvs },
 		{ &o->buffers.indices, NULL, 1, indices, nindices },
 	};
 
@@ -110,8 +84,11 @@ const struct hz_object_proto hz_basic_object_proto = {
 	.remove = basic_object_remove,
 };
 
-bool hz_basic_object_init(struct hz_basic_object *o, GLuint program)
+bool hz_basic_object_init(struct hz_basic_object *o, GLuint program,
+		struct hz_material *m)
 {
 	struct hz_object *super = hz_cast_object(o);
+
+	o->material = m;
 	return hz_object_init(super, program, &hz_basic_object_proto);
 }

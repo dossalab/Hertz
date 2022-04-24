@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <hz/utils/container_of.h>
 #include <hz/object.h>
+#include <hz/material.h>
 #include <hz/types.h>
 
 struct hz_basic_object {
@@ -23,22 +24,19 @@ struct hz_basic_object {
 		hz_mat4x4 model, mvp;
 	} transform;
 
-	GLuint texture;
-
-	bool texture_attached;
+	struct hz_material *material;
 	size_t nindices;
 };
 
 #define hz_cast_basic_object(ptr) \
 	hz_container_of(ptr, struct hz_basic_object, super)
 
-bool hz_basic_object_set_texture(struct hz_basic_object *o, GLuint texture,
-		hz_vec3 *uvs, size_t uv_count);
-
 bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		hz_vec3 *vertices, hz_vec3 *normals, size_t nvertices,
+		hz_vec3 *uvs, size_t nuvs,
 		unsigned *indices, size_t nindices);
 
-bool hz_basic_object_init(struct hz_basic_object *o, GLuint program);
+bool hz_basic_object_init(struct hz_basic_object *o, GLuint program,
+		struct hz_material *m);
 
 #endif

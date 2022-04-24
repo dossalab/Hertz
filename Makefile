@@ -14,6 +14,7 @@ hertz-objects := \
 	hertz/loader.o \
 	hertz/scene.o \
 	hertz/object.o \
+	hertz/material.o \
 	hertz/camera.o \
 	hertz/objects/basic.o \
 	hertz/objects/light.o \
