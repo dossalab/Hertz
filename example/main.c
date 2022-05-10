@@ -50,6 +50,7 @@ static bool load_shaders(struct render_state *state)
 
 static void camera_update(struct render_state *s, GLFWwindow *window, float spent)
 {
+	hz_vec3 position;
 	double pos_x, pos_y;
 	static double old_pos_x, old_pos_y;
 
@@ -67,7 +68,8 @@ static void camera_update(struct render_state *s, GLFWwindow *window, float spen
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
 
-	hz_light_move(&s->light, s->camera.position);
+	hz_camera_get_position(hz_cast_camera(&s->camera), position);
+	hz_light_move(&s->light, position);
 }
 
 
@@ -104,12 +106,15 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	glDepthFunc(GL_LESS);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	hz_fly_camera_init(&state->camera);
-
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
 	if (!ok) {
 		hz_log_e(tag, "unable to load shaders!");
+		return false;
+	}
+
+	ok = hz_fly_camera_init(&state->camera, assimp_shader);
+	if (!ok) {
 		return false;
 	}
 

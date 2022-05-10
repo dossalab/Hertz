@@ -7,7 +7,7 @@
 
 struct hz_fly_camera {
 	struct hz_camera super;
-	hz_vec3 position, look, up;
+	hz_vec3 look, up;
 	float speed;
 };
 
@@ -16,6 +16,6 @@ struct hz_fly_camera {
 
 void hz_fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 		bool forward, bool left, bool backward, bool right);
-void hz_fly_camera_init(struct hz_fly_camera *c);
+bool hz_fly_camera_init(struct hz_fly_camera *c, GLuint program);
 
 #endif

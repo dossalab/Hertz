@@ -1,3 +1,4 @@
+#include GL_EXTENSIONS_HEADER
 #include <stdbool.h>
 #include <hz/cameras/fly.h>
 #include <vendor/linmath/linmath.h>
@@ -56,7 +57,7 @@ void hz_fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 		vec3_add(xz_vec, x_vec, z_vec);
 		vec3_norm(xz_vec, xz_vec);
 		vec3_scale(xz_vec, xz_vec, move_distance);
-		vec3_add(c->position, c->position, xz_vec);
+		vec3_add(super->position, super->position, xz_vec);
 	}
 
 	delta_yaw = -dx * sensitivity;
@@ -68,10 +69,12 @@ void hz_fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 	mat4x4_rotate_vec(rotation, rotation, across, delta_pitch);
 
 	mat4x4_mul_vec3(c->look, rotation, c->look);
-	vec3_add(look_point, c->look, c->position);
+	vec3_add(look_point, c->look, super->position);
 
-	mat4x4_look_at(super->view, c->position, look_point, c->up);
+	mat4x4_look_at(super->view, super->position, look_point, c->up);
 	mat4x4_mul(super->vp, super->projection, super->view);
+
+	glUniform3fv(super->uniforms.position, 1, super->position);
 }
 
 static void fly_camera_update(struct hz_camera *super, size_t w, size_t h)
@@ -91,7 +94,7 @@ static void fly_camera_probe(struct hz_camera *super)
 	c->speed = 10.f;
 
 	vec3_dup(c->look, (vec3) { 1.0f, 1.0f, 1.0f });
-	vec3_dup(c->position, (vec3) { 5.0f, 5.0f, 5.0f });
+	vec3_dup(super->position, (vec3) { 5.0f, 5.0f, 5.0f });
 	vec3_dup(c->up, (vec3) { 0.0f, 1.0f, 0.0f });
 }
 
@@ -100,8 +103,8 @@ const struct hz_camera_proto hz_fly_camera_proto = {
 	.update = fly_camera_update
 };
 
-void hz_fly_camera_init(struct hz_fly_camera *c)
+bool hz_fly_camera_init(struct hz_fly_camera *c, GLuint program)
 {
 	struct hz_camera *super = hz_cast_camera(c);
-	hz_camera_init(super, &hz_fly_camera_proto);
+	return hz_camera_init(super, &hz_fly_camera_proto, program);
 }
