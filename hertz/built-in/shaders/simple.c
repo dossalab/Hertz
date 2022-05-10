@@ -30,7 +30,7 @@ const char *hz_simple_fragment_shader_source = \
 	"float calc_light(Light light, vec3 normal, vec3 vertex)\n"
 	"{\n"
 	"	vec3 dir = light.position - vertex;\n"
-	"	float diffuse = max(dot(normal, normalize(dir)), 0.0);\n"
+	"	float diffuse = max(dot(normalize(normal), normalize(dir)), 0.0);\n"
 	"	float ambient = 0.2;\n"
 	"	float distance = length(dir);\n"
 	"\n"
@@ -77,8 +77,8 @@ const char *hz_simple_vertex_shader_source = \
 	"{\n"
 	"	gl_Position = MVP * vec4(position, 1.0);\n"
 	"	_vertex = vec3(model * vec4(position, 1.0));\n"
+	"	_normal = vec3(model * vec4(normal, 0.0));\n"
 	"\n"
-	"	_normal = normal;\n"
 	"	_uv = uv;\n"
 	"}\n"
 ;
