@@ -32,6 +32,8 @@ static void light_draw(struct hz_object *super, struct hz_camera *c)
 		return;
 	}
 
+	glUseProgram(l->program);
+
 	glUniform3fv(l->uniforms.position, 1, l->position);
 	glUniform1f(l->uniforms.intensity, l->intensity);
 	glUniform1f(l->uniforms.constant, l->parameters.constant);
@@ -39,19 +41,30 @@ static void light_draw(struct hz_object *super, struct hz_camera *c)
 	glUniform1f(l->uniforms.quadratic, l->parameters.quadratic);
 }
 
-static bool light_probe(struct hz_object *super)
+static void light_deinit(struct hz_object *super)
 {
-	struct hz_light *l = hz_cast_light(super);
-	bool ok;
+	/* pass */
+}
 
+const struct hz_object_proto hz_light_proto = {
+	.draw = light_draw,
+	.deinit = light_deinit,
+};
+
+bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
+{
+	struct hz_object *super = hz_cast_object(l);
+	bool ok;
 	typedef char uniform_parameter[HZ_LIGHT_UNIFORM_PARAMETER_LEN];
 	uniform_parameter intensity, position, quadratic, constant, linear;
 
-	snprintf(position, sizeof(position), "lights[%d].position", l->index);
-	snprintf(intensity, sizeof(intensity), "lights[%d].intensity", l->index);
-	snprintf(constant, sizeof(constant), "lights[%d].constant", l->index);
-	snprintf(linear, sizeof(linear), "lights[%d].linear", l->index);
-	snprintf(quadratic, sizeof(quadratic), "lights[%d].quadratic", l->index);
+	hz_object_set_proto(super, &hz_light_proto);
+
+	snprintf(position, sizeof(position), "lights[%d].position", index);
+	snprintf(intensity, sizeof(intensity), "lights[%d].intensity", index);
+	snprintf(constant, sizeof(constant), "lights[%d].constant", index);
+	snprintf(linear, sizeof(linear), "lights[%d].linear", index);
+	snprintf(quadratic, sizeof(quadratic), "lights[%d].quadratic", index);
 
 	struct hz_uniform_binding bindings[] = {
 		{ &l->uniforms.position, position },
@@ -61,10 +74,13 @@ static bool light_probe(struct hz_object *super)
 		{ &l->uniforms.quadratic, quadratic },
 	};
 
-	ok = hz_bind_uniforms(bindings, super->program, HZ_ARRAY_SIZE(bindings));
+	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
 	if (!ok) {
 		return false;
 	}
+
+	l->index = index;
+	l->program = program;
 
 	hz_light_move(l, (vec3) { 0.f, 0.f, 0.f });
 	hz_light_dim(l, 1.0);
@@ -73,21 +89,3 @@ static bool light_probe(struct hz_object *super)
 	return true;
 }
 
-static void light_remove(struct hz_object *super)
-{
-	/* pass */
-}
-
-const struct hz_object_proto hz_light_proto = {
-	.draw = light_draw,
-	.probe = light_probe,
-	.remove = light_remove,
-};
-
-bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
-{
-	struct hz_object *super = hz_cast_object(l);
-
-	l->index = index;
-	return hz_object_init(super, program, &hz_light_proto);
-}

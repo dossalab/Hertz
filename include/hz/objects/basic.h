@@ -11,6 +11,8 @@
 
 struct hz_basic_object {
 	struct hz_object super;
+	GLuint vao;
+	GLuint program;
 
 	struct {
 		GLuint vertices, normals, uvs, indices;

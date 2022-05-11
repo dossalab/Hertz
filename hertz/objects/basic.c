@@ -13,6 +13,9 @@ static void basic_object_redraw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 
+	glBindVertexArray(o->vao);
+	glUseProgram(o->program);
+
 	hz_material_use(o->material);
 
 	mat4x4_mul(o->transform.mvp, c->vp, o->transform.model);
@@ -24,42 +27,23 @@ static void basic_object_redraw(struct hz_object *super, struct hz_camera *c)
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
 }
 
-static void basic_object_remove(struct hz_object *super)
+static void basic_object_deinit(struct hz_object *super)
 {
 	struct hz_basic_object *o = hz_cast_basic_object(super);
 
 	hz_delete_gl_buffer(o->buffers.vertices);
 	hz_delete_gl_buffer(o->buffers.normals);
 	hz_delete_gl_buffer(o->buffers.uvs);
+
+	glDeleteVertexArrays(1, &o->vao);
 }
 
-static bool basic_object_probe(struct hz_object *super)
-{
-	struct hz_basic_object *o = hz_cast_basic_object(super);
-	bool ok;
-
-	struct hz_uniform_binding bindings[] = {
-		{ &o->uniforms.mvp, "MVP" },
-		{ &o->uniforms.model, "model" },
-	};
-
-	ok = hz_bind_uniforms(bindings, super->program, HZ_ARRAY_SIZE(bindings));
-	if (!ok) {
-		return false;
-	}
-
-	mat4x4_identity(o->transform.model);
-	mat4x4_identity(o->transform.mvp);
-
-	return true;
-}
 
 bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		vec3 *vertices, vec3 *normals, size_t nvertices,
 		vec3 *uvs, size_t nuvs,
 		unsigned *indices, size_t nindices)
 {
-	struct hz_object *super = hz_cast_object(o);
 	bool ok;
 
 	struct hz_buffer_binding bindings[] = {
@@ -69,7 +53,7 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 		{ &o->buffers.indices, NULL, 1, indices, nindices },
 	};
 
-	ok = hz_bind_buffers(bindings, super->program, HZ_ARRAY_SIZE(bindings));
+	ok = hz_bind_buffers(bindings, o->program, HZ_ARRAY_SIZE(bindings));
 	if (!ok) {
 		return false;
 	}
@@ -80,15 +64,35 @@ bool hz_basic_object_set_geometry(struct hz_basic_object *o,
 
 const struct hz_object_proto hz_basic_object_proto = {
 	.draw = basic_object_redraw,
-	.probe = basic_object_probe,
-	.remove = basic_object_remove,
+	.deinit = basic_object_deinit,
 };
 
 bool hz_basic_object_init(struct hz_basic_object *o, GLuint program,
 		struct hz_material *m)
 {
 	struct hz_object *super = hz_cast_object(o);
+	bool ok;
+
+	hz_object_set_proto(super, &hz_basic_object_proto);
+
+	struct hz_uniform_binding bindings[] = {
+		{ &o->uniforms.mvp, "MVP" },
+		{ &o->uniforms.model, "model" },
+	};
+
+	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
+	if (!ok) {
+		return false;
+	}
 
 	o->material = m;
-	return hz_object_init(super, program, &hz_basic_object_proto);
+	o->program = program;
+
+	glGenVertexArrays(1, &o->vao);
+	glBindVertexArray(o->vao);
+
+	mat4x4_identity(o->transform.model);
+	mat4x4_identity(o->transform.mvp);
+
+	return true;
 }

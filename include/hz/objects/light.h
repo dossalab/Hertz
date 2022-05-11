@@ -9,6 +9,7 @@
 
 struct hz_light {
 	struct hz_object super;
+	GLuint program;
 
 	struct {
 		GLint position, intensity, constant, linear, quadratic;
