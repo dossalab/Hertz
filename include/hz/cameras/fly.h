@@ -7,8 +7,7 @@
 
 struct hz_fly_camera {
 	struct hz_camera super;
-	hz_vec3 look, up;
-	float speed;
+	float speed, sensitivity, pitch_margin;
 };
 
 #define hz_cast_fly_camera(ptr) \
