@@ -24,6 +24,6 @@ void hz_scene_draw(struct hz_scene *s, struct hz_camera *c, float time)
 
 	hz_list_backward(ptr, &s->drawing_list) {
 		o = hz_container_of(ptr, struct hz_object, scene_node);
-		hz_object_draw(o, c);
+		hz_object_proto_draw(o, c);
 	}
 }

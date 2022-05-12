@@ -41,14 +41,8 @@ static void light_draw(struct hz_object *super, struct hz_camera *c)
 	glUniform1f(l->uniforms.quadratic, l->parameters.quadratic);
 }
 
-static void light_deinit(struct hz_object *super)
-{
-	/* pass */
-}
-
 const struct hz_object_proto hz_light_proto = {
 	.draw = light_draw,
-	.deinit = light_deinit,
 };
 
 bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)

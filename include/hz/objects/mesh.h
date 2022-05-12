@@ -1,5 +1,5 @@
-#ifndef HZ_OBJECTS_BASIC_H
-#define HZ_OBJECTS_BASIC_H
+#ifndef HZ_OBJECTS_MESH_H
+#define HZ_OBJECTS_MESH_H
 
 #include <GL/gl.h>
 #include <stdbool.h>
@@ -9,7 +9,7 @@
 #include <hz/material.h>
 #include <hz/types.h>
 
-struct hz_basic_object {
+struct hz_mesh {
 	struct hz_object super;
 	GLuint vao;
 	GLuint program;
@@ -30,15 +30,15 @@ struct hz_basic_object {
 	size_t nindices;
 };
 
-#define hz_cast_basic_object(ptr) \
-	hz_container_of(ptr, struct hz_basic_object, super)
+#define hz_cast_mesh(ptr) \
+	hz_container_of(ptr, struct hz_mesh, super)
 
-bool hz_basic_object_set_geometry(struct hz_basic_object *o,
+bool hz_mesh_set_geometry(struct hz_mesh *o,
 		hz_vec3 *vertices, hz_vec3 *normals, size_t nvertices,
 		hz_vec3 *uvs, size_t nuvs,
 		unsigned *indices, size_t nindices);
 
-bool hz_basic_object_init(struct hz_basic_object *o, GLuint program,
-		struct hz_material *m);
+bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *m);
+void hz_mesh_deinit(struct hz_mesh *o);
 
 #endif

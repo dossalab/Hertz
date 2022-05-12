@@ -10,7 +10,6 @@ struct hz_object;
 
 struct hz_object_proto {
 	void (*draw)(struct hz_object *o, struct hz_camera *c);
-	void (*deinit)(struct hz_object *o);
 };
 
 struct hz_object {
@@ -21,8 +20,6 @@ struct hz_object {
 #define hz_cast_object(ptr) &(ptr)->super
 
 void hz_object_set_proto(struct hz_object *o, const struct hz_object_proto *proto);
-
-void hz_object_draw(struct hz_object *o, struct hz_camera *c);
-void hz_object_deinit(struct hz_object *o);
+void hz_object_proto_draw(struct hz_object *o, struct hz_camera *c);
 
 #endif

@@ -7,7 +7,7 @@
 
 #include <vendor/stb/stb_image.h>
 #include <vendor/linmath/linmath.h>
-#include <hz/objects/basic.h>
+#include <hz/objects/mesh.h>
 #include <hz/scene.h>
 #include <hz/loader.h>
 
@@ -19,18 +19,17 @@ static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
 
 extern int assimp_shader;
 
-static struct hz_basic_object *basic_object_new(GLuint program,
-		struct hz_material *m)
+static struct hz_mesh *mesh_new(GLuint program, struct hz_material *m)
 {
-	struct hz_basic_object *o;
+	struct hz_mesh *o;
 	bool ok;
 
-	o = calloc(1, sizeof(struct hz_basic_object));
+	o = calloc(1, sizeof(struct hz_mesh));
 	if (!o) {
 		return NULL;
 	}
 
-	ok = hz_basic_object_init(o, program, m);
+	ok = hz_mesh_init(o, program, m);
 	if (!ok) {
 		free(o);
 		return NULL;
@@ -58,9 +57,9 @@ static struct hz_material *material_new(GLuint program)
 	return o;
 }
 
-static void basic_object_free(struct hz_basic_object *o)
+static void mesh_free(struct hz_mesh *o)
 {
-	hz_object_deinit(hz_cast_object(o));
+	hz_mesh_deinit(o);
 	free(o);
 }
 
@@ -135,7 +134,7 @@ static bool apply_textures(struct hz_material *m, struct aiMesh *ai_mesh,
 	return bind_aimp_texture(m, diffuse->pcData, diffuse->mWidth);
 }
 
-static bool attach_geometry(struct hz_basic_object *o, struct aiMesh *ai_mesh)
+static bool attach_geometry(struct hz_mesh *o, struct aiMesh *ai_mesh)
 {
 	const size_t nindices = ai_mesh->mNumFaces * ai_mesh->mFaces[0].mNumIndices;
 	unsigned *indices;
@@ -156,7 +155,7 @@ static bool attach_geometry(struct hz_basic_object *o, struct aiMesh *ai_mesh)
 		}
 	}
 
-	ok = hz_basic_object_set_geometry(o,
+	ok = hz_mesh_set_geometry(o,
 		(vec3 *)ai_mesh->mVertices, (vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
 		(vec3 *)ai_mesh->mTextureCoords[0], ai_mesh->mNumVertices,
@@ -171,7 +170,7 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 		struct aiMatrix4x4 *ai_model, const struct aiScene *ai_scene)
 {
 	bool ok;
-	struct hz_basic_object *o;
+	struct hz_mesh *o;
 	struct hz_material *m;
 
 	m = material_new(assimp_shader);
@@ -179,14 +178,14 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 		return false;
 	}
 
-	o = basic_object_new(assimp_shader, m);
+	o = mesh_new(assimp_shader, m);
 	if (!o) {
 		return false;
 	}
 
 	ok = attach_geometry(o, ai_mesh);
 	if (!ok) {
-		basic_object_free(o);
+		mesh_free(o);
 		return false;
 	}
 
