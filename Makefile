@@ -25,6 +25,7 @@ hertz-objects := \
 	hertz/helpers/binders.o \
 	hertz/helpers/textures.o \
 	hertz/adt/list.o \
+	hertz/adt/tree.o \
 	hertz/misc/stb_image.o
 
 to-remove += $(hertz-objects) $(hertz-so)
