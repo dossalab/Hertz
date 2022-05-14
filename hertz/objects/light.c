@@ -52,7 +52,7 @@ bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
 	typedef char uniform_parameter[HZ_LIGHT_UNIFORM_PARAMETER_LEN];
 	uniform_parameter intensity, position, quadratic, constant, linear;
 
-	hz_object_set_proto(super, &hz_light_proto);
+	hz_object_init(super, &hz_light_proto);
 
 	snprintf(position, sizeof(position), "lights[%d].position", index);
 	snprintf(intensity, sizeof(intensity), "lights[%d].intensity", index);

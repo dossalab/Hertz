@@ -12,12 +12,12 @@ hertz-so := libhertz.so
 hertz-objects := \
 	hertz/loaders/assimp.o \
 	hertz/loader.o \
-	hertz/scene.o \
 	hertz/object.o \
 	hertz/material.o \
 	hertz/camera.o \
 	hertz/objects/mesh.o \
 	hertz/objects/light.o \
+	hertz/objects/root.o \
 	hertz/cameras/fly.o \
 	hertz/logger.o \
 	hertz/built-in/shaders/simple.o \

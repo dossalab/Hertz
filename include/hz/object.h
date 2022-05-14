@@ -4,7 +4,8 @@
 #include <GL/gl.h>
 #include <stdbool.h>
 #include <hz/types.h>
-#include "scene.h"
+#include <hz/adt/tree.h>
+#include "camera.h"
 
 struct hz_object;
 
@@ -13,13 +14,15 @@ struct hz_object_proto {
 };
 
 struct hz_object {
-	struct hz_list_item scene_node;
+	struct hz_tree_node scene_node;
 	const struct hz_object_proto *proto;
 };
 
 #define hz_cast_object(ptr) &(ptr)->super
 
-void hz_object_set_proto(struct hz_object *o, const struct hz_object_proto *proto);
-void hz_object_proto_draw(struct hz_object *o, struct hz_camera *c);
+void hz_object_insert(struct hz_object *o, struct hz_object *child);
+
+void hz_object_draw(struct hz_object *o, struct hz_camera *c);
+void hz_object_init(struct hz_object *o, const struct hz_object_proto *proto);
 
 #endif

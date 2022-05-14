@@ -4,10 +4,10 @@
 
 #include <hz/cameras/fly.h>
 #include <hz/logger.h>
-#include <hz/scene.h>
 #include <hz/loader.h>
 #include <hz/helpers/shaders.h>
 #include <hz/objects/light.h>
+#include <hz/objects/root.h>
 #include <hz/built-in/shaders/simple.h>
 
 #define EXIT_NOT_OK	1
@@ -16,11 +16,10 @@ static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 struct render_state {
-	struct hz_scene scene;
+	struct hz_root root;
 	struct hz_light light, l1, l2;
 	struct hz_fly_camera camera;
 	const char *scene_path;
-	double time;
 	GLuint shader;
 };
 
@@ -88,7 +87,7 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	camera_update(state, window, spent);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_scene_draw(&state->scene, hz_cast_camera(&state->camera), state->time);
+	hz_object_draw(hz_cast_object(&state->root), hz_cast_camera(&state->camera));
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
@@ -118,7 +117,9 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	ok = hz_loader_import_scene(state->scene_path, &state->scene);
+	hz_root_init(&state->root);
+
+	ok = hz_loader_import_scene(state->scene_path, hz_cast_object(&state->root));
 	if (!ok) {
 		hz_log_e(tag, "unable to import scene");
 		return false;
@@ -131,9 +132,9 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	hz_light_move(&state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
 	hz_light_move(&state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
 
-	hz_scene_attach(&state->scene, hz_cast_object(&state->light));
-	hz_scene_attach(&state->scene, hz_cast_object(&state->l1));
-	hz_scene_attach(&state->scene, hz_cast_object(&state->l2));
+	hz_object_insert(hz_cast_object(&state->root), hz_cast_object(&state->light));
+	hz_object_insert(hz_cast_object(&state->root), hz_cast_object(&state->l1));
+	hz_object_insert(hz_cast_object(&state->root), hz_cast_object(&state->l2));
 
 	return true;
 }

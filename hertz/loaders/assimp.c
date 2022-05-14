@@ -8,7 +8,6 @@
 #include <vendor/stb/stb_image.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/objects/mesh.h>
-#include <hz/scene.h>
 #include <hz/loader.h>
 
 static const char *tag = "aimp";
@@ -166,7 +165,7 @@ static bool attach_geometry(struct hz_mesh *o, struct aiMesh *ai_mesh)
 	return ok;
 }
 
-static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
+static bool import_ai_mesh(struct hz_object *parent, struct aiMesh *ai_mesh,
 		struct aiMatrix4x4 *ai_model, const struct aiScene *ai_scene)
 {
 	bool ok;
@@ -196,11 +195,11 @@ static bool import_ai_mesh(struct hz_scene *s, struct aiMesh *ai_mesh,
 	}
 
 	mat4x4_transpose(o->transform.model, (void *)ai_model);
-	hz_scene_attach(s, hz_cast_object(o));
+	hz_object_insert(parent, hz_cast_object(o));
 	return true;
 }
 
-static void load_scene_node(struct hz_scene *s, const struct aiScene *scene,
+static void load_scene_node(struct hz_object *object, const struct aiScene *scene,
 		struct aiNode *node)
 {
 	struct aiMesh *mesh;
@@ -211,39 +210,37 @@ static void load_scene_node(struct hz_scene *s, const struct aiScene *scene,
 		mesh = scene->mMeshes[mesh_index];
 
 		hz_log_i(tag, "loading mesh '%s'", mesh->mName.data);
-		if (!import_ai_mesh(s, mesh, &node->mTransformation, scene)) {
+		if (!import_ai_mesh(object, mesh, &node->mTransformation, scene)) {
 			hz_log_e(tag, "unable to load mesh '%s'", mesh->mName.data);
 		}
 	}
 }
 
-static void load_scene_recursive(struct hz_scene *s, const struct aiScene *scene,
-		struct aiNode *node)
+static void load_scene_recursive(struct hz_object *object,
+		const struct aiScene *scene, struct aiNode *node)
 {
 	struct aiNode *child;
 
-	load_scene_node(s, scene, node);
+	load_scene_node(object, scene, node);
 
 	for (size_t i = 0; i < node->mNumChildren; i++) {
 		child = node->mChildren[i];
-		load_scene_recursive(s, scene, child);
+		load_scene_recursive(object, scene, child);
 	}
 }
 
-static bool assimp_import_scene(const char *path, struct hz_scene *s)
+static bool assimp_import_scene(const char *path, struct hz_object *root)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
 		| aiProcess_JoinIdenticalVertices;
-
-	hz_scene_init(s);
 
 	scene = aiImportFile(path, flags);
 	if (!scene) {
 		return false;
 	}
 
-	load_scene_recursive(s, scene, scene->mRootNode);
+	load_scene_recursive(root, scene, scene->mRootNode);
 	aiReleaseImport(scene);
 
 	return true;

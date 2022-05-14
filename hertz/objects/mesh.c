@@ -59,7 +59,7 @@ bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *m)
 	struct hz_object *super = hz_cast_object(o);
 	bool ok;
 
-	hz_object_set_proto(super, &hz_mesh_proto);
+	hz_object_init(super, &hz_mesh_proto);
 
 	struct hz_uniform_binding bindings[] = {
 		{ &o->uniforms.mvp, "MVP" },
