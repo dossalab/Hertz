@@ -19,10 +19,10 @@ static void mesh_redraw(struct hz_object *super, struct hz_camera *c)
 
 	hz_material_use(o->material);
 
-	mat4x4_mul(mvp, c->vp, o->super.model);
+	mat4x4_mul(mvp, c->vp, super->model);
 
 	set_uniform_matrix(o->uniforms.mvp, mvp);
-	set_uniform_matrix(o->uniforms.model, o->super.model);
+	set_uniform_matrix(o->uniforms.model, super->model);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, o->buffers.indices);
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
