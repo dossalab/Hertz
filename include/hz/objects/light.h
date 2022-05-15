@@ -21,7 +21,6 @@ struct hz_light {
 
 	int index;
 	float intensity;
-	hz_vec3 position;
 };
 
 #define hz_cast_light(ptr) \
@@ -29,7 +28,6 @@ struct hz_light {
 
 void hz_light_setup(struct hz_light *l, float kc, float kl, float kq);
 void hz_light_dim(struct hz_light *l, float intensity);
-void hz_light_move(struct hz_light *l, hz_vec3 position);
 bool hz_light_init(struct hz_light *l, GLuint program, unsigned index);
 
 #endif

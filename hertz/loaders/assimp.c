@@ -194,7 +194,7 @@ static bool import_ai_mesh(struct hz_object *parent, struct aiMesh *ai_mesh,
 		hz_log_e(tag, "unable to apply textures for mesh '%s'", ai_mesh->mName.data);
 	}
 
-	mat4x4_transpose(o->transform.model, (void *)ai_model);
+	mat4x4_transpose(o->super.model, (void *)ai_model);
 	hz_object_insert(parent, hz_cast_object(o));
 	return true;
 }

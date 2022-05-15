@@ -12,16 +12,17 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 static void mesh_redraw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_mesh *o = hz_cast_mesh(super);
+	mat4x4 mvp;
 
 	glBindVertexArray(o->vao);
 	glUseProgram(o->program);
 
 	hz_material_use(o->material);
 
-	mat4x4_mul(o->transform.mvp, c->vp, o->transform.model);
+	mat4x4_mul(mvp, c->vp, o->super.model);
 
-	set_uniform_matrix(o->uniforms.mvp, o->transform.mvp);
-	set_uniform_matrix(o->uniforms.model, o->transform.model);
+	set_uniform_matrix(o->uniforms.mvp, mvp);
+	set_uniform_matrix(o->uniforms.model, o->super.model);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, o->buffers.indices);
 	glDrawElements(GL_TRIANGLES, o->nindices, GL_UNSIGNED_INT, 0);
@@ -76,9 +77,6 @@ bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *m)
 
 	glGenVertexArrays(1, &o->vao);
 	glBindVertexArray(o->vao);
-
-	mat4x4_identity(o->transform.model);
-	mat4x4_identity(o->transform.mvp);
 
 	return true;
 }

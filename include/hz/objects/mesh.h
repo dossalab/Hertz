@@ -22,10 +22,6 @@ struct hz_mesh {
 		GLint mvp, model;
 	} uniforms;
 
-	struct {
-		hz_mat4x4 model, mvp;
-	} transform;
-
 	struct hz_material *material;
 	size_t nindices;
 };

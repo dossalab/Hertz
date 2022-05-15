@@ -7,11 +7,6 @@
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
 
-void hz_light_move(struct hz_light *l, vec3 position)
-{
-	vec3_dup(l->position, position);
-}
-
 void hz_light_dim(struct hz_light *l, float intensity)
 {
 	l->intensity = intensity;
@@ -27,14 +22,19 @@ void hz_light_setup(struct hz_light *l, float kc, float kl, float kq)
 static void light_draw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_light *l = hz_cast_light(super);
+	vec4 position = { 0.f, 0.f, 0.f, 1.f };
 
 	if (l->index < 0) {
 		return;
 	}
 
+	mat4x4_mul_vec4(position, super->model, position);
+
 	glUseProgram(l->program);
 
-	glUniform3fv(l->uniforms.position, 1, l->position);
+	/* load it as vec3, ignoring the w component */
+	glUniform3fv(l->uniforms.position, 1, position);
+
 	glUniform1f(l->uniforms.intensity, l->intensity);
 	glUniform1f(l->uniforms.constant, l->parameters.constant);
 	glUniform1f(l->uniforms.linear, l->parameters.linear);
@@ -76,7 +76,6 @@ bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
 	l->index = index;
 	l->program = program;
 
-	hz_light_move(l, (vec3) { 0.f, 0.f, 0.f });
 	hz_light_dim(l, 1.0);
 	hz_light_setup(l, 1.0f, 0.09f, 0.032f);
 
