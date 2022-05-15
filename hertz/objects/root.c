@@ -11,6 +11,6 @@ const struct hz_object_proto hz_root_proto = {
 
 void hz_root_init(struct hz_root *r)
 {
-	struct hz_object *super = hz_cast_object(r);
+	struct hz_object *super = HZ_OBJECT(r);
 	hz_object_init(super, &hz_root_proto);
 }

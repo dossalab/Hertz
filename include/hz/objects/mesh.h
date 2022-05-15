@@ -26,7 +26,7 @@ struct hz_mesh {
 	size_t nindices;
 };
 
-#define hz_cast_mesh(ptr) \
+#define HZ_MESH(ptr) \
 	hz_container_of(ptr, struct hz_mesh, super)
 
 bool hz_mesh_set_geometry(struct hz_mesh *o,

@@ -67,8 +67,8 @@ static void camera_update(struct render_state *s, GLFWwindow *window, float spen
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
 
-	hz_camera_get_position(hz_cast_camera(&s->camera), position);
-	hz_object_move(hz_cast_object(&s->light), position);
+	hz_camera_get_position(HZ_CAMERA(&s->camera), position);
+	hz_object_move(HZ_OBJECT(&s->light), position);
 }
 
 
@@ -77,7 +77,7 @@ static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 	struct render_state *state = user;
 
 	glViewport(0, 0, w, h);
-	hz_camera_update(hz_cast_camera(&state->camera), w, h);
+	hz_camera_update(HZ_CAMERA(&state->camera), w, h);
 }
 
 static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
@@ -87,7 +87,7 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	camera_update(state, window, spent);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_object_draw(hz_cast_object(&state->root), hz_cast_camera(&state->camera));
+	hz_object_draw(HZ_OBJECT(&state->root), HZ_CAMERA(&state->camera));
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
@@ -119,7 +119,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 
 	hz_root_init(&state->root);
 
-	ok = hz_loader_import_scene(state->scene_path, hz_cast_object(&state->root));
+	ok = hz_loader_import_scene(state->scene_path, HZ_OBJECT(&state->root));
 	if (!ok) {
 		hz_log_e(tag, "unable to import scene");
 		return false;
@@ -129,12 +129,12 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	hz_light_init(&state->l2, assimp_shader, 1);
 	hz_light_init(&state->light, assimp_shader, 2);
 
-	hz_object_move(hz_cast_object(&state->l1), (hz_vec3) { -8.f, 4.f, -1.f });
-	hz_object_move(hz_cast_object(&state->l2), (hz_vec3) {  8.f, 4.f, -2.f });
+	hz_object_move(HZ_OBJECT(&state->l1), (hz_vec3) { -8.f, 4.f, -1.f });
+	hz_object_move(HZ_OBJECT(&state->l2), (hz_vec3) {  8.f, 4.f, -2.f });
 
-	hz_object_insert(hz_cast_object(&state->root), hz_cast_object(&state->light));
-	hz_object_insert(hz_cast_object(&state->root), hz_cast_object(&state->l1));
-	hz_object_insert(hz_cast_object(&state->root), hz_cast_object(&state->l2));
+	hz_object_insert(HZ_OBJECT(&state->root), HZ_OBJECT(&state->light));
+	hz_object_insert(HZ_OBJECT(&state->root), HZ_OBJECT(&state->l1));
+	hz_object_insert(HZ_OBJECT(&state->root), HZ_OBJECT(&state->l2));
 
 	return true;
 }

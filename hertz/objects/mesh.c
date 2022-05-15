@@ -11,7 +11,7 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 
 static void mesh_redraw(struct hz_object *super, struct hz_camera *c)
 {
-	struct hz_mesh *o = hz_cast_mesh(super);
+	struct hz_mesh *o = HZ_MESH(super);
 	mat4x4 mvp;
 
 	glBindVertexArray(o->vao);
@@ -57,7 +57,7 @@ const struct hz_object_proto hz_mesh_proto = {
 
 bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *m)
 {
-	struct hz_object *super = hz_cast_object(o);
+	struct hz_object *super = HZ_OBJECT(o);
 	bool ok;
 
 	hz_object_init(super, &hz_mesh_proto);

@@ -19,7 +19,7 @@ struct hz_object {
 	hz_mat4x4 model;
 };
 
-#define hz_cast_object(ptr) &(ptr)->super
+#define HZ_OBJECT(ptr) &(ptr)->super
 
 void hz_object_insert(struct hz_object *o, struct hz_object *child);
 

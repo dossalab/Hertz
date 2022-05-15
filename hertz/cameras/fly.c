@@ -24,7 +24,7 @@ static inline void mat4x4_rotate_vec(mat4x4 res, mat4x4 mat, vec3 vec, float a) 
 
 static void apply_pitch_limits(struct hz_fly_camera *c, float *delta_pitch)
 {
-	struct hz_camera *super = hz_cast_camera(c);
+	struct hz_camera *super = HZ_CAMERA(c);
 	float pitch = acosf(vec3_mul_inner(super->look, up_direction));
 
 	if (pitch < c->pitch_margin && *delta_pitch > 0.0f) {
@@ -39,7 +39,7 @@ static void apply_pitch_limits(struct hz_fly_camera *c, float *delta_pitch)
 void hz_fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,
 		bool forward, bool left, bool backward, bool right)
 {
-	struct hz_camera *super = hz_cast_camera(c);
+	struct hz_camera *super = HZ_CAMERA(c);
 	mat4x4 rotation;
 	vec3 across, upward, x_vec, z_vec, xz_vec, look_point;
 	float delta_yaw, delta_pitch, move_distance = c->speed * dt;
@@ -85,5 +85,5 @@ bool hz_fly_camera_init(struct hz_fly_camera *c, GLuint program)
 	c->sensitivity = FLY_CAMERA_DEFAULT_SENSITIVITY;
 	c->pitch_margin = FLY_CAMERA_DEFAULT_PITCH_MARGIN;
 
-	return hz_camera_init(hz_cast_camera(c), program);
+	return hz_camera_init(HZ_CAMERA(c), program);
 }

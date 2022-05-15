@@ -18,7 +18,7 @@ struct hz_camera {
 	} uniforms;
 };
 
-#define hz_cast_camera(ptr) &(ptr)->super
+#define HZ_CAMERA(ptr) &(ptr)->super
 
 void hz_camera_update_uniforms(struct hz_camera *c);
 void hz_camera_get_position(struct hz_camera *c, hz_vec3 position);

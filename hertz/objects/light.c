@@ -21,7 +21,7 @@ void hz_light_setup(struct hz_light *l, float kc, float kl, float kq)
 
 static void light_draw(struct hz_object *super, struct hz_camera *c)
 {
-	struct hz_light *l = hz_cast_light(super);
+	struct hz_light *l = HZ_LIGHT(super);
 	vec4 position = { 0.f, 0.f, 0.f, 1.f };
 
 	if (l->index < 0) {
@@ -47,7 +47,7 @@ const struct hz_object_proto hz_light_proto = {
 
 bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
 {
-	struct hz_object *super = hz_cast_object(l);
+	struct hz_object *super = HZ_OBJECT(l);
 	bool ok;
 	typedef char uniform_parameter[HZ_LIGHT_UNIFORM_PARAMETER_LEN];
 	uniform_parameter intensity, position, quadratic, constant, linear;

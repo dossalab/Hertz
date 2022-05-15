@@ -7,7 +7,7 @@ struct hz_root {
 	struct hz_object super;
 };
 
-#define hz_cast_root(ptr) \
+#define HZ_ROOT(ptr) \
 	hz_container_of(ptr, struct hz_root, super)
 
 void hz_root_init(struct hz_root *r);

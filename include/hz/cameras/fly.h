@@ -10,7 +10,7 @@ struct hz_fly_camera {
 	float speed, sensitivity, pitch_margin;
 };
 
-#define hz_cast_fly_camera(ptr) \
+#define HZ_FLY_CAMERA(ptr) \
 	hz_container_of(ptr, struct hz_fly_camera, super)
 
 void hz_fly_camera_move(struct hz_fly_camera *c, float dt, int dx, int dy,

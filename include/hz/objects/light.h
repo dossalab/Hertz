@@ -23,7 +23,7 @@ struct hz_light {
 	float intensity;
 };
 
-#define hz_cast_light(ptr) \
+#define HZ_LIGHT(ptr) \
 	hz_container_of(ptr, struct hz_light, super)
 
 void hz_light_setup(struct hz_light *l, float kc, float kl, float kq);
