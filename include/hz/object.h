@@ -10,6 +10,7 @@
 struct hz_object;
 
 struct hz_object_proto {
+	void (*bind)(struct hz_object *o);
 	void (*draw)(struct hz_object *o, struct hz_camera *c);
 };
 

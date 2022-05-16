@@ -30,6 +30,15 @@ static void scene_node_draw_callback(struct hz_tree_node *parent,
 	o->proto->draw(o, c);
 }
 
+static void scene_node_bind_callback(struct hz_tree_node *parent,
+		struct hz_tree_node *node, void *user)
+{
+	struct hz_object *o;
+
+	o = hz_container_of(node, struct hz_object, scene_node);
+	o->proto->bind(o);
+}
+
 void hz_object_insert(struct hz_object *o, struct hz_object *child)
 {
 	hz_tree_insert(&o->scene_node, &child->scene_node);
@@ -44,6 +53,7 @@ void hz_object_move(struct hz_object *o, vec3 pos)
 
 void hz_object_draw(struct hz_object *o, struct hz_camera *c)
 {
+	hz_tree_traverse(NULL, &o->scene_node, scene_node_bind_callback, c);
 	hz_tree_traverse(NULL, &o->scene_node, scene_node_draw_callback, c);
 }
 

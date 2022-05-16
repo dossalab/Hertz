@@ -19,7 +19,7 @@ void hz_light_setup(struct hz_light *l, float kc, float kl, float kq)
 	l->parameters.quadratic = kq;
 }
 
-static void light_draw(struct hz_object *super, struct hz_camera *c)
+static void light_bind(struct hz_object *super)
 {
 	struct hz_light *l = HZ_LIGHT(super);
 	vec4 position = { 0.f, 0.f, 0.f, 1.f };
@@ -41,7 +41,13 @@ static void light_draw(struct hz_object *super, struct hz_camera *c)
 	glUniform1f(l->uniforms.quadratic, l->parameters.quadratic);
 }
 
+static void light_draw(struct hz_object *super, struct hz_camera *c)
+{
+	/* pass */
+}
+
 const struct hz_object_proto hz_light_proto = {
+	.bind = light_bind,
 	.draw = light_draw,
 };
 

@@ -9,6 +9,11 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
 }
 
+static void mesh_bind(struct hz_object *super)
+{
+	/* pass */
+}
+
 static void mesh_redraw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_mesh *o = HZ_MESH(super);
@@ -52,6 +57,7 @@ bool hz_mesh_set_geometry(struct hz_mesh *o,
 }
 
 const struct hz_object_proto hz_mesh_proto = {
+	.bind = mesh_bind,
 	.draw = mesh_redraw,
 };
 
