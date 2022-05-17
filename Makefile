@@ -1,7 +1,10 @@
 V ?= @
 
-CC	:= gcc
-LD	:= gcc
+include scripts/build-utils.mk
+
+$(call allow-override,CC,gcc)
+$(call allow-override,LD,gcc)
+
 ECHO	:= @ printf "[%s]\t%s\n"
 PREFIX	?= /usr/local
 
