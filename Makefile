@@ -13,7 +13,9 @@ GL_EXTENSIONS_HEADER ?= <GL/glew.h>
 CFLAGS += -Wall -g -I. -Iinclude \
 	-DGL_EXTENSIONS_HEADER="$(GL_EXTENSIONS_HEADER)"
 
-hertz-so := libhertz.so
+hertz-so	:= libhertz.so
+hertz-so-name	:= $(notdir $(hertz-so))
+
 hertz-objects := \
 	hertz/loaders/assimp.o \
 	hertz/loader.o \
@@ -35,7 +37,7 @@ hertz-objects := \
 
 to-remove += $(hertz-objects) $(hertz-so)
 
-$(hertz-so): LDFLAGS += -shared
+$(hertz-so): LDFLAGS += -shared -Wl,-soname,$(hertz-so-name)
 $(hertz-so): CFLAGS  += -fPIC
 
 example-exe	:= example/example
@@ -76,7 +78,7 @@ install: $(hertz)
 
 phony += uninstall
 uninstall:
-	rm -f $(PREFIX)/lib/$(notdir $(hertz-so))
+	rm -f $(PREFIX)/lib/$(hertz-so-name)
 	rm -rf $(PREFIX)/include/hz
 
 phony += clean
