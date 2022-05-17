@@ -8,8 +8,10 @@ $(call allow-override,LD,gcc)
 ECHO	:= @ printf "[%s]\t%s\n"
 PREFIX	?= /usr/local
 
+GL_EXTENSIONS_HEADER ?= <GL/glew.h>
+
 CFLAGS += -Wall -g -I. -Iinclude \
-	-DGL_EXTENSIONS_HEADER="<GL/glew.h>"
+	-DGL_EXTENSIONS_HEADER="$(GL_EXTENSIONS_HEADER)"
 
 hertz-so := libhertz.so
 hertz-objects := \
