@@ -27,7 +27,7 @@ extern hz_logger hz_do_log_i;
 extern hz_logger hz_do_log_e;
 
 #define hz_log_fmt(fun, tag, expl, fmt, ...) \
-	fun("%6s " expl " " fmt "\n", tag __VA_OPT__(,) __VA_ARGS__)
+	fun("%6s " expl " " fmt "\n", tag, ## __VA_ARGS__)
 
 #define hz_log_i(tag, ...) \
 	hz_log_fmt(hz_do_log_i, tag, HZ_LOG_GRN("[I]"), __VA_ARGS__)
