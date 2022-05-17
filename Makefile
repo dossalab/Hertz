@@ -12,6 +12,7 @@ GL_HEADER ?= <GL/gl.h>
 GL_EXTENSIONS_HEADER ?= <GL/glew.h>
 
 CFLAGS += -Wall -g -I. -Iinclude \
+	-I$(PREFIX)/include \
 	-DHZ_GL_HEADER="$(GL_HEADER)" \
 	-DHZ_GL_EXTENSIONS_HEADER="$(GL_EXTENSIONS_HEADER)"
 
