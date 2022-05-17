@@ -1,7 +1,7 @@
 #ifndef HZ_HELPERS_SHADERS_H
 #define HZ_HELPERS_SHADERS_H
 
-#include <GL/gl.h>
+#include HZ_GL_HEADER
 #include <stddef.h>
 
 GLuint hz_compile_single_shader(const char *source, char **logs, GLenum type);

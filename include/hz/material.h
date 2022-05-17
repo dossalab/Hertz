@@ -1,7 +1,7 @@
 #ifndef HZ_MATERIAL_H
 #define HZ_MATERIAL_H
 
-#include <GL/gl.h>
+#include HZ_GL_HEADER
 #include <stdbool.h>
 #include <stddef.h>
 #include <hz/types.h>

@@ -1,4 +1,4 @@
-#include GL_EXTENSIONS_HEADER
+#include HZ_GL_EXTENSIONS_HEADER
 #include <stdbool.h>
 #include <hz/cameras/fly.h>
 #include <vendor/linmath/linmath.h>

@@ -1,7 +1,7 @@
 #ifndef HZ_OBJECT_H
 #define HZ_OBJECT_H
 
-#include <GL/gl.h>
+#include HZ_GL_HEADER
 #include <stdbool.h>
 #include <hz/types.h>
 #include <hz/adt/tree.h>

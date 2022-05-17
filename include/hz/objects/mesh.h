@@ -1,7 +1,7 @@
 #ifndef HZ_OBJECTS_MESH_H
 #define HZ_OBJECTS_MESH_H
 
-#include <GL/gl.h>
+#include HZ_GL_HEADER
 #include <stdbool.h>
 #include <stddef.h>
 #include <hz/utils/container_of.h>

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
-#include GL_EXTENSIONS_HEADER
+#include HZ_GL_EXTENSIONS_HEADER
 
 #include <hz/helpers/shaders.h>
 

@@ -4,7 +4,7 @@
 #include <hz/types.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <GL/gl.h>
+#include HZ_GL_HEADER
 
 struct hz_camera;
 

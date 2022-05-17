@@ -1,4 +1,4 @@
-#include GL_EXTENSIONS_HEADER
+#include HZ_GL_EXTENSIONS_HEADER
 #include <hz/helpers/binders.h>
 #include <hz/helpers/shaders.h>
 #include <hz/objects/mesh.h>

@@ -1,4 +1,4 @@
-#include GL_EXTENSIONS_HEADER
+#include HZ_GL_EXTENSIONS_HEADER
 #include <hz/objects/light.h>
 #include <hz/logger.h>
 #include <vendor/linmath/linmath.h>

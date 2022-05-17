@@ -1,4 +1,4 @@
-#include GL_EXTENSIONS_HEADER
+#include HZ_GL_EXTENSIONS_HEADER
 #include <hz/camera.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/helpers/binders.h>

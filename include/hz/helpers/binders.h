@@ -1,7 +1,7 @@
 #ifndef HZ_HELPERS_BINDERS_H
 #define HZ_HELPERS_BINDERS_H
 
-#include <GL/gl.h>
+#include HZ_GL_HEADER
 #include <stddef.h>
 #include <stdbool.h>
 #include <hz/utils/common.h>

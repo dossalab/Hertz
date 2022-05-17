@@ -1,4 +1,4 @@
-#include GL_EXTENSIONS_HEADER
+#include HZ_GL_EXTENSIONS_HEADER
 #include <hz/helpers/textures.h>
 
 GLuint hz_create_texture(void *texture_data, GLenum format, size_t w, size_t h)
