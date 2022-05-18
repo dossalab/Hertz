@@ -21,21 +21,22 @@ enum hz_loglevel {
 	HZ_LOGLEVEL_SILENT
 };
 
-typedef int (*hz_logger)(const char *, ...);
+typedef int (*hz_logger_sink)(const char *, ...);
 
-extern hz_logger hz_do_log_i;
-extern hz_logger hz_do_log_e;
+extern hz_logger_sink *hz_logger_info_sink;
+extern hz_logger_sink *hz_logger_error_sink;
 
-#define hz_log_fmt(fun, tag, expl, fmt, ...) \
-	fun("%6s " expl " " fmt "\n", tag, ## __VA_ARGS__)
+#define hz_log_fmt(sink, tag, expl, fmt, ...) \
+	(*sink)("%6s " expl " " fmt "\n", tag, ## __VA_ARGS__)
 
 #define hz_log_i(tag, ...) \
-	hz_log_fmt(hz_do_log_i, tag, HZ_LOG_GRN("[I]"), __VA_ARGS__)
+	hz_log_fmt(hz_logger_info_sink, tag, HZ_LOG_GRN("[I]"), __VA_ARGS__)
 
 #define hz_log_e(tag, ...) \
-	hz_log_fmt(hz_do_log_e, tag, HZ_LOG_RED("[E] (" HZ_LOG_FILE_AND_LINE ")"),\
+	hz_log_fmt(hz_logger_error_sink, tag, HZ_LOG_RED("[E] (" HZ_LOG_FILE_AND_LINE ")"),\
 			__VA_ARGS__)
 
 void hz_logger_init(enum hz_loglevel level);
+void hz_logger_route_output(hz_logger_sink to);
 
 #endif
