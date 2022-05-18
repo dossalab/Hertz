@@ -13,8 +13,7 @@
 static const char *tag = "aimp";
 
 /* Make sure we can copy assimp buffers directly */
-static_assert(sizeof(ai_real) == sizeof(float));
-static_assert(sizeof(struct aiMatrix4x4) == sizeof(mat4x4));
+static_assert(sizeof(ai_real) == sizeof(float), "ai_real is not float");
 
 extern int assimp_shader;
 
