@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <hz/types.h>
-#include <vendor/stb/stb_image.h>
 #include <hz/objects/mesh.h>
+
+#include "vendor/stb/stb_image.h"
 
 static const char *tag = "aimp";
 
