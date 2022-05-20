@@ -20,8 +20,6 @@ hertz-so	:= libhertz.so
 hertz-so-name	:= $(notdir $(hertz-so))
 
 hertz-objects := \
-	hertz/loaders/assimp.o \
-	hertz/loader.o \
 	hertz/object.o \
 	hertz/material.o \
 	hertz/camera.o \
@@ -36,7 +34,6 @@ hertz-objects := \
 	hertz/helpers/textures.o \
 	hertz/adt/list.o \
 	hertz/adt/tree.o \
-	hertz/misc/stb_image.o
 
 to-remove += $(hertz-objects) $(hertz-so)
 
@@ -48,6 +45,8 @@ example-libs	:= glfw3 glew assimp
 example-objects := \
 	example/main.o \
 	example/glfw_context.o \
+	example/assimp.o \
+	example/stb_image.o
 
 $(example-exe): LDFLAGS += $(shell pkg-config --libs $(example-libs)) -L. -lm -lhertz
 $(example-exe): CFLAGS  += $(shell pkg-config --cflags $(example-libs))

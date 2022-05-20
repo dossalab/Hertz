@@ -8,7 +8,6 @@
 #include <vendor/stb/stb_image.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/objects/mesh.h>
-#include <hz/loader.h>
 
 static const char *tag = "aimp";
 
@@ -228,7 +227,7 @@ static void load_scene_recursive(struct hz_object *object,
 	}
 }
 
-static bool assimp_import_scene(const char *path, struct hz_object *root)
+bool assimp_import_scene(const char *path, struct hz_object *root)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
@@ -244,9 +243,3 @@ static bool assimp_import_scene(const char *path, struct hz_object *root)
 
 	return true;
 }
-
-static struct hz_loader_proto assimp_loader_proto = {
-	.import_scene = assimp_import_scene,
-};
-
-hz_export_loader_proto(assimp_loader_proto);

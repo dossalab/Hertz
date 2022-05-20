@@ -4,11 +4,12 @@
 
 #include <hz/cameras/fly.h>
 #include <hz/logger.h>
-#include <hz/loader.h>
 #include <hz/helpers/shaders.h>
 #include <hz/objects/light.h>
 #include <hz/objects/root.h>
 #include <hz/built-in/shaders/simple.h>
+
+#include "assimp.h"
 
 #define EXIT_NOT_OK	1
 
@@ -119,7 +120,7 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 
 	hz_root_init(&state->root);
 
-	ok = hz_loader_import_scene(state->scene_path, HZ_OBJECT(&state->root));
+	ok = assimp_import_scene(state->scene_path, HZ_OBJECT(&state->root));
 	if (!ok) {
 		hz_log_e(tag, "unable to import scene");
 		return false;
