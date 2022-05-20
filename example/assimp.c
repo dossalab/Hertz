@@ -4,9 +4,8 @@
 #include <hz/logger.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include <hz/types.h>
 #include <vendor/stb/stb_image.h>
-#include <vendor/linmath/linmath.h>
 #include <hz/objects/mesh.h>
 
 static const char *tag = "aimp";
@@ -153,9 +152,9 @@ static bool attach_geometry(struct hz_mesh *o, struct aiMesh *ai_mesh)
 	}
 
 	ok = hz_mesh_set_geometry(o,
-		(vec3 *)ai_mesh->mVertices, (vec3 *)ai_mesh->mNormals,
+		(hz_vec3 *)ai_mesh->mVertices, (hz_vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
-		(vec3 *)ai_mesh->mTextureCoords[0], ai_mesh->mNumVertices,
+		(hz_vec3 *)ai_mesh->mTextureCoords[0], ai_mesh->mNumVertices,
 		indices, nindices);
 
 	free(indices);
@@ -192,7 +191,7 @@ static bool import_ai_mesh(struct hz_object *parent, struct aiMesh *ai_mesh,
 		hz_log_e(tag, "unable to apply textures for mesh '%s'", ai_mesh->mName.data);
 	}
 
-	mat4x4_transpose(o->super.local_model, (void *)ai_model);
+	hz_object_set_model(HZ_OBJECT(o), (void *)ai_model, true);
 	hz_object_insert(parent, HZ_OBJECT(o));
 	return true;
 }

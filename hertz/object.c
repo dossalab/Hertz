@@ -51,6 +51,15 @@ void hz_object_move(struct hz_object *o, vec3 pos)
 	hz_object_update(o);
 }
 
+void hz_object_set_model(struct hz_object *o, hz_mat4x4 model, bool transpose)
+{
+	if (transpose) {
+		mat4x4_transpose(o->local_model, model);
+	} else {
+		mat4x4_dup(o->local_model, model);
+	}
+}
+
 void hz_object_draw(struct hz_object *o, struct hz_camera *c)
 {
 	hz_tree_traverse(NULL, &o->scene_node, scene_node_bind_callback, c);
