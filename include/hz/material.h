@@ -24,6 +24,6 @@ bool hz_material_bind_texture(struct hz_material *m, enum hz_texture_type type,
 		void *data, GLenum format, size_t w, size_t h);
 
 void hz_material_use(struct hz_material *m);
-bool hz_material_init(struct hz_material *m, GLuint program);
+struct hz_material *hz_material_new(GLuint program);
 
 #endif

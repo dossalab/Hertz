@@ -1,33 +1,16 @@
-#ifndef HZ_OBJECTS_BASIC_H
-#define HZ_OBJECTS_BASIC_H
+#ifndef HZ_OBJECTS_LIGHT_H
+#define HZ_OBJECTS_LIGHT_H
 
 #include HZ_GL_HEADER
-#include <stdbool.h>
-#include <hz/utils/container_of.h>
-#include <hz/object.h>
-#include <hz/types.h>
 
-struct hz_light {
-	struct hz_object super;
-	GLuint program;
+struct hz_light;
+struct hz_object;
 
-	struct {
-		GLint position, intensity, constant, linear, quadratic;
-	} uniforms;
-
-	struct {
-		float constant, linear, quadratic;
-	} parameters;
-
-	int index;
-	float intensity;
-};
-
-#define HZ_LIGHT(ptr) \
-	hz_container_of(ptr, struct hz_light, super)
+struct hz_light *HZ_LIGHT(struct hz_object *o);
 
 void hz_light_setup(struct hz_light *l, float kc, float kl, float kq);
 void hz_light_dim(struct hz_light *l, float intensity);
-bool hz_light_init(struct hz_light *l, GLuint program, unsigned index);
+
+struct hz_object *hz_light_new(GLuint program, unsigned index);
 
 #endif

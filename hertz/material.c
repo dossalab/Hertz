@@ -1,4 +1,5 @@
 #include HZ_GL_EXTENSIONS_HEADER
+#include <internal/alloc.h>
 #include <hz/material.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/helpers/binders.h>
@@ -50,7 +51,7 @@ bool hz_material_bind_texture(struct hz_material *m, enum hz_texture_type type,
 	return !!(*texture);
 }
 
-bool hz_material_init(struct hz_material *m, GLuint program)
+static bool material_init(struct hz_material *m, GLuint program)
 {
 	GLuint dummy;
 
@@ -83,4 +84,9 @@ void hz_material_deinit(struct hz_material *m)
 	delete_texture_if_bound(m, m->textures.specular);
 
 	glDeleteTextures(1, &m->textures.dummy);
+}
+
+struct hz_material *hz_material_new(GLuint program)
+{
+	return hz_alloc_and_init(struct hz_material, material_init, program);
 }

@@ -3,6 +3,6 @@
 
 #include <hz/object.h>
 
-bool assimp_import_scene(const char *path, struct hz_object *root);
+struct hz_object *assimp_import_scene(const char *path);
 
 #endif

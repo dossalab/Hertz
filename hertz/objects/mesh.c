@@ -3,7 +3,28 @@
 #include <hz/helpers/shaders.h>
 #include <hz/objects/mesh.h>
 #include <hz/camera.h>
+#include <hz/material.h>
 #include <vendor/linmath/linmath.h>
+#include <hz/utils/container_of.h>
+#include <internal/alloc.h>
+#include <internal/object.h>
+
+struct hz_mesh {
+	struct hz_object super;
+	GLuint vao;
+	GLuint program;
+
+	struct {
+		GLuint vertices, normals, uvs, indices;
+	} buffers;
+
+	struct {
+		GLint mvp, model;
+	} uniforms;
+
+	struct hz_material *material;
+	size_t nindices;
+};
 
 static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
@@ -61,7 +82,7 @@ const struct hz_object_proto hz_mesh_proto = {
 	.draw = mesh_redraw,
 };
 
-bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *m)
+static bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *m)
 {
 	struct hz_object *super = HZ_OBJECT(o);
 	bool ok;
@@ -94,4 +115,14 @@ void hz_mesh_deinit(struct hz_mesh *o)
 	hz_delete_gl_buffer(o->buffers.uvs);
 
 	glDeleteVertexArrays(1, &o->vao);
+}
+
+struct hz_mesh *HZ_MESH(struct hz_object *o)
+{
+	return hz_container_of(o, struct hz_mesh, super);
+}
+
+struct hz_object *hz_mesh_new(GLuint program, struct hz_material *m)
+{
+	return HZ_OBJECT(hz_alloc_and_init(struct hz_mesh, hz_mesh_init, program, m));
 }
