@@ -1,16 +1,10 @@
 #ifndef HZ_OBJECTS_ROOT_H
 #define HZ_OBJECTS_ROOT_H
 
-#include <hz/object.h>
-#include <internal/object.h>
+struct hz_root;
+struct hz_object;
 
-struct hz_root {
-	struct hz_object super;
-};
-
-#define HZ_ROOT(ptr) \
-	hz_container_of(ptr, struct hz_root, super)
-
-void hz_root_init(struct hz_root *r);
+struct hz_root *HZ_ROOT(struct hz_object *o);
+struct hz_object *hz_root_new(void);
 
 #endif

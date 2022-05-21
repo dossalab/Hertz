@@ -1,12 +1,29 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/objects/light.h>
-#include <hz/logger.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/helpers/binders.h>
 #include <stdio.h>
 #include <internal/object.h>
+#include <internal/alloc.h>
+#include <hz/utils/container_of.h>
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
+
+struct hz_light {
+	struct hz_object super;
+	GLuint program;
+
+	struct {
+		GLint position, intensity, constant, linear, quadratic;
+	} uniforms;
+
+	struct {
+		float constant, linear, quadratic;
+	} parameters;
+
+	int index;
+	float intensity;
+};
 
 void hz_light_dim(struct hz_light *l, float intensity)
 {
@@ -52,7 +69,7 @@ const struct hz_object_proto hz_light_proto = {
 	.draw = light_draw,
 };
 
-bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
+static bool light_init(struct hz_light *l, GLuint program, unsigned index)
 {
 	struct hz_object *super = HZ_OBJECT(l);
 	bool ok;
@@ -89,3 +106,12 @@ bool hz_light_init(struct hz_light *l, GLuint program, unsigned index)
 	return true;
 }
 
+struct hz_light *HZ_LIGHT(struct hz_object *o)
+{
+	return hz_container_of(o, struct hz_light, super);
+}
+
+struct hz_object *hz_light_new(GLuint program, unsigned index)
+{
+	return HZ_OBJECT(hz_alloc_and_init(struct hz_light, light_init, program, index));
+}
