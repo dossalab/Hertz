@@ -1,4 +1,5 @@
 #include <hz/object.h>
+#include <internal/object.h>
 #include <hz/camera.h>
 #include <hz/utils/container_of.h>
 #include <vendor/linmath/linmath.h>

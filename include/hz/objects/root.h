@@ -2,6 +2,7 @@
 #define HZ_OBJECTS_ROOT_H
 
 #include <hz/object.h>
+#include <internal/object.h>
 
 struct hz_root {
 	struct hz_object super;
