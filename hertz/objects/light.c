@@ -4,6 +4,7 @@
 #include <vendor/linmath/linmath.h>
 #include <hz/helpers/binders.h>
 #include <stdio.h>
+#include <internal/object.h>
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
 

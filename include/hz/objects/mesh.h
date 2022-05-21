@@ -8,6 +8,7 @@
 #include <hz/object.h>
 #include <hz/material.h>
 #include <hz/types.h>
+#include <internal/object.h>
 
 struct hz_mesh {
 	struct hz_object super;
