@@ -1,7 +1,7 @@
 #include HZ_GL_EXTENSIONS_HEADER
-#include <hz/helpers/binders.h>
 #include <hz/helpers/shaders.h>
 #include <hz/logger.h>
+#include <internal/helpers/binders.h>
 
 static const char *tag = "binder";
 

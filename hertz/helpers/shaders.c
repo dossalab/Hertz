@@ -140,8 +140,3 @@ GLuint hz_create_shader_attribute_buffer(GLuint shader, const char *name,
 
 	return buffer;
 }
-
-void hz_delete_gl_buffer(GLuint buffer)
-{
-	glDeleteBuffers(1, &buffer);
-}

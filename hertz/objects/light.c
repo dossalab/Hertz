@@ -1,10 +1,10 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/objects/light.h>
 #include <vendor/linmath/linmath.h>
-#include <hz/helpers/binders.h>
 #include <stdio.h>
 #include <internal/object.h>
 #include <internal/alloc.h>
+#include <internal/helpers/binders.h>
 #include <hz/utils/container_of.h>
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
