@@ -1,8 +1,8 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/camera.h>
 #include <vendor/linmath/linmath.h>
-#include <hz/helpers/binders.h>
 #include <hz/units.h>
+#include <internal/helpers/binders.h>
 
 #define CAMERA_DEFAULT_FOV	HZ_DEG_TO_RAD(70.0f)
 #define CAMERA_DEFAULT_NEAR	0.1f

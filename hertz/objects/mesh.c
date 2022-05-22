@@ -1,6 +1,4 @@
 #include HZ_GL_EXTENSIONS_HEADER
-#include <hz/helpers/binders.h>
-#include <hz/helpers/shaders.h>
 #include <hz/objects/mesh.h>
 #include <hz/camera.h>
 #include <hz/material.h>
@@ -8,6 +6,7 @@
 #include <hz/utils/container_of.h>
 #include <internal/alloc.h>
 #include <internal/object.h>
+#include <internal/helpers/binders.h>
 
 struct hz_mesh {
 	struct hz_object super;
@@ -110,9 +109,9 @@ static bool hz_mesh_init(struct hz_mesh *o, GLuint program, struct hz_material *
 
 void hz_mesh_deinit(struct hz_mesh *o)
 {
-	hz_delete_gl_buffer(o->buffers.vertices);
-	hz_delete_gl_buffer(o->buffers.normals);
-	hz_delete_gl_buffer(o->buffers.uvs);
+	glDeleteBuffers(1, &o->buffers.vertices);
+	glDeleteBuffers(1, &o->buffers.normals);
+	glDeleteBuffers(1, &o->buffers.uvs);
 
 	glDeleteVertexArrays(1, &o->vao);
 }

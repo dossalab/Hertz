@@ -2,7 +2,6 @@
 #include <internal/alloc.h>
 #include <hz/material.h>
 #include <vendor/linmath/linmath.h>
-#include <hz/helpers/binders.h>
 #include <hz/helpers/textures.h>
 
 #define HZ_DIFFUSE_LOCATION	GL_TEXTURE0

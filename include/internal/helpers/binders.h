@@ -1,5 +1,5 @@
-#ifndef HZ_HELPERS_BINDERS_H
-#define HZ_HELPERS_BINDERS_H
+#ifndef HZ_INTERNAL_HELPERS_BINDERS_H
+#define HZ_INTERNAL_HELPERS_BINDERS_H
 
 #include HZ_GL_HEADER
 #include <stddef.h>

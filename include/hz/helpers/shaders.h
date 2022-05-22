@@ -13,6 +13,4 @@ GLuint hz_create_gl_buffer(void *data, size_t len);
 GLuint hz_create_shader_attribute_buffer(GLuint shader, const char *name,
 		size_t components, void *data, size_t len);
 
-void hz_delete_gl_buffer(GLuint buffer);
-
 #endif
