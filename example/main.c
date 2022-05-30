@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <hz/cameras/fly.h>
+#include <hz/actors/fly.h>
 #include <hz/logger.h>
 #include <hz/helpers/shaders.h>
 #include <hz/objects/light.h>
 #include <hz/objects/root.h>
+#include <hz/objects/camera.h>
 #include <hz/built-in/shaders/simple.h>
 
 #include "assimp.h"
@@ -17,8 +18,8 @@ static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 struct render_state {
-	struct hz_object *root, *light, *l1, *l2;
-	struct hz_fly_camera camera;
+	struct hz_object *root, *light, *l1, *l2, *camera;
+	struct hz_fly_actor *actor;
 	const char *scene_path;
 	GLuint shader;
 };
@@ -49,13 +50,12 @@ static bool load_shaders(struct render_state *state)
 
 static void camera_update(struct render_state *s, GLFWwindow *window, float spent)
 {
-	hz_vec3 position;
 	double pos_x, pos_y;
 	static double old_pos_x, old_pos_y;
 
 	glfwGetCursorPos(window, &pos_x, &pos_y);
 
-	hz_fly_camera_move(&s->camera,
+	hz_fly_actor_move(s->actor,
 		spent,
 		pos_x - old_pos_x,
 		pos_y - old_pos_y,
@@ -66,9 +66,6 @@ static void camera_update(struct render_state *s, GLFWwindow *window, float spen
 
 	old_pos_x = pos_x;
 	old_pos_y = pos_y;
-
-	hz_camera_get_position(HZ_CAMERA(&s->camera), position);
-	hz_object_move(s->light, position);
 }
 
 
@@ -77,7 +74,7 @@ static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
 	struct render_state *state = user;
 
 	glViewport(0, 0, w, h);
-	hz_camera_update(HZ_CAMERA(&state->camera), w, h);
+	hz_camera_resize(HZ_CAMERA(state->camera), w, h);
 }
 
 static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
@@ -87,7 +84,7 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	camera_update(state, window, spent);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_object_draw(state->root, HZ_CAMERA(&state->camera));
+	hz_object_draw(state->root, HZ_CAMERA(state->camera));
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
@@ -112,27 +109,25 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	ok = hz_fly_camera_init(&state->camera, assimp_shader);
-	if (!ok) {
-		return false;
-	}
-
 	state->root = assimp_import_scene(state->scene_path);
 	if (!state->root) {
 		hz_log_e(tag, "unable to import scene");
 		return false;
 	}
 
+	state->camera = hz_camera_new(assimp_shader);
 	state->l1 = hz_light_new(assimp_shader, 0);
 	state->l2 = hz_light_new(assimp_shader, 1);
 	state->light = hz_light_new(assimp_shader, 2);
+	state->actor = hz_fly_actor_new(state->camera);
 
 	hz_object_move(state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
 	hz_object_move(state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
 
-	hz_object_insert(state->root, state->light);
 	hz_object_insert(state->root, state->l1);
 	hz_object_insert(state->root, state->l2);
+	hz_object_insert(state->root, state->camera);
+	hz_object_insert(state->camera, state->light);
 
 	return true;
 }

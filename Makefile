@@ -22,18 +22,18 @@ hertz-so-name	:= $(notdir $(hertz-so))
 hertz-objects := \
 	hertz/object.o \
 	hertz/material.o \
-	hertz/camera.o \
+	hertz/objects/camera.o \
 	hertz/objects/mesh.o \
 	hertz/objects/light.o \
 	hertz/objects/root.o \
-	hertz/cameras/fly.o \
+	hertz/actors/fly.o \
 	hertz/logger.o \
 	hertz/built-in/shaders/simple.o \
 	hertz/helpers/shaders.o \
 	hertz/helpers/binders.o \
 	hertz/helpers/textures.o \
 	hertz/adt/list.o \
-	hertz/adt/tree.o \
+	hertz/adt/tree.o
 
 to-remove += $(hertz-objects) $(hertz-so)
 

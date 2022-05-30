@@ -1,6 +1,6 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/objects/mesh.h>
-#include <hz/camera.h>
+#include <hz/objects/camera.h>
 #include <hz/material.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/utils/container_of.h>
@@ -37,14 +37,15 @@ static void mesh_bind(struct hz_object *super)
 static void mesh_redraw(struct hz_object *super, struct hz_camera *c)
 {
 	struct hz_mesh *o = HZ_MESH(super);
-	mat4x4 mvp;
+	mat4x4 vp, mvp;
 
 	glBindVertexArray(o->vao);
 	glUseProgram(o->program);
 
 	hz_material_use(o->material);
 
-	mat4x4_mul(mvp, c->vp, super->model);
+	hz_camera_get_vp(c, vp);
+	mat4x4_mul(mvp, vp, super->model);
 
 	set_uniform_matrix(o->uniforms.mvp, mvp);
 	set_uniform_matrix(o->uniforms.model, super->model);

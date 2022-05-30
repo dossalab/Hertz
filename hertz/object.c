@@ -1,9 +1,9 @@
 #include <hz/object.h>
 #include <internal/object.h>
-#include <hz/camera.h>
 #include <hz/utils/container_of.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/objects/root.h>
+#include <hz/objects/camera.h>
 #include <hz/utils/compiler.h>
 
 static void calculate_local_model(struct hz_object *o)
@@ -61,6 +61,13 @@ void hz_object_insert(struct hz_object *o, struct hz_object *child)
 void hz_object_move(struct hz_object *o, vec3 pos)
 {
 	vec3_dup(o->position, pos);
+	calculate_local_model(o);
+	hz_object_update(o);
+}
+
+void hz_object_rotate_quat(struct hz_object *o, hz_quat q)
+{
+	vec4_dup(o->rotation, q);
 	calculate_local_model(o);
 	hz_object_update(o);
 }
