@@ -40,19 +40,19 @@ void hz_light_setup(struct hz_light *l, float kc, float kl, float kq)
 static void light_bind(struct hz_object *super)
 {
 	struct hz_light *l = HZ_LIGHT(super);
-	vec4 position = { 0.f, 0.f, 0.f, 1.f };
+	vec3 position, scale;
+	quat rotation;
 
 	if (l->index < 0) {
 		return;
 	}
 
-	mat4x4_mul_vec4(position, super->model, position);
+	/* we obviuosly only care about position */
+	mat4x4_decompose(super->model, scale, rotation, position);
 
 	glUseProgram(l->program);
 
-	/* load it as vec3, ignoring the w component */
 	glUniform3fv(l->uniforms.position, 1, position);
-
 	glUniform1f(l->uniforms.intensity, l->intensity);
 	glUniform1f(l->uniforms.constant, l->parameters.constant);
 	glUniform1f(l->uniforms.linear, l->parameters.linear);
