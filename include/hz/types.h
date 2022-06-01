@@ -15,5 +15,6 @@ HZ_TYPE_DEFINE_VEC(3);
 HZ_TYPE_DEFINE_VEC(4);
 
 typedef hz_vec4 hz_mat4x4[4];
+typedef hz_vec4 hz_quat;
 
 #endif
