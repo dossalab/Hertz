@@ -16,6 +16,8 @@ struct hz_object {
 	struct hz_tree_node scene_node;
 	const struct hz_object_proto *proto;
 	hz_mat4x4 model, local_model;
+	hz_vec3 position, scale;
+	hz_quat rotation;
 };
 
 #define HZ_OBJECT(ptr) &(ptr)->super
