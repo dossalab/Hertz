@@ -1,4 +1,4 @@
-#include "glfw_context.h" /* should be the first one */
+#include "../utils/glfw_context.h" /* should be the first one */
 #include <stdio.h>
 #include <stdlib.h>
 

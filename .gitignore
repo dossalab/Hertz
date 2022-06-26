@@ -1,4 +1,4 @@
 *.o
 *.so
-example/example
 .envrc
+examples/*/assimp

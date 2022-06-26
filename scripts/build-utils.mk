@@ -1,3 +1,5 @@
+my-dir = $(dir $(lastword $(MAKEFILE_LIST)))
+
 # Makefiles suck: This macro sets a default value of $(2) for the
 # variable named by $(1), unless the variable has been set by
 # environment or command line. This is necessary for CC and AR

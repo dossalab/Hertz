@@ -1,6 +1,6 @@
-[submodule "example/vendor/stb"]
-	path = example/vendor/stb
-	url = https://github.com/nothings/stb
 [submodule "vendor/linmath"]
 	path = vendor/linmath
 	url = https://github.com/dossalab/linmath.h
+[submodule "examples/vendor/stb"]
+	path = examples/vendor/stb
+	url = https://github.com/nothings/stb

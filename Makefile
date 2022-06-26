@@ -5,6 +5,10 @@ include scripts/build-utils.mk
 $(call allow-override,CC,gcc)
 $(call allow-override,LD,gcc)
 
+CC	:= $(CROSS_COMPILE)$(CC)
+LD	:= $(CROSS_COMPILE)$(LD)
+PKG_CONFIG ?= $(CROSS_COMPILE)pkg-config
+
 ECHO	:= @ printf "[%s]\t%s\n"
 PREFIX	?= /usr/local
 
@@ -35,39 +39,33 @@ hertz-objects := \
 	hertz/adt/list.o \
 	hertz/adt/tree.o
 
+to-linker += $(hertz-so)
 to-remove += $(hertz-objects) $(hertz-so)
+rebuild-deps += $(hertz-objects)
 
 $(hertz-so): LDFLAGS += -shared -Wl,-soname,$(hertz-so-name)
 $(hertz-so): CFLAGS  += -fPIC
 
-example-exe	:= example/example
-example-libs	:= glfw3 glew assimp
-example-objects := \
-	example/main.o \
-	example/glfw_context.o \
-	example/assimp.o \
-	example/stb_image.o
-
-$(example-exe): LDFLAGS += $(shell pkg-config --libs $(example-libs)) -L. -lm -lhertz
-$(example-exe): CFLAGS  += $(shell pkg-config --cflags $(example-libs))
-
-to-remove += $(example-objects) $(example-exe)
-
 phony += all
 all: $(hertz-so)
 
+$(hertz-so): $(hertz-objects)
+
+include examples/01-assimp/Makefile
+
+$(rebuild-deps): $(MAKEFILE_LIST)
+
+to-remove += $(example-programs)
+to-linker += $(example-programs)
+
 phony += examples
-examples: $(hertz-so) $(example-exe)
+examples: $(hertz-so) $(example-programs)
 
 %.o : %.c
 	$(ECHO) "CC" "$@"
 	$(V)$(CC) $(CFLAGS) -c $< -o $@
 
-$(hertz-so): $(hertz-objects)
-	$(ECHO) "LD" "$@"
-	$(V)$(LD) $(LDFLAGS) $^ -o $@
-
-$(example-exe): $(example-objects)
+$(to-linker):
 	$(ECHO) "LD" "$@"
 	$(V)$(LD) $(LDFLAGS) $^ -o $@
 

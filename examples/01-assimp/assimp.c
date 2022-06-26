@@ -10,7 +10,7 @@
 #include <hz/objects/root.h>
 #include <hz/material.h>
 
-#include "vendor/stb/stb_image.h"
+#include <examples/vendor/stb/stb_image.h>
 
 static const char *tag = "aimp";
 
