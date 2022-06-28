@@ -18,8 +18,13 @@ CFLAGS += -Wall -g -I. -Iinclude \
 	-DHZ_GL_HEADER="$(GL_HEADER)" \
 	-DHZ_GL_EXTENSIONS_HEADER="$(GL_EXTENSIONS_HEADER)"
 
-hertz-so	:= libhertz.so
-hertz-so-name	:= $(notdir $(hertz-so))
+hertz-abi	:= 1
+hertz-version	:= $(hertz-abi).0.0
+hertz-ldname	:= libhertz.so
+hertz-realname	:= $(hertz-ldname).$(hertz-version)
+hertz-soname	:= $(hertz-ldname).$(hertz-abi)
+
+hertz-target	:= $(hertz-realname)
 
 hertz-objects := \
 	hertz/object.o \
@@ -37,17 +42,17 @@ hertz-objects := \
 	hertz/adt/list.o \
 	hertz/adt/tree.o
 
-to-linker += $(hertz-so)
-to-remove += $(hertz-objects) $(hertz-so)
+to-linker += $(hertz-target)
+to-remove += $(hertz-objects) $(hertz-target)
 rebuild-deps += $(hertz-objects)
 
-$(hertz-so): LDFLAGS += -shared -Wl,-soname,$(hertz-so-name)
-$(hertz-so): CFLAGS  += -fPIC
+$(hertz-target): LDFLAGS += -shared -Wl,-soname,$(hertz-soname)
+$(hertz-target): CFLAGS  += -fPIC
 
 phony += all
-all: $(hertz-so)
+all: $(hertz-target)
 
-$(hertz-so): $(hertz-objects)
+$(hertz-target): $(hertz-objects)
 
 include examples/01-assimp/Makefile
 
@@ -57,7 +62,7 @@ to-remove += $(example-programs)
 to-linker += $(example-programs)
 
 phony += examples
-examples: $(hertz-so) $(example-programs)
+examples: $(hertz-target) $(example-programs)
 
 %.o : %.c
 	$(ECHO) "CC" "$@"
@@ -68,15 +73,19 @@ $(to-linker):
 	$(V)$(LD) $^ $(LDFLAGS) -o $@
 
 phony += install
-install: $(hertz)
+install: $(hertz-target)
 	install -d $(PREFIX)/include
 	install -d $(PREFIX)/lib
-	install -m 644 $(hertz-so) $(PREFIX)/lib/
+	install -m 644 $(hertz-target) $(PREFIX)/lib/
+	ln -sf $(PREFIX)/lib/$(hertz-realname) $(PREFIX)/lib/$(hertz-soname)
+	ln -sf $(PREFIX)/lib/$(hertz-realname) $(PREFIX)/lib/$(hertz-ldname)
 	cp -r include/hz $(PREFIX)/include/
 
 phony += uninstall
 uninstall:
-	rm -f $(PREFIX)/lib/$(hertz-so-name)
+	rm -f $(PREFIX)/lib/$(hertz-realname)
+	rm -f $(PREFIX)/lib/$(hertz-soname)
+	rm -f $(PREFIX)/lib/$(hertz-ldname)
 	rm -rf $(PREFIX)/include/hz
 
 phony += clean
