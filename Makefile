@@ -1,5 +1,3 @@
-V ?= @
-
 include scripts/build-utils.mk
 
 $(call allow-override,CC,gcc)

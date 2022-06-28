@@ -10,3 +10,10 @@ define allow-override
             $(findstring command line,$(origin $(1)))),,\
     $(eval $(1) = $(2)))
 endef
+
+# Handle verbosity settings
+ifeq ($V,1)
+  V :=
+else
+  V := @
+endif
