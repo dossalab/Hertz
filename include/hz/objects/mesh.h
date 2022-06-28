@@ -3,6 +3,7 @@
 
 #include HZ_GL_HEADER
 #include <stdbool.h>
+#include <stddef.h>
 #include <hz/types.h>
 
 struct hz_mesh;

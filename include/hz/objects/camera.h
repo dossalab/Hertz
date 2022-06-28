@@ -3,6 +3,7 @@
 
 #include HZ_GL_HEADER
 #include <hz/types.h>
+#include <stddef.h>
 
 struct hz_camera;
 struct hz_object;
