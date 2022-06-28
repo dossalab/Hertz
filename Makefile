@@ -1,5 +1,7 @@
 include scripts/build-utils.mk
 
+CROSS_COMPILE ?=
+
 $(call allow-override,CC,gcc)
 $(call allow-override,LD,gcc)
 
