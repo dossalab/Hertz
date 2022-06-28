@@ -67,7 +67,7 @@ examples: $(hertz-so) $(example-programs)
 
 $(to-linker):
 	$(ECHO) "LD" "$@"
-	$(V)$(LD) $(LDFLAGS) $^ -o $@
+	$(V)$(LD) $^ $(LDFLAGS) -o $@
 
 phony += install
 install: $(hertz)
