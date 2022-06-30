@@ -5,6 +5,9 @@
 
 #include "glfw_context.h"
 
+#define EXIT_CODE_OK	0
+#define EXIT_CODE_ERROR	1
+
 static const char *tag = "glfw";
 
 static void glfw_window_resize_callback(GLFWwindow *window, int width, int height)
@@ -64,6 +67,11 @@ static bool create_glfw_window_and_draw(const char *title,
 
 	glfwSetWindowUserPointer(window, callbacks);
 
+	glEnable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	ok = callbacks->on_init(window, callbacks->user);
 	if (!ok) {
 		hz_log_e(tag, "'on_init' failed, canceling drawing");
@@ -93,7 +101,7 @@ cleanup:
 	return ok;
 }
 
-bool glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
+int glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
 {
 	bool ok;
 
@@ -107,5 +115,5 @@ bool glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks)
 	ok = create_glfw_window_and_draw(title, callbacks);
 	glfwTerminate();
 
-	return ok;
+	return ok? EXIT_CODE_OK : EXIT_CODE_ERROR;
 }

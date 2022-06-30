@@ -12,8 +12,6 @@
 
 #include "assimp.h"
 
-#define EXIT_NOT_OK	1
-
 static const char *tag = "main";
 static const char *window_title = "My cool application";
 
@@ -97,11 +95,6 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	bool ok;
 	struct render_state *state = user;
 
-	glEnable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
 	if (!ok) {
@@ -134,12 +127,11 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 
 int main(int argc, char **argv)
 {
-	bool ok;
 	struct render_state state;
 
 	if (argc != 2) {
 		printf("usage: %s <scene>\n", argv[0]);
-		return EXIT_NOT_OK;
+		return 0;
 	}
 
 	hz_logger_init(HZ_LOGLEVEL_INFO);
@@ -153,12 +145,5 @@ int main(int argc, char **argv)
 		.user = &state,
 	};
 
-	ok = glfw_ctx_main(window_title, &callbacks);
-	if (!ok) {
-		hz_log_e(tag, "render finished with an error");
-	}
-
-	hz_log_i(tag, "we're done");
-
-	return ok? 0 : EXIT_NOT_OK;
+	return glfw_ctx_main(window_title, &callbacks);
 }

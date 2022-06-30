@@ -20,6 +20,6 @@ struct glfw_ctx_callbacks {
 	void *user;
 };
 
-bool glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks);
+int glfw_ctx_main(const char *title, struct glfw_ctx_callbacks *callbacks);
 
 #endif
