@@ -1,4 +1,2 @@
-*.o
-*.so*
 .envrc
-examples/*/assimp
+build/
