@@ -11,13 +11,12 @@ static hz_logger_sink discard_sink = discard;
 hz_logger_sink *hz_logger_info_sink = &discard_sink;
 hz_logger_sink *hz_logger_error_sink = &discard_sink;
 
-static void assign_sink(hz_logger_sink **s, enum hz_loglevel level,
-		enum hz_loglevel setting)
+static void assign_sink(hz_logger_sink **s, hz_loglevel level, hz_loglevel setting)
 {
 	*s = (setting > level)? &discard_sink : &active_sink;
 }
 
-void hz_logger_init(enum hz_loglevel level)
+void hz_logger_init(hz_loglevel level)
 {
 	assign_sink(&hz_logger_info_sink, HZ_LOGLEVEL_INFO, level);
 	assign_sink(&hz_logger_error_sink, HZ_LOGLEVEL_ERROR, level);

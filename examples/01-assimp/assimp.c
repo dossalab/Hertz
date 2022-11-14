@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <hz/types.h>
-#include <hz/object.h>
-#include <hz/objects/mesh.h>
-#include <hz/objects/root.h>
+#include <hz/node.h>
+#include <hz/nodes/mesh.h>
+#include <hz/nodes/root.h>
 #include <hz/material.h>
 
 #include <examples/vendor/stb/stb_image.h>
@@ -19,7 +19,7 @@ static_assert(sizeof(ai_real) == sizeof(float), "ai_real is not float");
 
 extern int assimp_shader;
 
-static bool bind_aimp_texture(struct hz_material *m, void *buffer, size_t len)
+static bool bind_aimp_texture(hz_material *m, void *buffer, size_t len)
 {
 	int w, h, n;
 	uint8_t *data;
@@ -71,7 +71,7 @@ static struct aiTexture *ai_get_texture(struct aiMaterial *material,
 	return ai_scene->mTextures[itexture];
 }
 
-static bool import_textures(struct hz_material *m, struct aiMaterial *ai_mat,
+static bool import_textures(hz_material *m, struct aiMaterial *ai_mat,
 		const struct aiScene *ai_scene)
 {
 	struct aiTexture *diffuse;
@@ -84,10 +84,10 @@ static bool import_textures(struct hz_material *m, struct aiMaterial *ai_mat,
 	return bind_aimp_texture(m, diffuse->pcData, diffuse->mWidth);
 }
 
-static struct hz_material *import_assimp_material(struct aiMaterial *ai_mat,
+static hz_material *import_assimp_material(struct aiMaterial *ai_mat,
 		const struct aiScene *ai_scene)
 {
-	struct hz_material *m;
+	hz_material *m;
 	bool ok;
 
 	m = hz_material_new(assimp_shader);
@@ -106,11 +106,11 @@ static struct hz_material *import_assimp_material(struct aiMaterial *ai_mat,
 	return m;
 }
 
-static struct hz_material **import_materials(const struct aiScene *ai_scene)
+static hz_material **import_materials(const struct aiScene *ai_scene)
 {
 	struct aiMaterial *ai_mat;
-	struct hz_material *m;
-	struct hz_material **materials;
+	hz_material *m;
+	hz_material **materials;
 
 	materials = calloc(1, sizeof(struct hz_material *) * ai_scene->mNumMaterials);
 	if (!materials) {
@@ -133,7 +133,7 @@ static struct hz_material **import_materials(const struct aiScene *ai_scene)
 	return materials;
 }
 
-static bool import_mesh_geometry(struct hz_object *o, struct aiMesh *ai_mesh)
+static bool import_mesh_geometry(hz_node *n, struct aiMesh *ai_mesh)
 {
 	const size_t nindices = ai_mesh->mNumFaces * ai_mesh->mFaces[0].mNumIndices;
 	unsigned *indices;
@@ -154,7 +154,7 @@ static bool import_mesh_geometry(struct hz_object *o, struct aiMesh *ai_mesh)
 		}
 	}
 
-	ok = hz_mesh_set_geometry(HZ_MESH(o),
+	ok = hz_mesh_set_geometry(HZ_MESH(n),
 		(hz_vec3 *)ai_mesh->mVertices, (hz_vec3 *)ai_mesh->mNormals,
 		ai_mesh->mNumVertices,
 		(hz_vec3 *)ai_mesh->mTextureCoords[0], ai_mesh->mNumVertices,
@@ -165,30 +165,29 @@ static bool import_mesh_geometry(struct hz_object *o, struct aiMesh *ai_mesh)
 	return ok;
 }
 
-static struct hz_object *import_assimp_mesh(struct aiMesh *ai_mesh,
-		struct hz_material **materials)
+static hz_node *import_assimp_mesh(struct aiMesh *ai_mesh, hz_material **materials)
 {
-	struct hz_object *o;
+	hz_node *n;
 	bool ok;
 
-	o = hz_mesh_new(assimp_shader, materials[ai_mesh->mMaterialIndex]);
-	if (!o) {
+	n = hz_mesh_new(assimp_shader, materials[ai_mesh->mMaterialIndex]);
+	if (!n) {
 		return false;
 	}
 
-	ok = import_mesh_geometry(o, ai_mesh);
+	ok = import_mesh_geometry(n, ai_mesh);
 	if (!ok) {
 		/* Free mesh */
 		return NULL;
 	}
 
-	return o;
+	return n;
 }
 
-static struct hz_object *import_assimp_node(const struct aiScene *scene,
-		struct aiNode *node, struct hz_material **materials)
+static hz_node *import_assimp_node(const struct aiScene *scene,
+		struct aiNode *node, hz_material **materials)
 {
-	struct hz_object *mesh, *root;
+	hz_node *mesh, *root;
 	struct aiMesh *ai_mesh;
 	unsigned ai_imesh;
 
@@ -197,7 +196,7 @@ static struct hz_object *import_assimp_node(const struct aiScene *scene,
 		return NULL;
 	}
 
-	hz_object_set_model(root, (void *)&node->mTransformation, true);
+	hz_node_set_model(root, (void *)&node->mTransformation, true);
 
 	for (size_t i = 0; i < node->mNumMeshes; i++) {
 		ai_imesh = node->mMeshes[i];
@@ -211,42 +210,42 @@ static struct hz_object *import_assimp_node(const struct aiScene *scene,
 			continue;
 		}
 
-		hz_object_insert(root, mesh);
+		hz_node_insert(root, mesh);
 	}
 
 	return root;
 }
 
-static struct hz_object *import_objects_recursive(const struct aiScene *ai_scene,
-		struct hz_object *parent, struct aiNode *ai_node,
-		struct hz_material **materials, unsigned depth)
+hz_node *import_objects_recursive(const struct aiScene *ai_scene,
+		hz_node *parent, struct aiNode *ai_node,
+		hz_material **materials, unsigned depth)
 {
 	struct aiNode *ai_child;
-	struct hz_object *object;
+	hz_node *node;
 
 	hz_log_i(tag, "(%d) looking at node '%s'", depth, ai_node->mName.data);
 
-	object = import_assimp_node(ai_scene, ai_node, materials);
-	if (parent && object) {
-		hz_object_insert(parent, object);
+	node = import_assimp_node(ai_scene, ai_node, materials);
+	if (parent && node) {
+		hz_node_insert(parent, node);
 	}
 
 	for (size_t i = 0; i < ai_node->mNumChildren; i++) {
 		ai_child = ai_node->mChildren[i];
-		import_objects_recursive(ai_scene, object, ai_child, materials,
+		import_objects_recursive(ai_scene, node, ai_child, materials,
 				depth + 1);
 	}
 
-	return object;
+	return node;
 }
 
-struct hz_object *assimp_import_scene(const char *path)
+hz_node *assimp_import_scene(const char *path)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
 		| aiProcess_JoinIdenticalVertices;
-	struct hz_object *root = NULL;
-	struct hz_material **materials;
+	hz_node *root = NULL;
+	hz_material **materials;
 
 	scene = aiImportFile(path, flags);
 	if (!scene) {

@@ -18,12 +18,12 @@ hertz_dep += dependency('opengl')
 
 hertz_inc = include_directories('include')
 hertz_src = [
-  'hertz/object.c',
   'hertz/material.c',
-  'hertz/objects/camera.c',
-  'hertz/objects/mesh.c',
-  'hertz/objects/light.c',
-  'hertz/objects/root.c',
+  'hertz/node.c',
+  'hertz/nodes/camera.c',
+  'hertz/nodes/mesh.c',
+  'hertz/nodes/light.c',
+  'hertz/nodes/root.c',
   'hertz/actors/fly.c',
   'hertz/logger.c',
   'hertz/built-in/shaders/simple.c',

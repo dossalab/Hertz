@@ -1,15 +1,15 @@
 #include HZ_GL_EXTENSIONS_HEADER
-#include <hz/objects/camera.h>
+#include <hz/nodes/camera.h>
 #include <vendor/linmath/linmath.h>
-#include <internal/alloc.h>
-#include <internal/object.h>
+#include <hz/internal/alloc.h>
+#include <hz/internal/node.h>
 #include <stdbool.h>
-#include <hz/utils/container_of.h>
-#include <internal/helpers/binders.h>
+#include <hz/utils.h>
+#include <hz/internal/helpers/binders.h>
 #include <hz/units.h>
 
-struct hz_camera {
-	struct hz_object super;
+struct _hz_camera {
+	hz_node super;
 	hz_mat4x4 view, projection, vp;
 	float fov, near, far;
 
@@ -23,12 +23,12 @@ struct hz_camera {
 #define CAMERA_DEFAULT_FAR	1000.0f
 #define CAMERA_DEFAULT_LOOK	(vec3) { 1.0f, 1.0f, 1.0f }
 
-void hz_camera_get_vp(struct hz_camera *c, hz_mat4x4 vp)
+void hz_camera_get_vp(hz_camera *c, hz_mat4x4 vp)
 {
 	mat4x4_dup(vp, c->vp);
 }
 
-static void hz_camera_resize_perspective(struct hz_camera *c, size_t w, size_t h)
+static void hz_camera_resize_perspective(hz_camera *c, size_t w, size_t h)
 {
 	float aspect;
 
@@ -38,15 +38,15 @@ static void hz_camera_resize_perspective(struct hz_camera *c, size_t w, size_t h
 	mat4x4_mul(c->vp, c->projection, c->view);
 }
 
-void hz_camera_resize(struct hz_camera *c, size_t w, size_t h)
+void hz_camera_resize(hz_camera *c, unsigned w, unsigned h)
 {
 	/* TODO: ortho cameras */
 	hz_camera_resize_perspective(c, w, h);
 }
 
-static void camera_bind(struct hz_object *super)
+static void camera_bind(hz_node *super)
 {
-	struct hz_camera *c = HZ_CAMERA(super);
+	hz_camera *c = HZ_CAMERA(super);
 	vec3 position, scale;
 	quat rotation;
 
@@ -59,26 +59,26 @@ static void camera_bind(struct hz_object *super)
 	mat4x4_mul(c->vp, c->projection, c->view);
 }
 
-static void camera_draw(struct hz_object *super, struct hz_camera *_)
+static void camera_draw(hz_node *super, struct hz_camera *_)
 {
 	/* pass */
 }
 
-const struct hz_object_proto hz_camera_proto = {
+const hz_node_proto hz_camera_proto = {
 	.bind = camera_bind,
 	.draw = camera_draw,
 };
 
-static bool camera_init(struct hz_camera *c, GLuint program)
+static bool camera_init(hz_camera *c, GLuint program)
 {
 	bool ok;
-	struct hz_object *super = HZ_OBJECT(c);
+	hz_node *super = HZ_NODE(c);
 
 	struct hz_uniform_binding bindings[] = {
 		{ &c->uniforms.position, "camera" },
 	};
 
-	hz_object_init(super, &hz_camera_proto);
+	hz_node_init(super, &hz_camera_proto);
 
 	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
 	if (!ok) {
@@ -95,12 +95,12 @@ static bool camera_init(struct hz_camera *c, GLuint program)
 	return true;
 }
 
-struct hz_camera *HZ_CAMERA(struct hz_object *o)
+hz_camera *HZ_CAMERA(hz_node *o)
 {
-	return hz_container_of(o, struct hz_camera, super);
+	return hz_container_of(o, hz_camera, super);
 }
 
-struct hz_object *hz_camera_new(GLuint program)
+hz_node *hz_camera_new(GLuint program)
 {
-	return HZ_OBJECT(hz_alloc_and_init(struct hz_camera, camera_init, program));
+	return HZ_NODE(hz_alloc_and_init(hz_camera, camera_init, program));
 }

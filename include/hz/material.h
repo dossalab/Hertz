@@ -1,29 +1,20 @@
-#ifndef HZ_MATERIAL_H
-#define HZ_MATERIAL_H
+#pragma once
 
 #include HZ_GL_HEADER
 #include <stdbool.h>
 #include <stddef.h>
 #include <hz/types.h>
 
-enum hz_texture_type {
+typedef enum {
 	HZ_TEXTURE_DIFFUSE,
 	HZ_TEXTURE_NORMAL,
 	HZ_TEXTURE_SPECULAR,
-};
+} hz_texture_type;
 
-struct hz_material {
-	struct {
-		GLuint diffuse, normal, specular, dummy;
-	} textures;
+typedef struct _hz_material hz_material;
 
-	GLuint program;
-};
-
-bool hz_material_bind_texture(struct hz_material *m, enum hz_texture_type type,
+bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
 		void *data, GLenum format, size_t w, size_t h);
 
-void hz_material_use(struct hz_material *m);
-struct hz_material *hz_material_new(GLuint program);
-
-#endif
+void hz_material_use(hz_material *m);
+hz_material *hz_material_new(GLuint program);

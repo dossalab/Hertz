@@ -1,14 +1,10 @@
-#ifndef HZ_ACTORS_FLY_H
-#define HZ_ACTORS_FLY_H
+#pragma once
 
-#include <stdbool.h>
+#include <hz/node.h>
 
-struct hz_fly_actor;
-struct hz_object;
+typedef struct _hz_fly_actor hz_fly_actor;
 
-void hz_fly_actor_move(struct hz_fly_actor *a, float dt, int dx, int dy,
+void hz_fly_actor_move(hz_fly_actor *a, float dt, int dx, int dy,
 		bool forward, bool left, bool backward, bool right);
 
-struct hz_fly_actor *hz_fly_actor_new(struct hz_object *puppet);
-
-#endif
+hz_fly_actor *hz_fly_actor_new(hz_node *puppet);

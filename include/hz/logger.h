@@ -1,5 +1,4 @@
-#ifndef HZ_LOGGER_H
-#define HZ_LOGGER_H
+#pragma once
 
 #define HZ_LOG_EXPAND(x)	#x
 #define HZ_LOG_NUM_TO_STR(x)	HZ_LOG_EXPAND(x)
@@ -15,11 +14,11 @@
 #define HZ_LOG_MAG(x)	HZ_LOG_MAKE_COLOR("\e[0;35m", x)
 #define HZ_LOG_CYA(x)	HZ_LOG_MAKE_COLOR("\e[0;36m", x)
 
-enum hz_loglevel {
+typedef enum {
 	HZ_LOGLEVEL_INFO,
 	HZ_LOGLEVEL_ERROR,
 	HZ_LOGLEVEL_SILENT
-};
+} hz_loglevel;
 
 typedef int (*hz_logger_sink)(const char *, ...);
 
@@ -36,7 +35,5 @@ extern hz_logger_sink *hz_logger_error_sink;
 	hz_log_fmt(hz_logger_error_sink, tag, HZ_LOG_RED("[E] (" HZ_LOG_FILE_AND_LINE ")"),\
 			__VA_ARGS__)
 
-void hz_logger_init(enum hz_loglevel level);
+void hz_logger_init(hz_loglevel level);
 void hz_logger_route_output(hz_logger_sink to);
-
-#endif

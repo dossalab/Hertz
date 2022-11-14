@@ -3,8 +3,8 @@
 #include <hz/actors/fly.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/units.h>
-#include <internal/alloc.h>
-#include <hz/object.h>
+#include <hz/internal/alloc.h>
+#include <hz/node.h>
 
 #define FLY_ACTOR_DEFAULT_SPEED		10.f
 #define FLY_ACTOR_DEFAULT_SENSITIVITY	HZ_DEG_TO_RAD(0.5f)
@@ -12,14 +12,14 @@
 #define FLY_ACTOR_DEFAULT_LOOK		(vec3) { 1.0f, 1.0f, 1.0f }
 #define FLY_ACTOR_DEFAULT_POSITION	(vec3) { 0.0f, 0.0f, 0.0f }
 
-struct hz_fly_actor {
+struct _hz_fly_actor {
 	vec3 look, position;
 	float speed, sensitivity, pitch_margin;
-	struct hz_object *puppet;
+	hz_node *puppet;
 	float yaw, pitch;
 };
 
-static void apply_pitch_limits(struct hz_fly_actor *a)
+static void apply_pitch_limits(hz_fly_actor *a)
 {
 	// if (a->pitch < HZ_M_PI / 2.f + a->pitch_margin) {
 	// 	a->pitch = HZ_M_PI / 2.f + a->pitch_margin;
@@ -30,7 +30,7 @@ static void apply_pitch_limits(struct hz_fly_actor *a)
 	}
 }
 
-void hz_fly_actor_move(struct hz_fly_actor *a, float dt, int dx, int dy,
+void hz_fly_actor_move(hz_fly_actor *a, float dt, int dx, int dy,
 		bool forward, bool left, bool backward, bool right)
 {
 	vec3 look = {0.f, 0.f, -1.f};
@@ -65,13 +65,13 @@ void hz_fly_actor_move(struct hz_fly_actor *a, float dt, int dx, int dy,
 		vec3_scale(xz_vec, xz_vec, move_distance);
 
 		vec3_add(a->position, a->position, xz_vec);
-		hz_object_move(a->puppet, a->position);
+		hz_node_move(a->puppet, a->position);
 	}
 
-	hz_object_rotate_quat(a->puppet, q);
+	hz_node_rotate_quat(a->puppet, q);
 }
 
-bool fly_actor_init(struct hz_fly_actor *a, struct hz_object *puppet)
+bool fly_actor_init(hz_fly_actor *a, hz_node *puppet)
 {
 	a->speed = FLY_ACTOR_DEFAULT_SPEED;
 	a->sensitivity = FLY_ACTOR_DEFAULT_SENSITIVITY;
@@ -86,7 +86,7 @@ bool fly_actor_init(struct hz_fly_actor *a, struct hz_object *puppet)
 	return true;
 }
 
-struct hz_fly_actor *hz_fly_actor_new(struct hz_object *puppet)
+hz_fly_actor *hz_fly_actor_new(hz_node *puppet)
 {
-	return hz_alloc_and_init(struct hz_fly_actor, fly_actor_init, puppet);
+	return hz_alloc_and_init(hz_fly_actor, fly_actor_init, puppet);
 }

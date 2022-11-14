@@ -1,5 +1,4 @@
-#ifndef HZ_TYPES_H
-#define HZ_TYPES_H
+#pragma once
 
 /*
  * This types must match the ones from linmath.h
@@ -16,5 +15,3 @@ HZ_TYPE_DEFINE_VEC(4);
 
 typedef hz_vec4 hz_mat4x4[4];
 typedef hz_vec4 hz_quat;
-
-#endif

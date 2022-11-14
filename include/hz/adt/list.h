@@ -1,12 +1,9 @@
-#ifndef HZ_ADT_LIST_H
-#define HZ_ADT_LIST_H
+#pragma once
 
-struct hz_list_item {
-	struct hz_list_item *next, *prev;
+typedef struct _hz_list_item hz_list_item;
+struct _hz_list_item {
+	hz_list_item *next, *prev;
 };
-
-#define BZ_LIST_CREATE(name) \
-	struct hz_list_item name = { .next = &(name), .prev = &(name) }
 
 #define hz_list_forward(ptr, list) \
 	for (ptr = (list)->next; ptr != (list); ptr = ptr->next)
@@ -22,12 +19,8 @@ struct hz_list_item {
 	for (ptr = (list)->prev, n = ptr->prev; ptr != (list); \
 		ptr = n, n = ptr->prev)
 
-void hz_list_init(struct hz_list_item *head);
 
-void hz_list_insert(struct hz_list_item *new,
-			struct hz_list_item *prev,
-			struct hz_list_item *next);
+void hz_list_insert(hz_list_item *new, hz_list_item *prev, hz_list_item *next);
+void hz_list_push(hz_list_item *new, hz_list_item *head);
 
-void hz_list_push(struct hz_list_item *new, struct hz_list_item *head);
-
-#endif
+void hz_list_init(hz_list_item *head);

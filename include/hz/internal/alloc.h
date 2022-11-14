@@ -1,5 +1,4 @@
-#ifndef HZ_INTERNAL_ALLOC_H
-#define HZ_INTERNAL_ALLOC_H
+#pragma once
 
 #include <stdlib.h> /* for *alloc / free */
 
@@ -14,5 +13,3 @@
 	} \
 	o; \
 })
-
-#endif

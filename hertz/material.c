@@ -1,5 +1,5 @@
 #include HZ_GL_EXTENSIONS_HEADER
-#include <internal/alloc.h>
+#include <hz/internal/alloc.h>
 #include <hz/material.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/helpers/textures.h>
@@ -8,13 +8,21 @@
 #define HZ_NORMAL_LOCATION	GL_TEXTURE1
 #define HZ_SPECULAR_LOCATION	GL_TEXTURE2
 
+struct _hz_material {
+	struct {
+		GLuint diffuse, normal, specular, dummy;
+	} textures;
+
+	GLuint program;
+};
+
 static GLuint create_dummy_texture(void)
 {
 	uint32_t data = 0xFFFFFF;
 	return hz_create_texture(&data, GL_RGB, 1, 1);
 }
 
-void hz_material_use(struct hz_material *m)
+void hz_material_use(hz_material *m)
 {
 	glActiveTexture(HZ_DIFFUSE_LOCATION);
 	glBindTexture(GL_TEXTURE_2D, m->textures.diffuse);
@@ -24,7 +32,7 @@ void hz_material_use(struct hz_material *m)
 	glBindTexture(GL_TEXTURE_2D, m->textures.specular);
 }
 
-bool hz_material_bind_texture(struct hz_material *m, enum hz_texture_type type,
+bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
 		void *data, GLenum format, size_t w, size_t h)
 {
 	GLuint *texture;
@@ -50,7 +58,7 @@ bool hz_material_bind_texture(struct hz_material *m, enum hz_texture_type type,
 	return !!(*texture);
 }
 
-static bool material_init(struct hz_material *m, GLuint program)
+static bool material_init(hz_material *m, GLuint program)
 {
 	GLuint dummy;
 
@@ -69,14 +77,14 @@ static bool material_init(struct hz_material *m, GLuint program)
 	return true;
 }
 
-static void delete_texture_if_bound(struct hz_material *m, GLuint texture)
+static void delete_texture_if_bound(hz_material *m, GLuint texture)
 {
 	if (m->textures.dummy != texture) {
 		glDeleteTextures(1, &texture);
 	}
 }
 
-void hz_material_deinit(struct hz_material *m)
+void hz_material_deinit(hz_material *m)
 {
 	delete_texture_if_bound(m, m->textures.diffuse);
 	delete_texture_if_bound(m, m->textures.normal);
@@ -85,7 +93,7 @@ void hz_material_deinit(struct hz_material *m)
 	glDeleteTextures(1, &m->textures.dummy);
 }
 
-struct hz_material *hz_material_new(GLuint program)
+hz_material *hz_material_new(GLuint program)
 {
-	return hz_alloc_and_init(struct hz_material, material_init, program);
+	return hz_alloc_and_init(hz_material, material_init, program);
 }

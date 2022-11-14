@@ -1,16 +1,16 @@
 #include HZ_GL_EXTENSIONS_HEADER
-#include <hz/objects/light.h>
+#include <hz/nodes/light.h>
 #include <vendor/linmath/linmath.h>
 #include <stdio.h>
-#include <internal/object.h>
-#include <internal/alloc.h>
-#include <internal/helpers/binders.h>
-#include <hz/utils/container_of.h>
+#include <hz/internal/node.h>
+#include <hz/internal/alloc.h>
+#include <hz/internal/helpers/binders.h>
+#include <hz/utils.h>
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
 
-struct hz_light {
-	struct hz_object super;
+struct _hz_light {
+	hz_node super;
 	GLuint program;
 
 	struct {
@@ -25,21 +25,21 @@ struct hz_light {
 	float intensity;
 };
 
-void hz_light_dim(struct hz_light *l, float intensity)
+void hz_light_dim(hz_light *l, float intensity)
 {
 	l->intensity = intensity;
 }
 
-void hz_light_setup(struct hz_light *l, float kc, float kl, float kq)
+void hz_light_setup(hz_light *l, float kc, float kl, float kq)
 {
 	l->parameters.constant = kc;
 	l->parameters.linear = kl;
 	l->parameters.quadratic = kq;
 }
 
-static void light_bind(struct hz_object *super)
+static void light_bind(hz_node *super)
 {
-	struct hz_light *l = HZ_LIGHT(super);
+	hz_light *l = HZ_LIGHT(super);
 	vec3 position, scale;
 	quat rotation;
 
@@ -59,24 +59,24 @@ static void light_bind(struct hz_object *super)
 	glUniform1f(l->uniforms.quadratic, l->parameters.quadratic);
 }
 
-static void light_draw(struct hz_object *super, struct hz_camera *c)
+static void light_draw(hz_node *super, hz_camera *c)
 {
 	/* pass */
 }
 
-const struct hz_object_proto hz_light_proto = {
+const hz_node_proto hz_light_proto = {
 	.bind = light_bind,
 	.draw = light_draw,
 };
 
-static bool light_init(struct hz_light *l, GLuint program, unsigned index)
+static bool light_init(hz_light *l, GLuint program, unsigned index)
 {
-	struct hz_object *super = HZ_OBJECT(l);
+	hz_node *super = HZ_NODE(l);
 	bool ok;
 	typedef char uniform_parameter[HZ_LIGHT_UNIFORM_PARAMETER_LEN];
 	uniform_parameter intensity, position, quadratic, constant, linear;
 
-	hz_object_init(super, &hz_light_proto);
+	hz_node_init(super, &hz_light_proto);
 
 	snprintf(position, sizeof(position), "lights[%d].position", index);
 	snprintf(intensity, sizeof(intensity), "lights[%d].intensity", index);
@@ -106,12 +106,12 @@ static bool light_init(struct hz_light *l, GLuint program, unsigned index)
 	return true;
 }
 
-struct hz_light *HZ_LIGHT(struct hz_object *o)
+hz_light *HZ_LIGHT(hz_node *n)
 {
-	return hz_container_of(o, struct hz_light, super);
+	return hz_container_of(n, hz_light, super);
 }
 
-struct hz_object *hz_light_new(GLuint program, unsigned index)
+hz_node *hz_light_new(GLuint program, unsigned index)
 {
-	return HZ_OBJECT(hz_alloc_and_init(struct hz_light, light_init, program, index));
+	return HZ_NODE(hz_alloc_and_init(hz_light, light_init, program, index));
 }

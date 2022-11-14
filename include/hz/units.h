@@ -1,5 +1,4 @@
-#ifndef HZ_UNITS_H
-#define HZ_UNITS_H
+#pragma once
 
 #include <math.h>
 
@@ -11,5 +10,3 @@
 
 #define HZ_DEG_TO_RAD(x)	((x) * HZ_M_PI / 180.0f)
 #define HZ_RAD_TO_DEG(x)	((x) / HZ_M_PI * 180.f)
-
-#endif

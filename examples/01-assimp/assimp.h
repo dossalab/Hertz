@@ -1,8 +1,5 @@
-#ifndef EXAMPLE_ASSIMP_H
-#define EXAMPLE_ASSIMP_H
+#pragma once
 
-#include <hz/object.h>
+#include <hz/node.h>
 
-struct hz_object *assimp_import_scene(const char *path);
-
-#endif
+hz_node *assimp_import_scene(const char *path);

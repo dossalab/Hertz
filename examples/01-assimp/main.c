@@ -5,9 +5,9 @@
 #include <hz/actors/fly.h>
 #include <hz/logger.h>
 #include <hz/helpers/shaders.h>
-#include <hz/objects/light.h>
-#include <hz/objects/root.h>
-#include <hz/objects/camera.h>
+#include <hz/nodes/light.h>
+#include <hz/nodes/root.h>
+#include <hz/nodes/camera.h>
 #include <hz/built-in/shaders/simple.h>
 
 #include "assimp.h"
@@ -16,8 +16,8 @@ static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 struct render_state {
-	struct hz_object *root, *light, *l1, *l2, *camera;
-	struct hz_fly_actor *actor;
+	hz_node *root, *light, *l1, *l2, *camera;
+	hz_fly_actor *actor;
 	const char *scene_path;
 	GLuint shader;
 };
@@ -82,7 +82,7 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 	camera_update(state, window, spent);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_object_draw(state->root, HZ_CAMERA(state->camera));
+	hz_node_draw(state->root, HZ_CAMERA(state->camera));
 }
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
@@ -114,13 +114,13 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 	state->light = hz_light_new(assimp_shader, 2);
 	state->actor = hz_fly_actor_new(state->camera);
 
-	hz_object_move(state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
-	hz_object_move(state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
+	hz_node_move(state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
+	hz_node_move(state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
 
-	hz_object_insert(state->root, state->l1);
-	hz_object_insert(state->root, state->l2);
-	hz_object_insert(state->root, state->camera);
-	hz_object_insert(state->camera, state->light);
+	hz_node_insert(state->root, state->l1);
+	hz_node_insert(state->root, state->l2);
+	hz_node_insert(state->root, state->camera);
+	hz_node_insert(state->camera, state->light);
 
 	return true;
 }

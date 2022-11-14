@@ -1,10 +1,9 @@
-#ifndef HZ_INTERNAL_HELPERS_BINDERS_H
-#define HZ_INTERNAL_HELPERS_BINDERS_H
+#pragma once
 
 #include HZ_GL_HEADER
 #include <stddef.h>
 #include <stdbool.h>
-#include <hz/utils/common.h>
+#include <hz/utils.h>
 
 struct hz_buffer_binding {
 	GLuint *handle;
@@ -23,5 +22,3 @@ bool hz_bind_buffers(struct hz_buffer_binding *bindings, GLuint program,
 	size_t len);
 bool hz_bind_uniforms(struct hz_uniform_binding *bindings, GLuint program,
 	size_t len);
-
-#endif
