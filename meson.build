@@ -25,7 +25,7 @@ hertz_src = [
   'hertz/nodes/light.c',
   'hertz/nodes/root.c',
   'hertz/actors/fly.c',
-  'hertz/logger.c',
+  'hertz/util/logger.c',
   'hertz/built-in/shaders/simple.c',
   'hertz/helpers/shaders.c',
   'hertz/helpers/binders.c',

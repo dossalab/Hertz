@@ -8,7 +8,7 @@
  * Most likely users of this header will inherit from hz_node, so
  * include this for convenient access to hz_container_of
  */
-#include <hz/utils.h>
+#include <hz/util/common.h>
 
 typedef struct _hz_node hz_node;
 typedef struct {

@@ -3,7 +3,7 @@
 #include HZ_GL_HEADER
 #include <stddef.h>
 #include <stdbool.h>
-#include <hz/utils.h>
+#include <hz/util/common.h>
 
 struct hz_buffer_binding {
 	GLuint *handle;

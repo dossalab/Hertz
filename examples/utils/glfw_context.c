@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <hz/logger.h>
+#include <hz/util/logger.h>
 #include <stdbool.h>
 
 #include "glfw_context.h"

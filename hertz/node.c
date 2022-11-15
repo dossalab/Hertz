@@ -1,6 +1,5 @@
 #include <hz/node.h>
 #include <hz/internal/node.h>
-#include <hz/utils.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/nodes/root.h>
 #include <hz/nodes/camera.h>

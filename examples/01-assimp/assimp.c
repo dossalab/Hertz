@@ -1,7 +1,7 @@
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <hz/logger.h>
+#include <hz/util/logger.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <hz/types.h>

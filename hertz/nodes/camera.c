@@ -4,7 +4,6 @@
 #include <hz/internal/alloc.h>
 #include <hz/internal/node.h>
 #include <stdbool.h>
-#include <hz/utils.h>
 #include <hz/internal/helpers/binders.h>
 #include <hz/units.h>
 
@@ -59,7 +58,7 @@ static void camera_bind(hz_node *super)
 	mat4x4_mul(c->vp, c->projection, c->view);
 }
 
-static void camera_draw(hz_node *super, struct hz_camera *_)
+static void camera_draw(hz_node *super, hz_camera *_)
 {
 	/* pass */
 }

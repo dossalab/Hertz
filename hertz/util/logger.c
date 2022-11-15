@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <hz/logger.h>
+#include <hz/util/logger.h>
 
 static int discard(const char *fmt, ...) {
 	return 0;

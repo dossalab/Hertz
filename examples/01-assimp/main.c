@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include <hz/actors/fly.h>
-#include <hz/logger.h>
+#include <hz/util/logger.h>
 #include <hz/helpers/shaders.h>
 #include <hz/nodes/light.h>
 #include <hz/nodes/root.h>

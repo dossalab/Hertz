@@ -5,7 +5,6 @@
 #include <hz/internal/node.h>
 #include <hz/internal/alloc.h>
 #include <hz/internal/helpers/binders.h>
-#include <hz/utils.h>
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
 
