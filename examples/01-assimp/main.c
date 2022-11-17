@@ -16,6 +16,7 @@ static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 struct render_state {
+	hz_arena *arena;
 	hz_node *root, *light, *l1, *l2, *camera;
 	hz_fly_actor *actor;
 	const char *scene_path;
@@ -87,13 +88,19 @@ static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
 
 static void glfw_on_exit(GLFWwindow *window, void *user)
 {
-	/* pass */
+	struct render_state *state = user;
+	hz_arena_free(state->arena);
 }
 
 static bool glfw_on_init(GLFWwindow *window, void *user)
 {
 	bool ok;
 	struct render_state *state = user;
+
+	state->arena = hz_arena_new();
+	if (!state->arena) {
+		return false;
+	}
 
 	/* TODO: exit path cleanups */
 	ok = load_shaders(user);
@@ -102,17 +109,17 @@ static bool glfw_on_init(GLFWwindow *window, void *user)
 		return false;
 	}
 
-	state->root = assimp_import_scene(state->scene_path);
+	state->root = assimp_import_scene(state->arena, state->scene_path);
 	if (!state->root) {
 		hz_log_e(tag, "unable to import scene");
 		return false;
 	}
 
-	state->camera = hz_camera_new(assimp_shader);
-	state->l1 = hz_light_new(assimp_shader, 0);
-	state->l2 = hz_light_new(assimp_shader, 1);
-	state->light = hz_light_new(assimp_shader, 2);
-	state->actor = hz_fly_actor_new(state->camera);
+	state->camera = hz_camera_new(state->arena, assimp_shader);
+	state->l1 = hz_light_new(state->arena, assimp_shader, 0);
+	state->l2 = hz_light_new(state->arena, assimp_shader, 1);
+	state->light = hz_light_new(state->arena, assimp_shader, 2);
+	state->actor = hz_fly_actor_new(state->arena, state->camera);
 
 	hz_node_move(state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
 	hz_node_move(state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
@@ -134,7 +141,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	hz_logger_init(HZ_LOGLEVEL_INFO);
+	hz_logger_init(HZ_LOGLEVEL_DEBUG);
 	state.scene_path = argv[1];
 
 	struct glfw_ctx_callbacks callbacks = {

@@ -12,4 +12,4 @@ bool hz_mesh_set_geometry(hz_mesh *o,
 		unsigned *indices, size_t nindices);
 
 hz_mesh *HZ_MESH(hz_node *o);
-hz_node *hz_mesh_new(GLuint program, hz_material *m);
+hz_node *hz_mesh_new(hz_arena *arena, GLuint program, hz_material *m);

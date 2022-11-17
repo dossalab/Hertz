@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <hz/actors/fly.h>
 #include <vendor/linmath/linmath.h>
+#include <hz/util/arena.h>
 #include <hz/units.h>
-#include <hz/internal/alloc.h>
 #include <hz/node.h>
 
 #define FLY_ACTOR_DEFAULT_SPEED		10.f
@@ -71,7 +71,7 @@ void hz_fly_actor_move(hz_fly_actor *a, float dt, int dx, int dy,
 	hz_node_rotate_quat(a->puppet, q);
 }
 
-bool fly_actor_init(hz_fly_actor *a, hz_node *puppet)
+static void fly_actor_init(hz_fly_actor *a, hz_node *puppet)
 {
 	a->speed = FLY_ACTOR_DEFAULT_SPEED;
 	a->sensitivity = FLY_ACTOR_DEFAULT_SENSITIVITY;
@@ -82,11 +82,21 @@ bool fly_actor_init(hz_fly_actor *a, hz_node *puppet)
 	vec3_dup(a->position, FLY_ACTOR_DEFAULT_POSITION);
 	a->yaw = 0.f;
 	a->pitch = 0.f;
-
-	return true;
 }
 
-hz_fly_actor *hz_fly_actor_new(hz_node *puppet)
+static const hz_arena_proto hz_fly_actor_arena_proto = {
+	.name = "flyactors",
+	.size = sizeof(hz_fly_actor)
+};
+
+hz_fly_actor *hz_fly_actor_new(hz_arena *arena, hz_node *puppet)
 {
-	return hz_alloc_and_init(hz_fly_actor, fly_actor_init, puppet);
+	hz_fly_actor *actor = hz_arena_alloc(arena, &hz_fly_actor_arena_proto);
+	if (!actor) {
+		return NULL;
+	}
+
+	fly_actor_init(actor, puppet);
+
+	return actor;
 }

@@ -15,6 +15,7 @@
 #define HZ_LOG_CYA(x)	HZ_LOG_MAKE_COLOR("\e[0;36m", x)
 
 typedef enum {
+	HZ_LOGLEVEL_DEBUG,
 	HZ_LOGLEVEL_INFO,
 	HZ_LOGLEVEL_ERROR,
 	HZ_LOGLEVEL_SILENT
@@ -22,11 +23,15 @@ typedef enum {
 
 typedef int (*hz_logger_sink)(const char *, ...);
 
+extern hz_logger_sink *hz_logger_debug_sink;
 extern hz_logger_sink *hz_logger_info_sink;
 extern hz_logger_sink *hz_logger_error_sink;
 
 #define hz_log_fmt(sink, tag, expl, fmt, ...) \
 	(*sink)("%6s " expl " " fmt "\n", tag, ## __VA_ARGS__)
+
+#define hz_log_d(tag, ...) \
+	hz_log_fmt(hz_logger_debug_sink, tag, HZ_LOG_YEL("[D]"), __VA_ARGS__)
 
 #define hz_log_i(tag, ...) \
 	hz_log_fmt(hz_logger_info_sink, tag, HZ_LOG_GRN("[I]"), __VA_ARGS__)

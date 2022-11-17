@@ -1,5 +1,5 @@
 #include HZ_GL_EXTENSIONS_HEADER
-#include <hz/internal/alloc.h>
+#include <hz/util/logger.h>
 #include <hz/material.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/helpers/textures.h>
@@ -7,6 +7,8 @@
 #define HZ_DIFFUSE_LOCATION	GL_TEXTURE0
 #define HZ_NORMAL_LOCATION	GL_TEXTURE1
 #define HZ_SPECULAR_LOCATION	GL_TEXTURE2
+
+static const char *tag = "mtl";
 
 struct _hz_material {
 	struct {
@@ -58,13 +60,14 @@ bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
 	return !!(*texture);
 }
 
-static bool material_init(hz_material *m, GLuint program)
+static void material_init(hz_material *m, GLuint program)
 {
 	GLuint dummy;
 
 	dummy = create_dummy_texture();
 	if (!dummy) {
-		return false;
+		hz_log_e(tag, "unable to create dummy texture");
+		return;
 	}
 
 	m->program = program;
@@ -73,8 +76,6 @@ static bool material_init(hz_material *m, GLuint program)
 	m->textures.diffuse = dummy;
 	m->textures.normal = dummy;
 	m->textures.specular = dummy;
-
-	return true;
 }
 
 static void delete_texture_if_bound(hz_material *m, GLuint texture)
@@ -84,8 +85,10 @@ static void delete_texture_if_bound(hz_material *m, GLuint texture)
 	}
 }
 
-void hz_material_deinit(hz_material *m)
+static void material_free(void *mem)
 {
+	hz_material *m = mem;
+
 	delete_texture_if_bound(m, m->textures.diffuse);
 	delete_texture_if_bound(m, m->textures.normal);
 	delete_texture_if_bound(m, m->textures.specular);
@@ -93,7 +96,20 @@ void hz_material_deinit(hz_material *m)
 	glDeleteTextures(1, &m->textures.dummy);
 }
 
-hz_material *hz_material_new(GLuint program)
+static const hz_arena_proto hz_material_arena_proto = {
+	.name = "materials",
+	.free = material_free,
+	.size = sizeof(hz_material),
+};
+
+hz_material *hz_material_new(hz_arena *arena, GLuint program)
 {
-	return hz_alloc_and_init(hz_material, material_init, program);
+	hz_material *material = hz_arena_alloc(arena, &hz_material_arena_proto);
+	if (!material) {
+		return NULL;
+	}
+
+	material_init(material, program);
+
+	return material;
 }

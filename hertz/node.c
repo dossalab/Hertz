@@ -19,104 +19,114 @@ static void calculate_local_model(hz_node *o)
 static void scene_node_update_callback(hz_tree_node *parent_node,
 		hz_tree_node *node, void *user)
 {
-	hz_node *o, *parent;
+	hz_node *scene_node, *parent;
 
-	o = hz_container_of(node, hz_node, scene_node);
+	scene_node = hz_container_of(node, hz_node, scene_node);
 
 	if (parent_node) {
 		parent = hz_container_of(parent_node, hz_node, scene_node);
-		mat4x4_mul(o->model, parent->model, o->local_model);
+		mat4x4_mul(scene_node->model, parent->model, scene_node->local_model);
 	} else {
-		mat4x4_dup(o->model, o->local_model);
+		mat4x4_dup(scene_node->model, scene_node->local_model);
 	}
 }
 
 static void scene_node_draw_callback(hz_tree_node *parent,
 		hz_tree_node *node, void *user)
 {
-	hz_node *o;
+	hz_node *scene_node;
 	hz_camera *c = user;
 
-	o = hz_container_of(node, hz_node, scene_node);
-	o->proto->draw(o, c);
+	scene_node = hz_container_of(node, hz_node, scene_node);
+	scene_node->proto->draw(scene_node, c);
 }
 
 static void scene_node_bind_callback(hz_tree_node *parent,
 		hz_tree_node *node, void *user)
 {
-	hz_node *o;
+	hz_node *scene_node;
 
-	o = hz_container_of(node, hz_node, scene_node);
-	o->proto->bind(o);
+	scene_node = hz_container_of(node, hz_node, scene_node);
+	scene_node->proto->bind(scene_node);
 }
 
-void hz_node_insert(hz_node *o, hz_node *child)
+void hz_node_insert(hz_node *node, hz_node *child)
 {
-	hz_tree_insert(&o->scene_node, &child->scene_node);
-	hz_node_update(o);
+	hz_tree_insert(&node->scene_node, &child->scene_node);
+	hz_node_update(node);
 }
 
-void hz_node_move(hz_node *o, vec3 pos)
+void hz_node_move(hz_node *node, vec3 pos)
 {
-	vec3_dup(o->position, pos);
-	calculate_local_model(o);
-	hz_node_update(o);
+	vec3_dup(node->position, pos);
+	calculate_local_model(node);
+	hz_node_update(node);
 }
 
-void hz_node_rotate_quat(hz_node *o, hz_quat q)
+void hz_node_rotate_quat(hz_node *node, hz_quat q)
 {
-	vec4_dup(o->rotation, q);
-	calculate_local_model(o);
-	hz_node_update(o);
+	vec4_dup(node->rotation, q);
+	calculate_local_model(node);
+	hz_node_update(node);
 }
 
-void hz_node_rotate(hz_node *o, float angle, vec3 axis)
+void hz_node_rotate(hz_node *node, float angle, vec3 axis)
 {
-	quat_rotate(o->rotation, angle, axis);
-	calculate_local_model(o);
-	hz_node_update(o);
+	quat_rotate(node->rotation, angle, axis);
+	calculate_local_model(node);
+	hz_node_update(node);
 }
 
-void hz_node_scale(hz_node *o, vec3 scale)
+void hz_node_scale(hz_node *node, vec3 scale)
 {
-	vec3_dup(o->scale, scale);
-	calculate_local_model(o);
-	hz_node_update(o);
+	vec3_dup(node->scale, scale);
+	calculate_local_model(node);
+	hz_node_update(node);
 }
 
-void hz_node_set_model(hz_node *o, hz_mat4x4 model, bool transpose)
+void hz_node_set_model(hz_node *node, hz_mat4x4 model, bool transpose)
 {
 	if (transpose) {
-		mat4x4_transpose(o->local_model, model);
+		mat4x4_transpose(node->local_model, model);
 	} else {
-		mat4x4_dup(o->local_model, model);
+		mat4x4_dup(node->local_model, model);
 	}
 
-	mat4x4_decompose(o->local_model, o->scale, o->rotation, o->position);
-	calculate_local_model(o);
+	mat4x4_decompose(node->local_model, node->scale, node->rotation, node->position);
+	calculate_local_model(node);
 
-	hz_node_update(o);
+	hz_node_update(node);
 }
 
-void hz_node_draw(hz_node *o, hz_camera *c)
+void hz_node_draw(hz_node *node, hz_camera *c)
 {
-	hz_tree_traverse(NULL, &o->scene_node, scene_node_bind_callback, c);
-	hz_tree_traverse(NULL, &o->scene_node, scene_node_draw_callback, c);
+	hz_tree_traverse(NULL, &node->scene_node, scene_node_bind_callback, c);
+	hz_tree_traverse(NULL, &node->scene_node, scene_node_draw_callback, c);
 }
 
-void hz_node_update(hz_node *o)
+void hz_node_update(hz_node *node)
 {
-	hz_tree_traverse(NULL, &o->scene_node, scene_node_update_callback, NULL);
+	hz_tree_traverse(NULL, &node->scene_node, scene_node_update_callback, NULL);
 }
 
-void hz_node_init(hz_node *o, const hz_node_proto *proto)
+void hz_node_dummy_bind(hz_node *node)
 {
-	o->proto = proto;
-	hz_tree_init(&o->scene_node);
 
-	mat4x4_identity(o->model);
+}
 
-	hz_node_move(o, (vec3) { 0.f, 0.f, 0.f });
-	hz_node_rotate(o, 0.f, (vec3) { 1.f, 0.f, 0.f });
-	hz_node_scale(o, (vec3) { 1.f, 1.f, 1.f });
+void hz_node_dummy_draw(hz_node *node, hz_camera *camera)
+{
+
+}
+
+void hz_node_init(hz_node *node, const hz_node_proto *proto)
+{
+	node->proto = proto;
+
+	hz_tree_init(&node->scene_node);
+	mat4x4_identity(node->model);
+
+	hz_node_move(node, (vec3) { 0.f, 0.f, 0.f });
+	hz_node_rotate(node, 0.f, (vec3) { 1.f, 0.f, 0.f });
+	hz_node_scale(node, (vec3) { 1.f, 1.f, 1.f });
 }

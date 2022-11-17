@@ -2,7 +2,6 @@
 #include <hz/nodes/mesh.h>
 #include <hz/material.h>
 #include <vendor/linmath/linmath.h>
-#include <hz/internal/alloc.h>
 #include <hz/internal/node.h>
 #include <hz/internal/helpers/binders.h>
 
@@ -27,12 +26,7 @@ static inline void set_uniform_matrix(GLint uniform, mat4x4 value) {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, (float *)value);
 }
 
-static void mesh_bind(hz_node *super)
-{
-	/* pass */
-}
-
-static void mesh_redraw(hz_node *super, hz_camera *c)
+static void mesh_draw(hz_node *super, hz_camera *c)
 {
 	hz_mesh *o = HZ_MESH(super);
 	mat4x4 vp, mvp;
@@ -75,52 +69,63 @@ bool hz_mesh_set_geometry(hz_mesh *n,
 	return true;
 }
 
-const hz_node_proto hz_mesh_proto = {
-	.bind = mesh_bind,
-	.draw = mesh_redraw,
-};
-
-static bool hz_mesh_init(hz_mesh *n, GLuint program, hz_material *m)
-{
-	hz_node *super = HZ_NODE(n);
-	bool ok;
-
-	hz_node_init(super, &hz_mesh_proto);
-
-	struct hz_uniform_binding bindings[] = {
-		{ &n->uniforms.mvp, "MVP" },
-		{ &n->uniforms.model, "model" },
-	};
-
-	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
-	if (!ok) {
-		return false;
-	}
-
-	n->material = m;
-	n->program = program;
-
-	glGenVertexArrays(1, &n->vao);
-	glBindVertexArray(n->vao);
-
-	return true;
-}
-
-void hz_mesh_deinit(hz_mesh *n)
-{
-	glDeleteBuffers(1, &n->buffers.vertices);
-	glDeleteBuffers(1, &n->buffers.normals);
-	glDeleteBuffers(1, &n->buffers.uvs);
-
-	glDeleteVertexArrays(1, &n->vao);
-}
-
 hz_mesh *HZ_MESH(hz_node *n)
 {
 	return hz_container_of(n, hz_mesh, super);
 }
 
-hz_node *hz_mesh_new(GLuint program, hz_material *m)
+static void mesh_init(hz_node *super, GLuint program, hz_material *m)
 {
-	return HZ_NODE(hz_alloc_and_init(hz_mesh, hz_mesh_init, program, m));
+	bool ok;
+	hz_mesh *mesh = HZ_MESH(super);
+
+	struct hz_uniform_binding bindings[] = {
+		{ &mesh->uniforms.mvp, "MVP" },
+		{ &mesh->uniforms.model, "model" },
+	};
+
+	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
+	if (!ok) {
+		return;
+	}
+
+	mesh->material = m;
+	mesh->program = program;
+
+	glGenVertexArrays(1, &mesh->vao);
+	glBindVertexArray(mesh->vao);
+}
+
+static void mesh_free(void *super)
+{
+	hz_mesh *mesh = HZ_MESH(super);
+
+	glDeleteBuffers(1, &mesh->buffers.vertices);
+	glDeleteBuffers(1, &mesh->buffers.normals);
+	glDeleteBuffers(1, &mesh->buffers.uvs);
+
+	glDeleteVertexArrays(1, &mesh->vao);
+}
+
+const hz_node_proto hz_mesh_proto = {
+	.bind = hz_node_dummy_bind,
+	.draw = mesh_draw,
+
+	.arena_proto = {
+		.name = "meshes",
+		.free = mesh_free,
+		.size = sizeof(hz_mesh),
+	}
+};
+
+hz_node *hz_mesh_new(hz_arena *arena, GLuint program, hz_material *m)
+{
+	hz_node *super = hz_node_new(arena, hz_mesh, &hz_mesh_proto);
+	if (!super) {
+		return NULL;
+	}
+
+	mesh_init(super, program, m);
+
+	return super;
 }

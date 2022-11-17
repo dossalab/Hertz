@@ -1,6 +1,7 @@
 #pragma once
 
 #include <hz/types.h>
+#include <hz/util/arena.h>
 #include <stdbool.h>
 
 typedef struct _hz_node hz_node;

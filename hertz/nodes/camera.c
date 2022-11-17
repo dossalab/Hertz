@@ -1,7 +1,6 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/nodes/camera.h>
 #include <vendor/linmath/linmath.h>
-#include <hz/internal/alloc.h>
 #include <hz/internal/node.h>
 #include <stdbool.h>
 #include <hz/internal/helpers/binders.h>
@@ -58,26 +57,19 @@ static void camera_bind(hz_node *super)
 	mat4x4_mul(c->vp, c->projection, c->view);
 }
 
-static void camera_draw(hz_node *super, hz_camera *_)
+hz_camera *HZ_CAMERA(hz_node *o)
 {
-	/* pass */
+	return hz_container_of(o, hz_camera, super);
 }
 
-const hz_node_proto hz_camera_proto = {
-	.bind = camera_bind,
-	.draw = camera_draw,
-};
-
-static bool camera_init(hz_camera *c, GLuint program)
+static bool camera_init(hz_node *super, GLuint program)
 {
 	bool ok;
-	hz_node *super = HZ_NODE(c);
+	hz_camera *c = HZ_CAMERA(super);
 
 	struct hz_uniform_binding bindings[] = {
 		{ &c->uniforms.position, "camera" },
 	};
-
-	hz_node_init(super, &hz_camera_proto);
 
 	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
 	if (!ok) {
@@ -94,12 +86,23 @@ static bool camera_init(hz_camera *c, GLuint program)
 	return true;
 }
 
-hz_camera *HZ_CAMERA(hz_node *o)
-{
-	return hz_container_of(o, hz_camera, super);
-}
+const hz_node_proto hz_camera_proto = {
+	.bind = camera_bind,
+	.draw = hz_node_dummy_draw,
+	.arena_proto = {
+		.name = "cameras",
+		.size = sizeof(hz_camera)
+	}
+};
 
-hz_node *hz_camera_new(GLuint program)
+hz_node *hz_camera_new(hz_arena *arena, GLuint program)
 {
-	return HZ_NODE(hz_alloc_and_init(hz_camera, camera_init, program));
+	hz_node *super = hz_node_new(arena, hz_camera, &hz_camera_proto);
+	if (!super) {
+		return NULL;
+	}
+
+	camera_init(super, program);
+
+	return super;
 }

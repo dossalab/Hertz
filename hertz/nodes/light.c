@@ -3,7 +3,6 @@
 #include <vendor/linmath/linmath.h>
 #include <stdio.h>
 #include <hz/internal/node.h>
-#include <hz/internal/alloc.h>
 #include <hz/internal/helpers/binders.h>
 
 #define HZ_LIGHT_UNIFORM_PARAMETER_LEN 64
@@ -58,24 +57,17 @@ static void light_bind(hz_node *super)
 	glUniform1f(l->uniforms.quadratic, l->parameters.quadratic);
 }
 
-static void light_draw(hz_node *super, hz_camera *c)
+hz_light *HZ_LIGHT(hz_node *n)
 {
-	/* pass */
+	return hz_container_of(n, hz_light, super);
 }
 
-const hz_node_proto hz_light_proto = {
-	.bind = light_bind,
-	.draw = light_draw,
-};
-
-static bool light_init(hz_light *l, GLuint program, unsigned index)
+static void light_init(hz_node *super, GLuint program, unsigned index)
 {
-	hz_node *super = HZ_NODE(l);
+	hz_light *light = HZ_LIGHT(super);
 	bool ok;
 	typedef char uniform_parameter[HZ_LIGHT_UNIFORM_PARAMETER_LEN];
 	uniform_parameter intensity, position, quadratic, constant, linear;
-
-	hz_node_init(super, &hz_light_proto);
 
 	snprintf(position, sizeof(position), "lights[%d].position", index);
 	snprintf(intensity, sizeof(intensity), "lights[%d].intensity", index);
@@ -84,33 +76,42 @@ static bool light_init(hz_light *l, GLuint program, unsigned index)
 	snprintf(quadratic, sizeof(quadratic), "lights[%d].quadratic", index);
 
 	struct hz_uniform_binding bindings[] = {
-		{ &l->uniforms.position, position },
-		{ &l->uniforms.intensity, intensity },
-		{ &l->uniforms.constant, constant },
-		{ &l->uniforms.linear, linear },
-		{ &l->uniforms.quadratic, quadratic },
+		{ &light->uniforms.position, position },
+		{ &light->uniforms.intensity, intensity },
+		{ &light->uniforms.constant, constant },
+		{ &light->uniforms.linear, linear },
+		{ &light->uniforms.quadratic, quadratic },
 	};
 
 	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
 	if (!ok) {
-		return false;
+		return;
 	}
 
-	l->index = index;
-	l->program = program;
+	light->index = index;
+	light->program = program;
 
-	hz_light_dim(l, 1.0);
-	hz_light_setup(l, 1.0f, 0.09f, 0.032f);
-
-	return true;
+	hz_light_dim(light, 1.0);
+	hz_light_setup(light, 1.0f, 0.09f, 0.032f);
 }
 
-hz_light *HZ_LIGHT(hz_node *n)
-{
-	return hz_container_of(n, hz_light, super);
-}
+const hz_node_proto hz_light_proto = {
+	.bind = light_bind,
+	.draw = hz_node_dummy_draw,
+	.arena_proto = {
+		.name = "lights",
+		.size = sizeof(hz_light)
+	}
+};
 
-hz_node *hz_light_new(GLuint program, unsigned index)
+hz_node *hz_light_new(hz_arena *arena, GLuint program, unsigned index)
 {
-	return HZ_NODE(hz_alloc_and_init(hz_light, light_init, program, index));
+	hz_node *super = hz_node_new(arena, hz_light, &hz_light_proto);
+	if (!super) {
+		return NULL;
+	}
+
+	light_init(super, program, index);
+
+	return super;
 }
