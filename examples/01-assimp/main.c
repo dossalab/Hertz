@@ -1,4 +1,3 @@
-#include "../utils/glfw_context.h" /* should be the first one */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,6 +8,7 @@
 #include <hz/nodes/root.h>
 #include <hz/nodes/camera.h>
 #include <hz/built-in/shaders/simple.h>
+#include <hz/contexts/glfw.h>
 
 #include "assimp.h"
 
@@ -16,16 +16,13 @@ static const char *tag = "main";
 static const char *window_title = "My cool application";
 
 struct render_state {
-	hz_arena *arena;
-	hz_node *root, *light, *l1, *l2, *camera;
-	hz_fly_actor *actor;
 	const char *scene_path;
 	GLuint shader;
 };
 
 int assimp_shader;
 
-static bool load_shaders(struct render_state *state)
+static bool load_shaders(struct render_state *state, int *shader)
 {
 	char *logs;
 
@@ -44,90 +41,47 @@ static bool load_shaders(struct render_state *state)
 	}
 
 	assimp_shader = state->shader;
+	*shader = state->shader;
 	return true;
 }
 
-static void camera_update(struct render_state *s, GLFWwindow *window, float spent)
-{
-	double pos_x, pos_y;
-	static double old_pos_x, old_pos_y;
+// static void camera_update(struct render_state *s, GLFWwindow *window, float spent)
+// {
+// 	double pos_x, pos_y;
+// 	static double old_pos_x, old_pos_y;
 
-	glfwGetCursorPos(window, &pos_x, &pos_y);
+// 	glfwGetCursorPos(window, &pos_x, &pos_y);
 
-	hz_fly_actor_move(s->actor,
-		spent,
-		pos_x - old_pos_x,
-		pos_y - old_pos_y,
-		glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS,
-		glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
+// 	hz_fly_actor_move(s->actor,
+// 		spent,
+// 		pos_x - old_pos_x,
+// 		pos_y - old_pos_y,
+// 		hz_context_get_key(context, 'w'),
+// 		hz_context_get_key(context, 'a'),
+// 		hz_context_get_key(context, 's'),
+// 		hz_context_get_key(context, 'd'));
 
-	old_pos_x = pos_x;
-	old_pos_y = pos_y;
-}
+// 	old_pos_x = pos_x;
+// 	old_pos_y = pos_y;
+// }
 
-
-static void glfw_on_resize(GLFWwindow *window, size_t w, size_t h, void *user)
-{
-	struct render_state *state = user;
-
-	glViewport(0, 0, w, h);
-	hz_camera_resize(HZ_CAMERA(state->camera), w, h);
-}
-
-static void glfw_on_draw(GLFWwindow *window, double spent, void *user)
-{
-	struct render_state *state = user;
-
-	camera_update(state, window, spent);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hz_node_draw(state->root, HZ_CAMERA(state->camera));
-}
-
-static void glfw_on_exit(GLFWwindow *window, void *user)
-{
-	struct render_state *state = user;
-	hz_arena_free(state->arena);
-}
-
-static bool glfw_on_init(GLFWwindow *window, void *user)
+static bool init(hz_context *context, hz_arena *arena, hz_node *root, int *shader, void *user)
 {
 	bool ok;
 	struct render_state *state = user;
 
-	state->arena = hz_arena_new();
-	if (!state->arena) {
-		return false;
-	}
+	hz_glfw_context_set_window_title(HZ_GLFW_CONTEXT(context), window_title);
 
-	/* TODO: exit path cleanups */
-	ok = load_shaders(user);
+	ok = load_shaders(user, shader);
 	if (!ok) {
 		hz_log_e(tag, "unable to load shaders!");
 		return false;
 	}
 
-	state->root = assimp_import_scene(state->arena, state->scene_path);
-	if (!state->root) {
-		hz_log_e(tag, "unable to import scene");
+	if (!assimp_import_scene(root, arena, state->scene_path)) {
+		hz_log_e(tag, "unable to import scene!");
 		return false;
 	}
-
-	state->camera = hz_camera_new(state->arena, assimp_shader);
-	state->l1 = hz_light_new(state->arena, assimp_shader, 0);
-	state->l2 = hz_light_new(state->arena, assimp_shader, 1);
-	state->light = hz_light_new(state->arena, assimp_shader, 2);
-	state->actor = hz_fly_actor_new(state->arena, state->camera);
-
-	hz_node_move(state->l1, (hz_vec3) { -8.f, 4.f, -1.f });
-	hz_node_move(state->l2, (hz_vec3) {  8.f, 4.f, -2.f });
-
-	hz_node_insert(state->root, state->l1);
-	hz_node_insert(state->root, state->l2);
-	hz_node_insert(state->root, state->camera);
-	hz_node_insert(state->camera, state->light);
 
 	return true;
 }
@@ -144,13 +98,5 @@ int main(int argc, char **argv)
 	hz_logger_init(HZ_LOGLEVEL_DEBUG);
 	state.scene_path = argv[1];
 
-	struct glfw_ctx_callbacks callbacks = {
-		.on_init = glfw_on_init,
-		.on_draw = glfw_on_draw,
-		.on_resize = glfw_on_resize,
-		.on_exit = glfw_on_exit,
-		.user = &state,
-	};
-
-	return glfw_ctx_main(window_title, &callbacks);
+	return hz_context_wrapper(hz_glfw_context_new, init, &state);
 }

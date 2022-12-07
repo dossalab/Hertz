@@ -239,12 +239,12 @@ hz_node *import_objects_recursive(hz_arena *arena, const struct aiScene *ai_scen
 	return node;
 }
 
-hz_node *assimp_import_scene(hz_arena *arena, const char *path)
+bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
 		| aiProcess_JoinIdenticalVertices;
-	hz_node *root = NULL;
+	hz_node *imported = NULL;
 	hz_material **materials;
 
 	scene = aiImportFile(path, flags);
@@ -257,9 +257,11 @@ hz_node *assimp_import_scene(hz_arena *arena, const char *path)
 		goto cleanup;
 	}
 
-	root = import_objects_recursive(arena, scene, NULL, scene->mRootNode, materials, 0);
+	imported = import_objects_recursive(arena, scene, NULL, scene->mRootNode, materials, 0);
 
 cleanup:
 	aiReleaseImport(scene);
-	return root;
+	hz_node_insert(root, imported);
+
+	return true;
 }
