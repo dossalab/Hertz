@@ -8,11 +8,12 @@ static const char *tag = "ctx";
 
 #define SUN_LIGHT_INDEX		0
 #define SUN_POSITION		(hz_vec3) { 0.f, 10.f, 0.f }
+#define CAMERA_POSITION		(hz_vec3) { 0.f, 0.f, 4.f }
 
 /* Light source parameters */
 #define SUN_CONSTANT		0.1
 #define SUN_LINEAR		0.06
-#define SUN_QUADRATIC		0.01
+#define SUN_QUADRATIC		0.001
 
 void hz_context_handle_resize(hz_context *context, unsigned w, unsigned h)
 {
@@ -54,6 +55,7 @@ int hz_context_wrapper_with_context(hz_arena *arena, hz_context *context,
 	}
 
 	context->camera = hz_camera_new(arena, shader);
+	hz_node_move(context->camera, CAMERA_POSITION);
 	hz_node_insert(root, context->camera);
 
 	sun = hz_light_new(arena, shader, SUN_LIGHT_INDEX);

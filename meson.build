@@ -30,6 +30,7 @@ hertz_src = [
   'hertz/contexts/glfw.c',
   'hertz/context.c',
   'hertz/built-in/shaders/simple.c',
+  'hertz/built-in/primitives/cube.c',
   'hertz/helpers/shaders.c',
   'hertz/helpers/binders.c',
   'hertz/helpers/textures.c',
@@ -50,4 +51,10 @@ executable('01-assimp',
     'examples/utils/stb_image.c' ],
   include_directories : hertz_inc,
   dependencies : [ hertz_dep, assimp_dep ],
+  link_with : libhertz)
+
+executable('hello-cube',
+  'examples/hello-cube/hello-cube.c',
+  include_directories : hertz_inc,
+  dependencies : hertz_dep,
   link_with : libhertz)
