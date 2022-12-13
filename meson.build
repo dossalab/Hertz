@@ -38,6 +38,8 @@ hertz_src = [
   'hertz/adt/tree.c'
 ]
 
+install_subdir('include/hz', install_dir: 'include')
+
 libhertz = library('hertz', hertz_src,
   version : meson.project_version(),
   soversion : soversion,
