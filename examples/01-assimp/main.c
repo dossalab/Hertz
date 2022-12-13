@@ -1,14 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <hz/actors/fly.h>
-#include <hz/util/logger.h>
-#include <hz/helpers/shaders.h>
-#include <hz/nodes/light.h>
-#include <hz/nodes/root.h>
-#include <hz/nodes/camera.h>
+#include <hz/hertz.h>
 #include <hz/built-in/shaders/simple.h>
 #include <hz/contexts/glfw.h>
+#include <stdio.h>
 
 #include "assimp.h"
 

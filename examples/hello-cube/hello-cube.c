@@ -1,11 +1,7 @@
-#include <hz/util/logger.h>
-#include <hz/contexts/glfw.h>
-#include <hz/helpers/shaders.h>
+#include <hz/hertz.h>
 #include <hz/built-in/shaders/simple.h>
 #include <hz/built-in/primitives/cube.h>
-#include <hz/material.h>
-#include <stdlib.h>
-#include <hz/units.h>
+#include <hz/contexts/glfw.h>
 
 static const char *tag = "hcube";
 

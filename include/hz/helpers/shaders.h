@@ -3,6 +3,9 @@
 #include HZ_GL_HEADER
 #include <stddef.h>
 
+/* FIXME - for 'free' */
+#include <stdlib.h>
+
 GLuint hz_compile_single_shader(const char *source, char **logs, GLenum type);
 GLuint hz_create_program(size_t shader_count, ...);
 GLuint hz_create_program_from_source(const char *vert_src,
