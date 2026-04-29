@@ -2,18 +2,13 @@
 #include <hz/nodes/camera.h>
 #include <vendor/linmath/linmath.h>
 #include <hz/internal/node.h>
-#include <stdbool.h>
-#include <hz/internal/helpers/binders.h>
 #include <hz/units.h>
 
 struct _hz_camera {
 	hz_node super;
 	hz_mat4x4 view, projection, vp;
 	float fov, near, far;
-
-	struct {
-		GLint position;
-	} uniforms;
+	vec3 position;
 };
 
 #define CAMERA_DEFAULT_FOV	HZ_DEG_TO_RAD(70.0f)
@@ -42,16 +37,18 @@ void hz_camera_resize(hz_camera *c, unsigned w, unsigned h)
 	hz_camera_resize_perspective(c, w, h);
 }
 
+void hz_camera_get_position(hz_camera *c, hz_vec3 pos)
+{
+	vec3_dup(pos, c->position);
+}
+
 static void camera_bind(hz_node *super)
 {
 	hz_camera *c = HZ_CAMERA(super);
-	vec3 position, scale;
+	vec3 scale;
 	quat rotation;
 
-	/* we obviuosly only care about position */
-	mat4x4_decompose(super->model, scale, rotation, position);
-
-	glUniform3fv(c->uniforms.position, 1, position);
+	mat4x4_decompose(super->model, scale, rotation, c->position);
 
 	mat4x4_invert(c->view, super->model);
 	mat4x4_mul(c->vp, c->projection, c->view);
@@ -62,19 +59,9 @@ hz_camera *HZ_CAMERA(hz_node *o)
 	return hz_container_of(o, hz_camera, super);
 }
 
-static bool camera_init(hz_node *super, GLuint program)
+static void camera_init(hz_node *super)
 {
-	bool ok;
 	hz_camera *c = HZ_CAMERA(super);
-
-	struct hz_uniform_binding bindings[] = {
-		{ &c->uniforms.position, "camera" },
-	};
-
-	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
-	if (!ok) {
-		return false;
-	}
 
 	c->fov = CAMERA_DEFAULT_FOV;
 	c->near = CAMERA_DEFAULT_NEAR;
@@ -82,8 +69,6 @@ static bool camera_init(hz_node *super, GLuint program)
 
 	mat4x4_identity(c->view);
 	mat4x4_identity(c->vp);
-
-	return true;
 }
 
 const hz_node_proto hz_camera_proto = {
@@ -95,14 +80,14 @@ const hz_node_proto hz_camera_proto = {
 	}
 };
 
-hz_node *hz_camera_new(hz_arena *arena, GLuint program)
+hz_node *hz_camera_new(hz_arena *arena)
 {
 	hz_node *super = hz_node_new(arena, hz_camera, &hz_camera_proto);
 	if (!super) {
 		return NULL;
 	}
 
-	camera_init(super, program);
+	camera_init(super);
 
 	return super;
 }

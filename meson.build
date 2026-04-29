@@ -19,17 +19,21 @@ hertz_dep += dependency('opengl')
 hertz_inc = include_directories('include')
 hertz_src = [
   'hertz/material.c',
+  'hertz/program.c',
   'hertz/node.c',
   'hertz/nodes/camera.c',
   'hertz/nodes/mesh.c',
   'hertz/nodes/light.c',
   'hertz/nodes/root.c',
   'hertz/actors/fly.c',
+  'hertz/actors/orbit.c',
   'hertz/util/logger.c',
   'hertz/util/arena.c',
   'hertz/contexts/glfw.c',
   'hertz/context.c',
-  'hertz/built-in/shaders/simple.c',
+  'hertz/built-in/shaders/phong.c',
+  'hertz/built-in/shaders/wireframe.c',
+  'hertz/built-in/materials/checkerboard.c',
   'hertz/built-in/primitives/cube.c',
   'hertz/helpers/shaders.c',
   'hertz/helpers/binders.c',
@@ -55,8 +59,8 @@ executable('01-assimp',
   dependencies : [ hertz_dep, assimp_dep ],
   link_with : libhertz)
 
-executable('hello-cube',
-  'examples/hello-cube/hello-cube.c',
+executable('orbit-cube',
+  'examples/orbit-cube/orbit-cube.c',
   include_directories : hertz_inc,
   dependencies : hertz_dep,
   link_with : libhertz)

@@ -18,6 +18,10 @@ static bool bind_single_buffer(struct hz_buffer_binding *b, GLuint program)
 	}
 
 	if (!handle) {
+		if (b->name) {
+			hz_log_d(tag, "attribute '%s' not found in shader, skipping", b->name);
+			return true;
+		}
 		return false;
 	}
 
@@ -65,8 +69,7 @@ bool hz_bind_uniforms(struct hz_uniform_binding *bindings, GLuint program,
 
 		*b->handle = glGetUniformLocation(program, b->name);
 		if (*b->handle < 0) {
-			hz_log_e(tag, "unable to find '%s' uniform", b->name);
-			return false;
+			hz_log_d(tag, "uniform '%s' not found in shader, skipping", b->name);
 		}
 	}
 

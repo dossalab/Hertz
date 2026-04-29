@@ -17,8 +17,6 @@ static const char *tag = "aimp";
 /* Make sure we can copy assimp buffers directly */
 static_assert(sizeof(ai_real) == sizeof(float), "ai_real is not float");
 
-extern int assimp_shader;
-
 static bool bind_aimp_texture(hz_material *m, void *buffer, size_t len)
 {
 	int w, h, n;
@@ -43,7 +41,7 @@ static bool bind_aimp_texture(hz_material *m, void *buffer, size_t len)
 		goto cleanup;
 	}
 
-	ok = hz_material_bind_texture(m, HZ_TEXTURE_DIFFUSE, data, format, w, h);
+	ok = hz_material_bind_texture(m, HZ_TEXTURE_DIFFUSE, data, format, w, h, true);
 
 cleanup:
 	stbi_image_free(data);
@@ -90,7 +88,7 @@ static hz_material *import_assimp_material(hz_arena *arena, struct aiMaterial *a
 	hz_material *m;
 	bool ok;
 
-	m = hz_material_new(arena, assimp_shader);
+	m = hz_material_new(arena);
 	if (!m) {
 		return NULL;
 	}
@@ -106,7 +104,7 @@ static hz_material *import_assimp_material(hz_arena *arena, struct aiMaterial *a
 	return m;
 }
 
-static hz_material **import_materials(hz_arena *arena, const struct aiScene *ai_scene)
+static hz_material **import_materials(hz_arena *arena, const struct aiScene *ai_scene, hz_program *program)
 {
 	struct aiMaterial *ai_mat;
 	hz_material *m;
@@ -165,12 +163,13 @@ static bool import_mesh_geometry(hz_node *n, struct aiMesh *ai_mesh)
 	return ok;
 }
 
-static hz_node *import_assimp_mesh(hz_arena *arena, struct aiMesh *ai_mesh, hz_material **materials)
+static hz_node *import_assimp_mesh(hz_arena *arena, struct aiMesh *ai_mesh,
+		hz_material **materials, hz_program *program)
 {
 	hz_node *n;
 	bool ok;
 
-	n = hz_mesh_new(arena, assimp_shader, materials[ai_mesh->mMaterialIndex]);
+	n = hz_mesh_new(arena, program, materials[ai_mesh->mMaterialIndex]);
 	if (!n) {
 		return false;
 	}
@@ -185,7 +184,7 @@ static hz_node *import_assimp_mesh(hz_arena *arena, struct aiMesh *ai_mesh, hz_m
 }
 
 static hz_node *import_assimp_node(hz_arena *arena, const struct aiScene *scene,
-		struct aiNode *node, hz_material **materials)
+		struct aiNode *node, hz_material **materials, hz_program *program)
 {
 	hz_node *mesh, *root;
 	struct aiMesh *ai_mesh;
@@ -204,7 +203,7 @@ static hz_node *import_assimp_node(hz_arena *arena, const struct aiScene *scene,
 
 		hz_log_i(tag, "- found mesh '%s'", ai_mesh->mName.data);
 
-		mesh = import_assimp_mesh(arena, ai_mesh, materials);
+		mesh = import_assimp_mesh(arena, ai_mesh, materials, program);
 		if (!mesh) {
 			hz_log_e(tag, "unable to import '%s'", ai_mesh->mName.data);
 			continue;
@@ -218,14 +217,14 @@ static hz_node *import_assimp_node(hz_arena *arena, const struct aiScene *scene,
 
 hz_node *import_objects_recursive(hz_arena *arena, const struct aiScene *ai_scene,
 		hz_node *parent, struct aiNode *ai_node,
-		hz_material **materials, unsigned depth)
+		hz_material **materials, hz_program *program, unsigned depth)
 {
 	struct aiNode *ai_child;
 	hz_node *node;
 
 	hz_log_i(tag, "(%d) looking at node '%s'", depth, ai_node->mName.data);
 
-	node = import_assimp_node(arena, ai_scene, ai_node, materials);
+	node = import_assimp_node(arena, ai_scene, ai_node, materials, program);
 	if (parent && node) {
 		hz_node_insert(parent, node);
 	}
@@ -233,13 +232,13 @@ hz_node *import_objects_recursive(hz_arena *arena, const struct aiScene *ai_scen
 	for (size_t i = 0; i < ai_node->mNumChildren; i++) {
 		ai_child = ai_node->mChildren[i];
 		import_objects_recursive(arena, ai_scene, node, ai_child, materials,
-				depth + 1);
+				program, depth + 1);
 	}
 
 	return node;
 }
 
-bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path)
+bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path, hz_program *program)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
@@ -252,12 +251,13 @@ bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path)
 		return false;
 	}
 
-	materials = import_materials(arena, scene);
+	materials = import_materials(arena, scene, program);
 	if (!materials) {
 		goto cleanup;
 	}
 
-	imported = import_objects_recursive(arena, scene, NULL, scene->mRootNode, materials, 0);
+	imported = import_objects_recursive(arena, scene, NULL, scene->mRootNode, materials,
+			program, 0);
 
 cleanup:
 	aiReleaseImport(scene);

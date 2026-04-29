@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <ctype.h>
 #include <hz/internal/context.h>
 #include <hz/util/logger.h>
 #include <hz/contexts/glfw.h>
@@ -70,6 +71,29 @@ static bool glfw_poll(hz_context *super)
 	return !glfwWindowShouldClose(context->window);
 }
 
+static bool glfw_get_mouse_button(hz_context *super, int button)
+{
+	hz_glfw_context *context = HZ_GLFW_CONTEXT(super);
+	return glfwGetMouseButton(context->window, button) == GLFW_PRESS;
+}
+
+static void glfw_get_cursor(hz_context *super, float *x, float *y)
+{
+	double _x, _y; // GLFW expects doubles here
+	hz_glfw_context *context = HZ_GLFW_CONTEXT(super);
+
+	glfwGetCursorPos(context->window, &_x, &_y);
+
+	*x = _x;
+	*y = _y;
+}
+
+static bool glfw_get_key(hz_context *super, char key)
+{
+	hz_glfw_context *context = HZ_GLFW_CONTEXT(super);
+	return glfwGetKey(context->window, toupper((unsigned char)key)) == GLFW_PRESS;
+}
+
 static bool glfw_init(hz_context *super)
 {
 	hz_glfw_context *context = HZ_GLFW_CONTEXT(super);
@@ -84,6 +108,9 @@ static bool glfw_init(hz_context *super)
 	glfw_init_refcounter++;
 
 	context->window = create_context_window();
+	if (!context->window) {
+		return false;
+	}
 
 	glfwSetWindowUserPointer(context->window, super);
 	glfwSetFramebufferSizeCallback(context->window, glfw_resize_callback);
@@ -104,6 +131,9 @@ hz_glfw_context *HZ_GLFW_CONTEXT(hz_context *super)
 static const hz_context_proto hz_glfw_context_proto = {
 	.exit = glfw_exit,
 	.poll = glfw_poll,
+	.get_key = glfw_get_key,
+	.get_mouse_button = glfw_get_mouse_button,
+	.get_cursor = glfw_get_cursor,
 
 	.arena_proto = {
 		.name = "glfw_context",

@@ -3,6 +3,7 @@
 #include HZ_GL_EXTENSIONS_HEADER
 
 #include <hz/helpers/shaders.h>
+#include <hz/internal/helpers/shaders.h>
 
 static char *get_shader_compilation_results(GLuint handle)
 {

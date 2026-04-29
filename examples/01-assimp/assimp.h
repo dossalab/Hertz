@@ -1,6 +1,7 @@
 #pragma once
 
 #include <hz/node.h>
+#include <hz/program.h>
 #include <stdbool.h>
 
-bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path);
+bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path, hz_program *program);

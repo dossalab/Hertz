@@ -30,7 +30,7 @@ static void apply_pitch_limits(hz_fly_actor *a)
 	}
 }
 
-void hz_fly_actor_move(hz_fly_actor *a, float dt, int dx, int dy,
+void hz_fly_actor_move(hz_fly_actor *a, float dt, float dx, float dy,
 		bool forward, bool left, bool backward, bool right)
 {
 	vec3 look = {0.f, 0.f, -1.f};

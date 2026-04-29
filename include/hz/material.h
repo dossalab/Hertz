@@ -15,7 +15,7 @@ typedef enum {
 typedef struct _hz_material hz_material;
 
 bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
-		void *data, GLenum format, size_t w, size_t h);
+		void *data, GLenum format, size_t w, size_t h, bool linear);
 
 void hz_material_use(hz_material *m);
-hz_material *hz_material_new(hz_arena *arena, GLuint program);
+hz_material *hz_material_new(hz_arena *arena);

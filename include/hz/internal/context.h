@@ -9,6 +9,8 @@ typedef struct {
 	void (*exit)(hz_context *super);
 	bool (*poll)(hz_context *super);
 	bool (*get_key)(hz_context *super, char key);
+	bool (*get_mouse_button)(hz_context *super, int button);
+	void (*get_cursor)(hz_context *super, float *x, float *y);
 	hz_arena_proto arena_proto;
 } hz_context_proto;
 

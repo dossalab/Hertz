@@ -1,7 +1,6 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/util/logger.h>
 #include <hz/material.h>
-#include <vendor/linmath/linmath.h>
 #include <hz/helpers/textures.h>
 
 #define HZ_DIFFUSE_LOCATION	GL_TEXTURE0
@@ -14,14 +13,12 @@ struct _hz_material {
 	struct {
 		GLuint diffuse, normal, specular, dummy;
 	} textures;
-
-	GLuint program;
 };
 
 static GLuint create_dummy_texture(void)
 {
 	uint32_t data = 0xFFFFFF;
-	return hz_create_texture(&data, GL_RGB, 1, 1);
+	return hz_create_texture(&data, GL_RGB, 1, 1, true);
 }
 
 void hz_material_use(hz_material *m)
@@ -35,7 +32,7 @@ void hz_material_use(hz_material *m)
 }
 
 bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
-		void *data, GLenum format, size_t w, size_t h)
+		void *data, GLenum format, size_t w, size_t h, bool linear)
 {
 	GLuint *texture;
 
@@ -49,18 +46,18 @@ bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
 		break;
 
 	case HZ_TEXTURE_SPECULAR:
-		texture = &m->textures.normal;
+		texture = &m->textures.specular;
 		break;
 
 	default:
 		return false;
 	}
 
-	*texture = hz_create_texture(data, format, w, h);
+	*texture = hz_create_texture(data, format, w, h, linear);
 	return !!(*texture);
 }
 
-static void material_init(hz_material *m, GLuint program)
+static void material_init(hz_material *m)
 {
 	GLuint dummy;
 
@@ -69,8 +66,6 @@ static void material_init(hz_material *m, GLuint program)
 		hz_log_e(tag, "unable to create dummy texture");
 		return;
 	}
-
-	m->program = program;
 
 	m->textures.dummy = dummy;
 	m->textures.diffuse = dummy;
@@ -102,14 +97,14 @@ static const hz_arena_proto hz_material_arena_proto = {
 	.size = sizeof(hz_material),
 };
 
-hz_material *hz_material_new(hz_arena *arena, GLuint program)
+hz_material *hz_material_new(hz_arena *arena)
 {
 	hz_material *material = hz_arena_alloc(arena, &hz_material_arena_proto);
 	if (!material) {
 		return NULL;
 	}
 
-	material_init(material, program);
+	material_init(material);
 
 	return material;
 }

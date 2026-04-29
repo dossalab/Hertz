@@ -1,5 +1,6 @@
 #include HZ_GL_EXTENSIONS_HEADER
 #include <hz/nodes/light.h>
+#include <hz/internal/program.h>
 #include <vendor/linmath/linmath.h>
 #include <stdio.h>
 #include <hz/internal/node.h>
@@ -9,7 +10,7 @@
 
 struct _hz_light {
 	hz_node super;
-	GLuint program;
+	hz_program *program;
 
 	struct {
 		GLint position, intensity, constant, linear, quadratic;
@@ -48,7 +49,7 @@ static void light_bind(hz_node *super)
 	/* we obviuosly only care about position */
 	mat4x4_decompose(super->model, scale, rotation, position);
 
-	glUseProgram(l->program);
+	glUseProgram(l->program->id);
 
 	glUniform3fv(l->uniforms.position, 1, position);
 	glUniform1f(l->uniforms.intensity, l->intensity);
@@ -62,7 +63,7 @@ hz_light *HZ_LIGHT(hz_node *n)
 	return hz_container_of(n, hz_light, super);
 }
 
-static void light_init(hz_node *super, GLuint program, unsigned index)
+static void light_init(hz_node *super, hz_program *program, unsigned index)
 {
 	hz_light *light = HZ_LIGHT(super);
 	bool ok;
@@ -83,7 +84,7 @@ static void light_init(hz_node *super, GLuint program, unsigned index)
 		{ &light->uniforms.quadratic, quadratic },
 	};
 
-	ok = hz_bind_uniforms(bindings, program, HZ_ARRAY_SIZE(bindings));
+	ok = hz_bind_uniforms(bindings, program->id, HZ_ARRAY_SIZE(bindings));
 	if (!ok) {
 		return;
 	}
@@ -104,7 +105,7 @@ const hz_node_proto hz_light_proto = {
 	}
 };
 
-hz_node *hz_light_new(hz_arena *arena, GLuint program, unsigned index)
+hz_node *hz_light_new(hz_arena *arena, hz_program *program, unsigned index)
 {
 	hz_node *super = hz_node_new(arena, hz_light, &hz_light_proto);
 	if (!super) {

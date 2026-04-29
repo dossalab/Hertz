@@ -1,11 +1,12 @@
-#include <hz/built-in/shaders/simple.h>
+#include <hz/built-in/shaders/phong.h>
+#include <hz/program.h>
 
 #define GLSL_VERSION	"100"
 
 #define expand(x)	#x
 #define stringify(x)	expand(x)
 
-const char *hz_simple_fragment_shader_source = \
+static const char *phong_fragment_shader_source = \
 	"#version " GLSL_VERSION "\n"
 	"\n"
 	"precision highp float;\n"
@@ -18,7 +19,7 @@ const char *hz_simple_fragment_shader_source = \
 	"	float quadratic;\n"
 	"};\n"
 	"\n"
-	"const int num_lights = " stringify(HZ_SIMPLE_SHADER_NUM_LIGHTS) ";\n"
+	"const int num_lights = " stringify(HZ_PHONG_SHADER_NUM_LIGHTS) ";\n"
 	"uniform Light lights[num_lights];\n"
 	"uniform sampler2D tex;\n"
 	"uniform vec3 camera;\n"
@@ -66,7 +67,7 @@ const char *hz_simple_fragment_shader_source = \
 	"}\n"
 ;
 
-const char *hz_simple_vertex_shader_source = \
+static const char *phong_vertex_shader_source = \
 	"#version " GLSL_VERSION "\n"
 	"\n"
 	"uniform mat4 MVP;\n"
@@ -90,3 +91,8 @@ const char *hz_simple_vertex_shader_source = \
 	"	_uv = uv;\n"
 	"}\n"
 ;
+
+hz_program *hz_phong_program_new(hz_arena *arena)
+{
+	return hz_program_new(arena, phong_vertex_shader_source, phong_fragment_shader_source);
+}

@@ -1,19 +1,11 @@
+#include HZ_GL_EXTENSIONS_HEADER
+#include <time.h>
 #include <hz/nodes/root.h>
-#include <hz/nodes/light.h>
 #include <hz/internal/context.h>
 #include <hz/context.h>
 #include <hz/util/logger.h>
 
 static const char *tag = "ctx";
-
-#define SUN_LIGHT_INDEX		0
-#define SUN_POSITION		(hz_vec3) { 0.f, 10.f, 0.f }
-#define CAMERA_POSITION		(hz_vec3) { 0.f, 0.f, 4.f }
-
-/* Light source parameters */
-#define SUN_CONSTANT		0.1
-#define SUN_LINEAR		0.06
-#define SUN_QUADRATIC		0.001
 
 void hz_context_handle_resize(hz_context *context, unsigned w, unsigned h)
 {
@@ -24,6 +16,26 @@ void hz_context_handle_resize(hz_context *context, unsigned w, unsigned h)
 bool hz_context_get_key(hz_context *context, char key)
 {
 	return context->proto->get_key(context, key);
+}
+
+bool hz_context_get_mouse_button(hz_context *context, int button)
+{
+	return context->proto->get_mouse_button(context, button);
+}
+
+void hz_context_get_cursor(hz_context *context, float *x, float *y)
+{
+	context->proto->get_cursor(context, x, y);
+}
+
+hz_node *hz_context_get_camera(hz_context *context)
+{
+	return context->camera;
+}
+
+void hz_context_set_camera(hz_context *context, hz_node *camera)
+{
+	context->camera = camera;
 }
 
 bool hz_context_poll(hz_context *context)
@@ -42,36 +54,35 @@ void hz_context_init(hz_context *context, const hz_context_proto *proto)
 }
 
 int hz_context_wrapper_with_context(hz_arena *arena, hz_context *context,
-		hz_context_wrapper_init init, void *user)
+		hz_context_wrapper_init init, hz_context_update_fn update, void *user)
 {
-	hz_node *root, *sun;
-	int shader;
+	hz_node *root;
 
 	root = hz_root_new(arena);
 
-	if (!init(context, arena, root, &shader, user)) {
+	if (!init(context, arena, root, user)) {
 		hz_log_e(tag, "user init failed");
 		return HZ_EXIT_CODE_ERROR;
 	}
-
-	context->camera = hz_camera_new(arena, shader);
-	hz_node_move(context->camera, CAMERA_POSITION);
-	hz_node_insert(root, context->camera);
-
-	sun = hz_light_new(arena, shader, SUN_LIGHT_INDEX);
-
-	hz_node_move(sun, SUN_POSITION);
-	hz_light_setup(HZ_LIGHT(sun), SUN_CONSTANT, SUN_LINEAR, SUN_QUADRATIC);
-
-	hz_node_insert(root, sun);
 
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	struct timespec prev, now;
+	clock_gettime(CLOCK_MONOTONIC, &prev);
+
 	while (hz_context_poll(context)) {
+		float dt;
+
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		dt = (now.tv_sec - prev.tv_sec) + (now.tv_nsec - prev.tv_nsec) * 1e-9f;
+		prev = now;
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (update)
+			update(context, dt, user);
 		hz_node_draw(root, HZ_CAMERA(context->camera));
 	}
 
@@ -79,7 +90,7 @@ int hz_context_wrapper_with_context(hz_arena *arena, hz_context *context,
 }
 
 int hz_context_wrapper_with_arena(hz_arena *arena, hz_context_constructor constructor,
-		hz_context_wrapper_init init, void *user)
+		hz_context_wrapper_init init, hz_context_update_fn update, void *user)
 {
 	int ret;
 	hz_context *context;
@@ -90,7 +101,7 @@ int hz_context_wrapper_with_arena(hz_arena *arena, hz_context_constructor constr
 		return HZ_EXIT_CODE_ERROR;
 	}
 
-	ret = hz_context_wrapper_with_context(arena, context, init, user);
+	ret = hz_context_wrapper_with_context(arena, context, init, update, user);
 
 	hz_context_exit(context);
 	hz_log_i(tag, "context is done");
@@ -98,7 +109,8 @@ int hz_context_wrapper_with_arena(hz_arena *arena, hz_context_constructor constr
 	return ret;
 }
 
-int hz_context_wrapper(hz_context_constructor constructor, hz_context_wrapper_init init, void *user)
+int hz_context_wrapper(hz_context_constructor constructor,
+		hz_context_wrapper_init init, hz_context_update_fn update, void *user)
 {
 	int ret;
 	hz_arena *arena;
@@ -109,7 +121,7 @@ int hz_context_wrapper(hz_context_constructor constructor, hz_context_wrapper_in
 		return HZ_EXIT_CODE_ERROR;
 	}
 
-	ret = hz_context_wrapper_with_arena(arena, constructor, init, user);
+	ret = hz_context_wrapper_with_arena(arena, constructor, init, update, user);
 
 	hz_arena_free(arena);
 	hz_log_d(tag, "context arena is cleared");
