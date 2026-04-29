@@ -5,15 +5,15 @@ soversion = '0'
 
 cc = meson.get_compiler('c')
 
-add_global_arguments('-DHZ_GL_HEADER=<GL/gl.h>', language : 'c')
-add_global_arguments('-DHZ_GL_EXTENSIONS_HEADER=<GL/glew.h>', language : 'c')
+add_global_arguments('-DHZ_GL_HEADER=<glad/glad.h>', language : 'c')
+add_global_arguments('-DHZ_GL_EXTENSIONS_HEADER=<glad/glad.h>', language : 'c')
 
 assimp_dep = dependency('assimp')
 
 hertz_dep = []
 hertz_dep += cc.find_library('m')
 hertz_dep += dependency('glfw3')
-hertz_dep += dependency('glew')
+hertz_dep += dependency('glad')
 hertz_dep += dependency('opengl')
 
 hertz_inc = include_directories('include')

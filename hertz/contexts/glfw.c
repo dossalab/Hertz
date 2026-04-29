@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <ctype.h>
 #include <hz/internal/context.h>
@@ -24,7 +24,6 @@ static void glfw_resize_callback(GLFWwindow *window, int w, int h)
 
 static GLFWwindow *create_context_window(void)
 {
-	GLenum glew_ret;
 	GLFWwindow *window;
 
 	window = glfwCreateWindow(640, 480, "", NULL, NULL);
@@ -39,14 +38,13 @@ static GLFWwindow *create_context_window(void)
 	 * uhh we have to do that *after* context is created.
 	 * not sure what will happen if we create multiple windows
 	 */
-	glew_ret = glewInit();
-	if (glew_ret != GLEW_OK) {
-		hz_log_e(tag, "unable to init GLEW! %s", glewGetErrorString(glew_ret));
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		hz_log_e(tag, "unable to init GLAD!");
 		glfwDestroyWindow(window);
 		return NULL;
 	}
 
-	hz_log_i(tag, "created window with GLEW %s", glewGetString(GLEW_VERSION));
+	hz_log_i(tag, "created window with OpenGL %s", glGetString(GL_VERSION));
 	return window;
 }
 
