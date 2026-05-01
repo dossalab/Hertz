@@ -51,9 +51,9 @@ libhertz = library('hertz', hertz_src,
   dependencies : hertz_dep,
   install : true)
 
-executable('01-assimp',
-  [ 'examples/01-assimp/assimp.c',
-    'examples/01-assimp/main.c',
+executable('assimp',
+  [ 'examples/assimp/assimp.c',
+    'examples/assimp/main.c',
     'examples/utils/stb_image.c' ],
   include_directories : hertz_inc,
   dependencies : [ hertz_dep, assimp_dep ],
