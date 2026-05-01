@@ -34,9 +34,6 @@ void hz_node_init(hz_node *node, const hz_node_proto *proto);
 
 #define hz_node_new(arena, type, proto) ({ \
 	type *node = hz_arena_alloc(arena, &(proto)->arena_proto); \
-	if (!node) { \
-		return NULL; \
-	} \
 	hz_node_init(HZ_NODE(node), proto); \
 	HZ_NODE(node); \
 })

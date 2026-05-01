@@ -83,10 +83,6 @@ const hz_node_proto hz_camera_proto = {
 hz_node *hz_camera_new(hz_arena *arena)
 {
 	hz_node *super = hz_node_new(arena, hz_camera, &hz_camera_proto);
-	if (!super) {
-		return NULL;
-	}
-
 	camera_init(super);
 
 	return super;

@@ -92,10 +92,6 @@ static const hz_arena_proto hz_fly_actor_arena_proto = {
 hz_fly_actor *hz_fly_actor_new(hz_arena *arena, hz_node *puppet)
 {
 	hz_fly_actor *actor = hz_arena_alloc(arena, &hz_fly_actor_arena_proto);
-	if (!actor) {
-		return NULL;
-	}
-
 	fly_actor_init(actor, puppet);
 
 	return actor;

@@ -46,10 +46,6 @@ static const hz_arena_proto hz_orbit_actor_arena_proto = {
 hz_orbit_actor *hz_orbit_actor_new(hz_arena *arena, hz_node *puppet)
 {
 	hz_orbit_actor *actor = hz_arena_alloc(arena, &hz_orbit_actor_arena_proto);
-	if (!actor) {
-		return NULL;
-	}
-
 	orbit_actor_init(actor, puppet);
 
 	return actor;

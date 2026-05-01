@@ -62,9 +62,6 @@ static hz_vec3 cube_uvs[N_CUBE_VERTICES] = {
 hz_node *hz_cube_new(hz_arena *arena, hz_program *program, hz_material *material)
 {
 	hz_node *mesh = hz_mesh_new(arena, program, material);
-	if (!mesh) {
-		return NULL;
-	}
 
 	hz_mesh_set_geometry(HZ_MESH(mesh),
 		cube_vertices, cube_normals,

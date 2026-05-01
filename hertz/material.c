@@ -100,9 +100,6 @@ static const hz_arena_proto hz_material_arena_proto = {
 hz_material *hz_material_new(hz_arena *arena)
 {
 	hz_material *material = hz_arena_alloc(arena, &hz_material_arena_proto);
-	if (!material) {
-		return NULL;
-	}
 
 	material_init(material);
 

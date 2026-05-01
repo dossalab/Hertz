@@ -108,10 +108,6 @@ const hz_node_proto hz_light_proto = {
 hz_node *hz_light_new(hz_arena *arena, hz_program *program, unsigned index)
 {
 	hz_node *super = hz_node_new(arena, hz_light, &hz_light_proto);
-	if (!super) {
-		return NULL;
-	}
-
 	light_init(super, program, index);
 
 	return super;

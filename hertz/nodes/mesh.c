@@ -169,10 +169,6 @@ const hz_node_proto hz_mesh_proto = {
 hz_node *hz_mesh_new(hz_arena *arena, hz_program *program, hz_material *m)
 {
 	hz_node *super = hz_node_new(arena, hz_mesh, &hz_mesh_proto);
-	if (!super) {
-		return NULL;
-	}
-
 	mesh_init(super, program, m);
 
 	return super;

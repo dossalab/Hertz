@@ -2,6 +2,7 @@
 #include <hz/built-in/shaders/phong.h>
 #include <hz/built-in/shaders/wireframe.h>
 #include <hz/built-in/primitives/cube.h>
+#include <hz/built-in/primitives/sphere.h>
 #include <hz/built-in/materials/checkerboard.h>
 #include <hz/contexts/glfw.h>
 #include <hz/actors/orbit.h>
@@ -40,7 +41,7 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	hz_program *program;
 	hz_node *camera, *light;
 
-	hz_glfw_context_set_window_title(HZ_GLFW_CONTEXT(context), "Orbit cube - drag to rotate");
+	hz_glfw_context_set_window_title(HZ_GLFW_CONTEXT(context), "Primitives - drag to rotate");
 
 	program = s->wireframe
 		? hz_wireframe_program_new(arena)
@@ -51,7 +52,7 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	}
 
 	camera = hz_camera_new(arena);
-	hz_node_move(camera, (hz_vec3) { 0.f, 0.f, 4.f });
+	hz_node_move(camera, (hz_vec3) { 0.f, 0.f, 7.f });
 	hz_node_insert(root, camera);
 	hz_context_set_camera(context, camera);
 
@@ -63,8 +64,14 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	hz_node_insert(root, light);
 
 	hz_material *material = hz_checkerboard_material_new(arena, 8);
+
 	hz_node *cube = hz_cube_new(arena, program, material);
+	hz_node_move(cube, (hz_vec3) { -1.5f, 0.f, 0.f });
 	hz_node_insert(root, cube);
+
+	hz_node *sphere = hz_sphere_new(arena, program, material, 20);
+	hz_node_move(sphere, (hz_vec3) { 1.5f, 0.f, 0.f });
+	hz_node_insert(root, sphere);
 
 	return true;
 }
@@ -85,7 +92,7 @@ int main(int argc, char **argv)
 			}
 			break;
 		default:
-			fprintf(stderr, "usage: orbit-cube [-s phong|wireframe]\n");
+			fprintf(stderr, "usage: primitives [-s phong|wireframe]\n");
 			return 1;
 		}
 	}

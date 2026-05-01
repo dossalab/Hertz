@@ -1,5 +1,6 @@
 #include <hz/util/arena.h>
 #include <hz/util/common.h>
+#include <hz/util/panic.h>
 #include <hz/adt/list.h>
 #include <hz/util/logger.h>
 #include <stdlib.h>
@@ -50,7 +51,7 @@ static hz_arena_bucket *create_bucket(hz_arena *arena, const hz_arena_proto *pro
 
 	bucket = malloc(sizeof(hz_arena_bucket) + alloc_size * OBJECTS_PER_BUCKET);
 	if (!bucket) {
-		return NULL;
+		hz_panic("out of memory");
 	}
 
 	bucket->ptr = 0;
@@ -120,7 +121,7 @@ hz_arena *hz_arena_new(void)
 
 	arena = malloc(sizeof(hz_arena));
 	if (!arena) {
-		return NULL;
+		hz_panic("out of memory");
 	}
 
 	hz_list_init(&arena->bucket_list);

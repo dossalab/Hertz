@@ -24,10 +24,6 @@ hz_program *hz_program_new(hz_arena *arena, const char *vert, const char *frag)
 	hz_program *p = hz_arena_alloc(arena, &hz_program_arena_proto);
 	char *logs = NULL;
 
-	if (!p) {
-		return NULL;
-	}
-
 	p->id = hz_create_program_from_source(vert, frag, &logs);
 	if (!p->id) {
 		if (logs) {

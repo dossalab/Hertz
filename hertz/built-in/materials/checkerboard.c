@@ -25,9 +25,6 @@ hz_material *hz_checkerboard_material_new(hz_arena *arena, int cells)
 		return NULL;
 
 	m = hz_material_new(arena);
-	if (!m) {
-		return NULL;
-	}
 
 	generate_checkerboard(pixels, cells);
 	hz_material_bind_texture(m, HZ_TEXTURE_DIFFUSE, pixels,
