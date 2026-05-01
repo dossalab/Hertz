@@ -37,6 +37,7 @@ hertz_src = [
   'hertz/built-in/materials/checkerboard.c',
   'hertz/built-in/materials/solid.c',
   'hertz/built-in/primitives/cube.c',
+  'hertz/built-in/primitives/plane.c',
   'hertz/built-in/primitives/sphere.c',
   'hertz/helpers/shaders.c',
   'hertz/helpers/binders.c',

@@ -2,6 +2,7 @@
 #include <hz/built-in/shaders/phong.h>
 #include <hz/built-in/shaders/wireframe.h>
 #include <hz/built-in/primitives/cube.h>
+#include <hz/built-in/primitives/plane.h>
 #include <hz/built-in/primitives/sphere.h>
 #include <hz/built-in/materials/checkerboard.h>
 #include <hz/built-in/materials/solid.h>
@@ -74,6 +75,11 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	hz_node *sphere = hz_sphere_new(arena, program, checkerboard, 20);
 	hz_node_move(sphere, (hz_vec3) { 1.5f, 0.f, 0.f });
 	hz_node_insert(root, sphere);
+
+	hz_node *ground = hz_plane_new(arena, program, hz_checkerboard_material_new(arena, 16));
+	hz_node_move(ground, (hz_vec3) { 0.f, -1.f, 0.f });
+	hz_node_scale(ground, (hz_vec3) { 5.f, 1.f, 5.f });
+	hz_node_insert(root, ground);
 
 	return true;
 }
