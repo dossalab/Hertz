@@ -2,13 +2,13 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <hz/util/logger.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <hz/types.h>
 #include <hz/node.h>
 #include <hz/nodes/mesh.h>
 #include <hz/nodes/root.h>
 #include <hz/material.h>
+#include <hz/material_store.h>
 
 #include <examples/vendor/stb/stb_image.h>
 
@@ -16,6 +16,18 @@ static const char *tag = "aimp";
 
 /* Make sure we can copy assimp buffers directly */
 static_assert(sizeof(ai_real) == sizeof(float), "ai_real is not float");
+
+static void material_key(const struct aiScene *ai_scene, unsigned mat_index,
+		char *buf, size_t size)
+{
+	struct aiString name;
+	struct aiMaterial *ai_mat = ai_scene->mMaterials[mat_index];
+
+	if (aiGetMaterialString(ai_mat, AI_MATKEY_NAME, &name) == AI_SUCCESS && name.length > 0)
+		snprintf(buf, size, "%s", name.data);
+	else
+		snprintf(buf, size, "mat_%u", mat_index);
+}
 
 static bool bind_aimp_texture(hz_material *m, void *buffer, size_t len)
 {
@@ -26,7 +38,7 @@ static bool bind_aimp_texture(hz_material *m, void *buffer, size_t len)
 
 	data = stbi_load_from_memory(buffer, len, &w, &h, &n, 0);
 	if (!data) {
-		return 0;
+		return false;
 	}
 
 	switch (n) {
@@ -82,53 +94,22 @@ static bool import_textures(hz_material *m, struct aiMaterial *ai_mat,
 	return bind_aimp_texture(m, diffuse->pcData, diffuse->mWidth);
 }
 
-static hz_material *import_assimp_material(hz_arena *arena, struct aiMaterial *ai_mat,
+static void import_materials(hz_arena *arena, hz_material_store *store,
 		const struct aiScene *ai_scene)
 {
-	hz_material *m;
-	bool ok;
-
-	m = hz_material_new(arena);
-	if (!m) {
-		return NULL;
-	}
-
-	ok = import_textures(m, ai_mat, ai_scene);
-	if (!ok) {
-		/* TODO: get material name */
-		hz_log_e(tag, "unable to import textures for '%s'", "x");
-
-		/* not an error? */
-	}
-
-	return m;
-}
-
-static hz_material **import_materials(hz_arena *arena, const struct aiScene *ai_scene, hz_program *program)
-{
-	struct aiMaterial *ai_mat;
-	hz_material *m;
-	hz_material **materials;
-
-	materials = calloc(1, sizeof(struct hz_material *) * ai_scene->mNumMaterials);
-	if (!materials) {
-		return NULL;
-	}
-
 	for (unsigned i = 0; i < ai_scene->mNumMaterials; i++) {
-		ai_mat = ai_scene->mMaterials[i];
+		struct aiMaterial *ai_mat = ai_scene->mMaterials[i];
+		char key[64];
+		material_key(ai_scene, i, key, sizeof(key));
 
-		m = import_assimp_material(arena, ai_mat, ai_scene);
-		if (!m) {
-			/* TODO: get material name */
-			hz_log_e(tag, "unable to import material '%s'", "x");
-			continue;
-		}
+		hz_material *m = hz_material_new(arena);
 
-		materials[i] = m;
+		if (!import_textures(m, ai_mat, ai_scene))
+			hz_log_e(tag, "unable to import textures for '%s'", key);
+
+		hz_material_store_set(store, key, m);
+		hz_log_i(tag, "imported material '%s'", key);
 	}
-
-	return materials;
 }
 
 static bool import_mesh_geometry(hz_node *n, struct aiMesh *ai_mesh)
@@ -163,37 +144,29 @@ static bool import_mesh_geometry(hz_node *n, struct aiMesh *ai_mesh)
 	return ok;
 }
 
-static hz_node *import_assimp_mesh(hz_arena *arena, struct aiMesh *ai_mesh,
-		hz_material **materials, hz_program *program)
+static hz_node *import_assimp_mesh(hz_arena *arena, hz_material_store *store,
+		const struct aiScene *ai_scene, struct aiMesh *ai_mesh, hz_program *program)
 {
-	hz_node *n;
-	bool ok;
+	char key[64];
+	material_key(ai_scene, ai_mesh->mMaterialIndex, key, sizeof(key));
 
-	n = hz_mesh_new(arena, program, materials[ai_mesh->mMaterialIndex]);
-	if (!n) {
-		return false;
-	}
+	hz_material *material = hz_material_store_get(store, key);
+	hz_node *n = hz_mesh_new(arena, program, material);
 
-	ok = import_mesh_geometry(n, ai_mesh);
-	if (!ok) {
-		/* Free mesh */
+	if (!import_mesh_geometry(n, ai_mesh))
 		return NULL;
-	}
 
 	return n;
 }
 
 static hz_node *import_assimp_node(hz_arena *arena, const struct aiScene *scene,
-		struct aiNode *node, hz_material **materials, hz_program *program)
+		struct aiNode *node, hz_material_store *store, hz_program *program)
 {
 	hz_node *mesh, *root;
 	struct aiMesh *ai_mesh;
 	unsigned ai_imesh;
 
 	root = hz_root_new(arena);
-	if (!root) {
-		return NULL;
-	}
 
 	hz_node_set_model(root, (void *)&node->mTransformation, true);
 
@@ -203,7 +176,7 @@ static hz_node *import_assimp_node(hz_arena *arena, const struct aiScene *scene,
 
 		hz_log_i(tag, "- found mesh '%s'", ai_mesh->mName.data);
 
-		mesh = import_assimp_mesh(arena, ai_mesh, materials, program);
+		mesh = import_assimp_mesh(arena, store, scene, ai_mesh, program);
 		if (!mesh) {
 			hz_log_e(tag, "unable to import '%s'", ai_mesh->mName.data);
 			continue;
@@ -215,51 +188,47 @@ static hz_node *import_assimp_node(hz_arena *arena, const struct aiScene *scene,
 	return root;
 }
 
-hz_node *import_objects_recursive(hz_arena *arena, const struct aiScene *ai_scene,
+static hz_node *import_objects_recursive(hz_arena *arena, const struct aiScene *ai_scene,
 		hz_node *parent, struct aiNode *ai_node,
-		hz_material **materials, hz_program *program, unsigned depth)
+		hz_material_store *store, hz_program *program, unsigned depth)
 {
 	struct aiNode *ai_child;
 	hz_node *node;
 
 	hz_log_i(tag, "(%d) looking at node '%s'", depth, ai_node->mName.data);
 
-	node = import_assimp_node(arena, ai_scene, ai_node, materials, program);
+	node = import_assimp_node(arena, ai_scene, ai_node, store, program);
 	if (parent && node) {
 		hz_node_insert(parent, node);
 	}
 
 	for (size_t i = 0; i < ai_node->mNumChildren; i++) {
 		ai_child = ai_node->mChildren[i];
-		import_objects_recursive(arena, ai_scene, node, ai_child, materials,
+		import_objects_recursive(arena, ai_scene, node, ai_child, store,
 				program, depth + 1);
 	}
 
 	return node;
 }
 
-bool assimp_import_scene(hz_node *root, hz_arena *arena, const char *path, hz_program *program)
+bool assimp_import_scene(hz_node *root, hz_arena *arena, hz_material_store *store,
+		const char *path, hz_program *program)
 {
 	const struct aiScene *scene;
 	unsigned int flags = aiProcess_FlipUVs | aiProcess_Triangulate
 		| aiProcess_JoinIdenticalVertices;
 	hz_node *imported = NULL;
-	hz_material **materials;
 
 	scene = aiImportFile(path, flags);
 	if (!scene) {
 		return false;
 	}
 
-	materials = import_materials(arena, scene, program);
-	if (!materials) {
-		goto cleanup;
-	}
+	import_materials(arena, store, scene);
 
-	imported = import_objects_recursive(arena, scene, NULL, scene->mRootNode, materials,
-			program, 0);
+	imported = import_objects_recursive(arena, scene, NULL, scene->mRootNode,
+			store, program, 0);
 
-cleanup:
 	aiReleaseImport(scene);
 	hz_node_insert(root, imported);
 

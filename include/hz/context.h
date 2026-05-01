@@ -2,6 +2,7 @@
 
 #include <hz/node.h>
 #include <hz/util/arena.h>
+#include <hz/material_store.h>
 
 #define HZ_EXIT_CODE_OK		0
 #define HZ_EXIT_CODE_ERROR	1
@@ -21,6 +22,7 @@ bool hz_context_get_key(hz_context *context, char key);
 bool hz_context_get_mouse_button(hz_context *context, int button);
 void hz_context_get_cursor(hz_context *context, float *x, float *y);
 hz_node *hz_context_get_camera(hz_context *context);
+hz_material_store *hz_context_get_material_store(hz_context *context);
 bool hz_context_poll(hz_context *context);
 void hz_context_exit(hz_context *context);
 

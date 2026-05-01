@@ -122,7 +122,12 @@ hz_mesh *HZ_MESH(hz_node *n)
 	return hz_container_of(n, hz_mesh, super);
 }
 
-static void mesh_init(hz_node *super, hz_program *program, hz_material *m)
+void hz_mesh_set_material(hz_node *node, hz_material *material)
+{
+	HZ_MESH(node)->material = material;
+}
+
+static void mesh_init(hz_node *super, hz_program *program, hz_material *material)
 {
 	hz_mesh *mesh = HZ_MESH(super);
 
@@ -134,7 +139,7 @@ static void mesh_init(hz_node *super, hz_program *program, hz_material *m)
 
 	hz_bind_uniforms(bindings, program->id, HZ_ARRAY_SIZE(bindings));
 
-	mesh->material = m;
+	mesh->material = material;
 	mesh->program = program;
 	memset(&mesh->buffers, 0, sizeof(mesh->buffers));
 
@@ -166,10 +171,10 @@ const hz_node_proto hz_mesh_proto = {
 	}
 };
 
-hz_node *hz_mesh_new(hz_arena *arena, hz_program *program, hz_material *m)
+hz_node *hz_mesh_new(hz_arena *arena, hz_program *program, hz_material *material)
 {
 	hz_node *super = hz_node_new(arena, hz_mesh, &hz_mesh_proto);
-	mesh_init(super, program, m);
+	mesh_init(super, program, material);
 
 	return super;
 }

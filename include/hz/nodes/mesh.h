@@ -12,4 +12,5 @@ bool hz_mesh_set_geometry(hz_mesh *o,
 		unsigned *indices, size_t nindices);
 
 hz_mesh *HZ_MESH(hz_node *o);
-hz_node *hz_mesh_new(hz_arena *arena, hz_program *program, hz_material *m);
+void hz_mesh_set_material(hz_node *node, hz_material *material);
+hz_node *hz_mesh_new(hz_arena *arena, hz_program *program, hz_material *material);

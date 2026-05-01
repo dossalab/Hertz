@@ -4,6 +4,7 @@
 #include <hz/built-in/primitives/cube.h>
 #include <hz/built-in/primitives/sphere.h>
 #include <hz/built-in/materials/checkerboard.h>
+#include <hz/built-in/materials/solid.h>
 #include <hz/contexts/glfw.h>
 #include <hz/actors/orbit.h>
 #include <unistd.h>
@@ -63,13 +64,14 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	hz_light_setup(HZ_LIGHT(light), 0.1f, 0.06f, 0.001f);
 	hz_node_insert(root, light);
 
-	hz_material *material = hz_checkerboard_material_new(arena, 8);
+	hz_material *checkerboard = hz_checkerboard_material_new(arena, 8);
+	hz_material *solid = hz_solid_material_new(arena, 1.0, 0.0, 0.0, 1.0);
 
-	hz_node *cube = hz_cube_new(arena, program, material);
+	hz_node *cube = hz_cube_new(arena, program, solid);
 	hz_node_move(cube, (hz_vec3) { -1.5f, 0.f, 0.f });
 	hz_node_insert(root, cube);
 
-	hz_node *sphere = hz_sphere_new(arena, program, material, 20);
+	hz_node *sphere = hz_sphere_new(arena, program, checkerboard, 20);
 	hz_node_move(sphere, (hz_vec3) { 1.5f, 0.f, 0.f });
 	hz_node_insert(root, sphere);
 

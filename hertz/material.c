@@ -13,6 +13,7 @@ struct _hz_material {
 	struct {
 		GLuint diffuse, normal, specular, dummy;
 	} textures;
+	float shininess;
 };
 
 static GLuint create_dummy_texture(void)
@@ -23,12 +24,24 @@ static GLuint create_dummy_texture(void)
 
 void hz_material_use(hz_material *m)
 {
+	GLint prog, loc;
+
 	glActiveTexture(HZ_DIFFUSE_LOCATION);
 	glBindTexture(GL_TEXTURE_2D, m->textures.diffuse);
 	glActiveTexture(HZ_NORMAL_LOCATION);
 	glBindTexture(GL_TEXTURE_2D, m->textures.normal);
 	glActiveTexture(HZ_SPECULAR_LOCATION);
 	glBindTexture(GL_TEXTURE_2D, m->textures.specular);
+
+	glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+	loc = glGetUniformLocation(prog, "shininess");
+	if (loc >= 0)
+		glUniform1f(loc, m->shininess);
+}
+
+void hz_material_set_shininess(hz_material *m, float shininess)
+{
+	m->shininess = shininess;
 }
 
 bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
@@ -71,6 +84,7 @@ static void material_init(hz_material *m)
 	m->textures.diffuse = dummy;
 	m->textures.normal = dummy;
 	m->textures.specular = dummy;
+	m->shininess = 32.f;
 }
 
 static void delete_texture_if_bound(hz_material *m, GLuint texture)
@@ -105,3 +119,4 @@ hz_material *hz_material_new(hz_arena *arena)
 
 	return material;
 }
+

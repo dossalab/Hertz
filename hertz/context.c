@@ -3,6 +3,7 @@
 #include <hz/nodes/root.h>
 #include <hz/internal/context.h>
 #include <hz/context.h>
+#include <hz/material_store.h>
 #include <hz/util/logger.h>
 
 static const char *tag = "ctx";
@@ -38,6 +39,11 @@ void hz_context_set_camera(hz_context *context, hz_node *camera)
 	context->camera = camera;
 }
 
+hz_material_store *hz_context_get_material_store(hz_context *context)
+{
+	return context->store;
+}
+
 bool hz_context_poll(hz_context *context)
 {
 	return context->proto->poll(context);
@@ -59,6 +65,7 @@ int hz_context_wrapper_with_context(hz_arena *arena, hz_context *context,
 	hz_node *root;
 
 	root = hz_root_new(arena);
+	context->store = hz_material_store_new(arena);
 
 	if (!init(context, arena, root, user)) {
 		hz_log_e(tag, "user init failed");

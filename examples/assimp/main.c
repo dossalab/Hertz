@@ -67,7 +67,8 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	hz_light_setup(HZ_LIGHT(light), 0.1f, 0.06f, 0.001f);
 	hz_node_insert(root, light);
 
-	if (!assimp_import_scene(root, arena, state->scene_path, state->program)) {
+	if (!assimp_import_scene(root, arena, hz_context_get_material_store(context),
+			state->scene_path, state->program)) {
 		hz_log_e(tag, "unable to import scene!");
 		return false;
 	}

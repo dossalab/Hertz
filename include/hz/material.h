@@ -18,4 +18,5 @@ bool hz_material_bind_texture(hz_material *m, hz_texture_type type,
 		void *data, GLenum format, size_t w, size_t h, bool linear);
 
 void hz_material_use(hz_material *m);
+void hz_material_set_shininess(hz_material *m, float shininess);
 hz_material *hz_material_new(hz_arena *arena);

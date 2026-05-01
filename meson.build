@@ -35,13 +35,16 @@ hertz_src = [
   'hertz/built-in/shaders/phong.c',
   'hertz/built-in/shaders/wireframe.c',
   'hertz/built-in/materials/checkerboard.c',
+  'hertz/built-in/materials/solid.c',
   'hertz/built-in/primitives/cube.c',
   'hertz/built-in/primitives/sphere.c',
   'hertz/helpers/shaders.c',
   'hertz/helpers/binders.c',
   'hertz/helpers/textures.c',
   'hertz/adt/list.c',
-  'hertz/adt/tree.c'
+  'hertz/adt/map.c',
+  'hertz/adt/tree.c',
+  'hertz/material_store.c'
 ]
 
 install_subdir('include/hz', install_dir: 'include')
