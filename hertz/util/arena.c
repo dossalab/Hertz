@@ -1,3 +1,4 @@
+#include <hz/util/mem.h>
 #include <hz/util/arena.h>
 #include <hz/util/common.h>
 #include <hz/util/panic.h>
@@ -17,9 +18,9 @@ struct _hz_arena_bucket {
 	hz_list_item head;
 	const hz_arena_proto *proto;
 	void *stack[OBJECTS_PER_BUCKET];
-	unsigned ptr, alloc_size;
+	unsigned ptr;
 	bool full;
-	void *mem[];
+	char mem[];
 };
 
 struct _hz_arena {
@@ -49,10 +50,7 @@ static hz_arena_bucket *create_bucket(hz_arena *arena, const hz_arena_proto *pro
 	hz_arena_bucket *bucket;
 	unsigned alloc_size = align_size(proto->size);
 
-	bucket = malloc(sizeof(hz_arena_bucket) + alloc_size * OBJECTS_PER_BUCKET);
-	if (!bucket) {
-		hz_panic("out of memory");
-	}
+	bucket = hz_malloc(sizeof(hz_arena_bucket) + alloc_size * OBJECTS_PER_BUCKET);
 
 	bucket->ptr = 0;
 	bucket->proto = proto;
@@ -81,7 +79,7 @@ static void free_bucket(hz_arena_bucket *bucket)
 		}
 	}
 
-	free(bucket);
+	hz_free(bucket);
 }
 
 static hz_arena_bucket *find_bucket(hz_arena *arena, const hz_arena_proto *proto)
@@ -107,9 +105,6 @@ void *hz_arena_alloc(hz_arena *arena, const hz_arena_proto *proto)
 	bucket  = find_bucket(arena, proto);
 	if (!bucket) {
 		bucket = create_bucket(arena, proto);
-		if (!bucket) {
-			return NULL;
-		}
 	}
 
 	return bucket_alloc(bucket);
@@ -119,11 +114,7 @@ hz_arena *hz_arena_new(void)
 {
 	hz_arena *arena;
 
-	arena = malloc(sizeof(hz_arena));
-	if (!arena) {
-		hz_panic("out of memory");
-	}
-
+	arena = hz_malloc(sizeof(hz_arena));
 	hz_list_init(&arena->bucket_list);
 
 	return arena;
@@ -136,4 +127,6 @@ void hz_arena_free(hz_arena *arena)
 	hz_list_forward_safe(item, tmp, &arena->bucket_list) {
 		free_bucket(cast_bucket(item));
 	}
+
+	hz_free(arena);
 }
