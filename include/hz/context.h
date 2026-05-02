@@ -21,6 +21,7 @@ void hz_context_set_camera(hz_context *context, hz_node *camera);
 bool hz_context_get_key(hz_context *context, char key);
 bool hz_context_get_mouse_button(hz_context *context, int button);
 void hz_context_get_cursor(hz_context *context, float *x, float *y);
+float hz_context_get_scroll(hz_context *context);
 hz_node *hz_context_get_camera(hz_context *context);
 hz_material_store *hz_context_get_material_store(hz_context *context);
 bool hz_context_poll(hz_context *context);

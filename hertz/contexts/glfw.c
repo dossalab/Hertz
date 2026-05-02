@@ -14,12 +14,20 @@ static unsigned glfw_init_refcounter = 0;
 struct _hz_glfw_context {
 	hz_context super;
 	GLFWwindow *window;
+	float scroll_y;
 };
 
 static void glfw_resize_callback(GLFWwindow *window, int w, int h)
 {
 	hz_context *super = glfwGetWindowUserPointer(window);
 	hz_context_handle_resize(super, w, h);
+}
+
+static void glfw_scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+	(void)xoffset;
+	hz_glfw_context *context = HZ_GLFW_CONTEXT(glfwGetWindowUserPointer(window));
+	context->scroll_y += (float)yoffset;
 }
 
 static GLFWwindow *create_context_window(void)
@@ -92,6 +100,14 @@ static bool glfw_get_key(hz_context *super, char key)
 	return glfwGetKey(context->window, toupper((unsigned char)key)) == GLFW_PRESS;
 }
 
+static float glfw_get_scroll(hz_context *super)
+{
+	hz_glfw_context *context = HZ_GLFW_CONTEXT(super);
+	float scroll = context->scroll_y;
+	context->scroll_y = 0.f;
+	return scroll;
+}
+
 static bool glfw_init(hz_context *super)
 {
 	hz_glfw_context *context = HZ_GLFW_CONTEXT(super);
@@ -112,6 +128,7 @@ static bool glfw_init(hz_context *super)
 
 	glfwSetWindowUserPointer(context->window, super);
 	glfwSetFramebufferSizeCallback(context->window, glfw_resize_callback);
+	glfwSetScrollCallback(context->window, glfw_scroll_callback);
 
 	return true;
 }
@@ -132,6 +149,7 @@ static const hz_context_proto hz_glfw_context_proto = {
 	.get_key = glfw_get_key,
 	.get_mouse_button = glfw_get_mouse_button,
 	.get_cursor = glfw_get_cursor,
+	.get_scroll = glfw_get_scroll,
 
 	.arena_proto = {
 		.name = "glfw_context",

@@ -12,6 +12,7 @@ typedef struct {
 	bool (*get_key)(hz_context *super, char key);
 	bool (*get_mouse_button)(hz_context *super, int button);
 	void (*get_cursor)(hz_context *super, float *x, float *y);
+	float (*get_scroll)(hz_context *super);
 	hz_arena_proto arena_proto;
 } hz_context_proto;
 

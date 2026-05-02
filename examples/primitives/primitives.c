@@ -32,6 +32,10 @@ static void update(hz_context *context, float dt, void *user)
 		hz_orbit_actor_rotate(s->actor, x - s->last_x, y - s->last_y);
 	}
 
+	float scroll = hz_context_get_scroll(context);
+	if (scroll != 0.f)
+		hz_orbit_actor_zoom(s->actor, scroll);
+
 	s->last_x = x;
 	s->last_y = y;
 	s->prev_pressed = pressed;

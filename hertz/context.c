@@ -29,6 +29,11 @@ void hz_context_get_cursor(hz_context *context, float *x, float *y)
 	context->proto->get_cursor(context, x, y);
 }
 
+float hz_context_get_scroll(hz_context *context)
+{
+	return context->proto->get_scroll(context);
+}
+
 hz_node *hz_context_get_camera(hz_context *context)
 {
 	return context->camera;

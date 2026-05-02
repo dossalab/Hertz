@@ -30,6 +30,20 @@ void hz_orbit_actor_rotate(hz_orbit_actor *a, float dx, float dy)
 	hz_node_set_model(a->puppet, model, false);
 }
 
+void hz_orbit_actor_zoom(hz_orbit_actor *a, float delta)
+{
+	mat4x4 model, translate;
+
+	a->radius -= delta;
+	if (a->radius < 0.5f)
+		a->radius = 0.5f;
+
+	mat4x4_translate(translate, 0.f, 0.f, a->radius);
+	mat4x4_mul(model, a->rotation, translate);
+
+	hz_node_set_model(a->puppet, model, false);
+}
+
 static void orbit_actor_init(hz_orbit_actor *a, hz_node *puppet)
 {
 	a->radius      = ORBIT_DEFAULT_RADIUS;
