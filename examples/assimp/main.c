@@ -49,6 +49,7 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	hz_node *camera, *light;
 
 	hz_glfw_context_set_window_title(HZ_GLFW_CONTEXT(context), window_title);
+	hz_glfw_context_set_cursor_hidden(HZ_GLFW_CONTEXT(context), true);
 
 	if (!load_shaders(state, arena)) {
 		hz_log_e(tag, "unable to load shaders!");

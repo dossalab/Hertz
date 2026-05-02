@@ -138,6 +138,12 @@ void hz_glfw_context_set_window_title(hz_glfw_context *context, const char *titl
 	glfwSetWindowTitle(context->window, title);
 }
 
+void hz_glfw_context_set_cursor_hidden(hz_glfw_context *context, bool hidden)
+{
+	glfwSetInputMode(context->window, GLFW_CURSOR,
+		hidden ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+}
+
 hz_glfw_context *HZ_GLFW_CONTEXT(hz_context *super)
 {
 	return hz_container_of(super, hz_glfw_context, super);
