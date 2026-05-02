@@ -71,6 +71,12 @@ void hz_fly_actor_move(hz_fly_actor *a, float dt, float dx, float dy,
 	hz_node_rotate_quat(a->puppet, q);
 }
 
+void hz_fly_actor_set_position(hz_fly_actor *a, hz_vec3 pos)
+{
+	vec3_dup(a->position, pos);
+	hz_node_move(a->puppet, pos);
+}
+
 static void fly_actor_init(hz_fly_actor *a, hz_node *puppet)
 {
 	a->speed = FLY_ACTOR_DEFAULT_SPEED;

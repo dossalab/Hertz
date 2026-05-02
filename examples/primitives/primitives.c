@@ -58,11 +58,11 @@ static bool init(hz_context *context, hz_arena *arena, hz_node *root, void *user
 	}
 
 	camera = hz_camera_new(arena);
-	hz_node_move(camera, (hz_vec3) { 0.f, 0.f, 7.f });
 	hz_node_insert(root, camera);
 	hz_context_set_camera(context, camera);
 
 	s->actor = hz_orbit_actor_new(arena, camera);
+	hz_orbit_actor_zoom(s->actor, 0.f);
 
 	light = hz_light_new(arena, program, 0);
 	hz_node_move(light, (hz_vec3) { 0.f, 10.f, 0.f });
