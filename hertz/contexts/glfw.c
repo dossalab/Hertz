@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <ctype.h>
 #include <hz/internal/context.h>
@@ -38,7 +38,7 @@ static GLFWwindow *create_context_window(void)
 	 * uhh we have to do that *after* context is created.
 	 * not sure what will happen if we create multiple windows
 	 */
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!gladLoadGL(glfwGetProcAddress)) {
 		hz_log_e(tag, "unable to init GLAD!");
 		glfwDestroyWindow(window);
 		return NULL;
